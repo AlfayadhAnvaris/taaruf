@@ -118,17 +118,17 @@ export default function LandingPage({ onEnter }) {
           <div className="mentor-grid" style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             <div className="mentor-card">
               <div className="mentor-avatar bg-primary" style={{ backgroundColor: 'var(--primary-light)' }}></div>
-              <h4>Ustadz Abdullah, Lc.</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Alumni Al-Azhar. Fokus Bimbingan Fiqih Keluarga.</p>
+              <h4>Ustadz Abdullah Taslim,Lc. Ma</h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Alumni S2 Hadits Universitas Islam Madinah</p>
             </div>
             <div className="mentor-card">
               <div className="mentor-avatar bg-secondary" style={{ backgroundColor: '#D4AF37' }}></div>
-              <h4>Ustadz Abdurrahman, M.A.</h4>
+              <h4>Ustadz Fulan</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Konsultan Pernikahan Syar'i dengan pengalaman luas.</p>
             </div>
             <div className="mentor-card">
               <div className="mentor-avatar bg-info" style={{ backgroundColor: 'var(--success)' }}></div>
-              <h4>Ustadzah Aisyah</h4>
+              <h4>Ustadzah Fulanah</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Pembimbing khusus akhwat & persiapan kerumahtanggaan.</p>
             </div>
           </div>
