@@ -44,7 +44,7 @@ function App() {
            wali_phone: sessionUser.user_metadata?.wali_phone || ''
         };
         const { data: upsertedProfile, error: upsertError } = await supabase
-          .from('profiles')day
+          .from('profiles')
           .upsert(profilePayload, { onConflict: 'id', ignoreDuplicates: false })
           .select()
           .single();
