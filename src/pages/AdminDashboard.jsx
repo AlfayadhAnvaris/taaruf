@@ -1,12 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../App';
-import { CheckCircle, XCircle, Users, Activity, FileText, UserCheck, ShieldAlert, Eye, MessageCircle, BarChart2 } from 'lucide-react';
+import { CheckCircle, XCircle, Users, Activity, FileText, UserCheck, ShieldAlert, Eye, MessageCircle, BarChart2, Send } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { supabase } from '../supabase';
 
 export default function AdminDashboard({ activeTab, setActiveTab }) {
-  const { cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, showAlert, messages } = useContext(AppContext);
+  const { user, cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, showAlert, messages, setMessages, addNotification } = useContext(AppContext);
+  const adminName = user?.name || 'Ustadz';
   const [monitoringChatId, setMonitoringChatId] = useState(null);
   const [reviewingCv, setReviewingCv] = useState(null);
+  const [chatInput, setChatInput] = useState('');
 
   const pendingCvs = cvs.filter(cv => cv.status === 'pending');
   const totalApproved = cvs.filter(cv => cv.status === 'approved').length;
@@ -21,28 +24,40 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
   ];
   const COLORS = ['var(--primary)', 'var(--secondary)'];
 
-  const handleApprove = (id) => {
-    setCvs(cvs.map(cv => cv.id === id ? { ...cv, status: 'approved' } : cv));
+  const handleApprove = async (id) => {
+    try {
+      await supabase.from('cv_profiles').update({ status: 'approved' }).eq('id', id);
+      setCvs(cvs.map(cv => cv.id === id ? { ...cv, status: 'approved' } : cv));
+    } catch (err) { console.error(err); }
   };
 
-  const handleReject = (id) => {
-    setCvs(cvs.filter(cv => cv.id !== id));
+  const handleReject = async (id) => {
+    try {
+      await supabase.from('cv_profiles').delete().eq('id', id);
+      setCvs(cvs.filter(cv => cv.id !== id));
+    } catch (err) { console.error(err); }
   };
 
-  const updateTaarufStatus = (id, newStatus) => {
-    setTaarufRequests(taarufRequests.map(req => 
-      req.id === id ? { ...req, status: newStatus, updatedAt: new Date().toISOString() } : req
-    ));
+  const updateTaarufStatus = async (id, newStatus) => {
+    try {
+      const { error } = await supabase.from('taaruf_requests').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) {
+        console.error('Supabase update error:', error);
+        showAlert('Gagal Update', error.message, 'error');
+        return; // Jangan update local state jika gagal
+      }
+      setTaarufRequests(taarufRequests.map(req => 
+        req.id === id ? { ...req, status: newStatus, updatedAt: new Date().toISOString() } : req
+      ));
+    } catch (err) { 
+      console.error(err); 
+      showAlert('Gagal', 'Terjadi kesalahan sistem saat update status.', 'error');
+    }
   };
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease' }}>
-      <div className="hero-section" style={{ background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(200, 150, 50, 0.05) 100%)' }}>
-        <div className="hero-text">
-          <h1 className="hero-title" style={{ color: 'var(--accent)' }}>Ahlan wa Sahlan, {usersDb.find(u => u.email === 'admin@mail.com')?.name || 'Ustadz'}</h1>
-          <p className="hero-subtitle">Panel pengawasan mediasi harian. Membantu menjaga batasan syariat dalam proses perkenalan, serta memantau semua ketertarikan dengan saksama.</p>
-        </div>
-      </div>
+
 
       <div className="dashboard-grid" style={{ marginTop: 0, marginBottom: '2rem' }}>
         <div className="stat-card">
@@ -177,20 +192,30 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     <p style={{ marginTop: '0.5rem' }}>Status Saat Ini: <span className="badge badge-warning" style={{ textTransform: 'capitalize' }}>{req.status.replace('_', ' ')}</span></p>
                   </div>
                   <div className="cv-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {req.status === 'pending_target' && (
+                      <button className="btn btn-outline" onClick={() => {
+                        updateTaarufStatus(req.id, 'pending_admin');
+                        addNotification(`Mediasi #${req.id} disetujui target (Simulasi), menunggu review Ustadz.`);
+                      }}>
+                        Simulasikan Target Setuju
+                      </button>
+                    )}
                     {req.status === 'pending_admin' && (
                       <>
-                        <button className="btn btn-success" onClick={() => updateTaarufStatus(req.id, 'pending_target')}>
-                          <CheckCircle size={16} /> Teruskan ke Target
+                        <p style={{ fontSize: '0.85rem', color: 'var(--success)' }}>✔ Target telah setuju. Perlu verifikasi Anda sebelum Q&A dibuka.</p>
+                        <button className="btn btn-success" onClick={() => {
+                          updateTaarufStatus(req.id, 'qna');
+                          addNotification(`Mediasi #${req.id} disetujui ustadz. Masuk ke fase Q&A.`);
+                        }}>
+                          <CheckCircle size={16} /> Setujui & Buka Ruang Q&A
                         </button>
-                        <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => updateTaarufStatus(req.id, 'rejected')}>
+                        <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => {
+                          updateTaarufStatus(req.id, 'rejected');
+                          addNotification(`Mediasi #${req.id} ditolak ustadz.`);
+                        }}>
                           <XCircle size={16} /> Tolak Pengajuan
                         </button>
                       </>
-                    )}
-                    {req.status === 'pending_target' && (
-                      <button className="btn btn-primary" onClick={() => updateTaarufStatus(req.id, 'qna')}>
-                        Simulasikan Target Setuju (Lanjut Q&A)
-                      </button>
                     )}
                     {req.status === 'qna' && (
                       <button className="btn btn-warning" onClick={() => setMonitoringChatId(req.id)} style={{ color: '#000' }}>
@@ -229,7 +254,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => setMonitoringChatId(null)}>Tutup</button>
               </div>
               
-              <div className="chat-container" style={{ border: 'none', borderRadius: 0, height: '450px' }}>
+              <div className="chat-container" style={{ borderTop: 'none', borderRadius: '0', boxShadow: 'none' }}>
                 <div className="chat-history">
                   {(!chatData || chatData.chats.length === 0) ? (
                     <div className="empty-state" style={{ padding: '2rem' }}>
@@ -237,15 +262,64 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                       <p style={{ marginTop: '1rem' }}>Belum ada obrolan terekam.</p>
                     </div>
                   ) : (
-                    chatData.chats.map(msg => (
-                      <div key={msg.id} className={`chat-bubble ${msg.sender === req.senderEmail ? 'left' : 'right'}`}>
-                        <span className="chat-sender-name">{msg.senderAlias}</span>
-                        {msg.text}
-                        <span className="chat-meta">{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
-                    ))
+                    chatData.chats.map(msg => {
+                      const isAdmin = msg.sender.includes('admin');
+                      return (
+                        <div key={msg.id} className={`chat-bubble ${isAdmin ? 'admin' : (msg.sender === req.senderEmail ? 'left' : 'right')}`} style={isAdmin ? { alignSelf: 'center', background: 'var(--bg-card)', border: '1px solid var(--secondary)', textAlign: 'center' } : {}}>
+                          <span className="chat-sender-name" style={isAdmin ? { color: 'var(--secondary)' } : {}}>{isAdmin ? 'Ustadz / Admin' : msg.senderAlias}</span>
+                          {msg.text}
+                          <span className="chat-meta">{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
+                
+                <form onSubmit={async e => {
+                  e.preventDefault();
+                  if (!chatInput.trim()) return;
+                  
+                  try {
+                    const { data, error } = await supabase.from('messages').insert({
+                      taaruf_request_id: monitoringChatId,
+                      sender_id: user.id,
+                      text: chatInput
+                    }).select('*, sender:sender_id(email, name)').single();
+                    
+                    if (error) throw error;
+                    
+                    const newMsg = {
+                      id: data.id,
+                      sender: data.sender.email,
+                      senderAlias: data.sender.name,
+                      text: data.text,
+                      timestamp: data.created_at
+                    };
+
+                    let newChats = chatData ? [...chatData.chats] : [];
+                    newChats.push(newMsg);
+                    if (chatData) {
+                      setMessages(messages.map(m => m.taarufId === monitoringChatId ? { ...m, chats: newChats } : m));
+                    } else {
+                      setMessages([...messages, { taarufId: monitoringChatId, chats: newChats }]);
+                    }
+                    setChatInput('');
+                  } catch (err) {
+                    console.error('Error Admin Chat:', err);
+                    showAlert('Gagal Kirim', err.message || 'Gagal mengirim pesan', 'error');
+                  }
+                }} className="chat-input-area">
+                  <input 
+                    type="text" 
+                    className="chat-input-field" 
+                    placeholder="Beri pesan sebagai moderator..." 
+                    value={chatInput} 
+                    onChange={e => setChatInput(e.target.value)} 
+                  />
+                  <button type="submit" className="chat-send-btn">
+                    <Send size={20} />
+                  </button>
+                </form>
               </div>
 
               <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
@@ -255,6 +329,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 <button className="btn btn-success" onClick={() => {
                   showAlert('Konfirmasi Berhasil', 'Proses taaruf disetujui ustadz untuk lanjut ke Proses Wali', 'success');
                   updateTaarufStatus(req.id, 'wali_process');
+                  addNotification(`Mediasi #${req.id} lanjut ke Proses Wali.`);
                   setMonitoringChatId(null);
                 }}>
                   Teruskan ke Proses Wali
@@ -284,7 +359,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
               <h4 style={{ color: 'var(--primary)', marginBottom: '1rem', marginTop: '1.5rem', borderBottom: '2px solid var(--border)', paddingBottom: '0.5rem' }}>Deskripsi Profil</h4>
               <p><strong>Tentang Saya:</strong><br/>{reviewingCv.about || 'Tidak ada deskripsi'}</p>
               <p style={{ marginTop: '1rem' }}><strong>Kriteria Pasangan:</strong><br/>{reviewingCv.criteria || 'Tidak memberikan kriteria spesifik'}</p>
-              {reviewingCv.hobbies && <p style={{ marginTop: '1rem' }}><strong>Hobi:</strong><br/>{reviewingCv.hobbies}</p>}
+              {reviewingCv.hobi && <p style={{ marginTop: '1rem' }}><strong>Hobi:</strong><br/>{reviewingCv.hobi}</p>}
             </div>
 
             <div className="modal-footer" style={{ justifyContent: 'space-between', padding: '1.5rem' }}>
@@ -292,6 +367,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 handleReject(reviewingCv.id);
                 setReviewingCv(null);
                 showAlert('Ditolak', 'CV Berhasil Ditolak & Dihapus', 'success');
+                addNotification(`CV dari ${reviewingCv.alias} ditolak oleh Ustadz/Admin.`);
               }}>
                 <XCircle size={18} /> Tolak CV
               </button>
@@ -299,6 +375,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 handleApprove(reviewingCv.id);
                 setReviewingCv(null);
                 showAlert('Disetujui', 'CV Berhasil Disetujui & Dipublikasikan', 'success');
+                addNotification(`CV dari ${reviewingCv.alias} disetujui oleh Ustadz/Admin.`);
               }}>
                 <CheckCircle size={18} /> Setujui & Publish
               </button>

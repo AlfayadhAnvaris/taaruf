@@ -1,9 +1,13 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
-import { FileText, Search, UserCheck, Send, Filter, Clock, MessageCircle, Users, CheckCircle, XCircle, User, MapPin, Briefcase, GraduationCap, Heart } from 'lucide-react';
+import { FileText, Search, UserCheck, Send, Clock, MessageCircle, Users, CheckCircle, XCircle, User, MapPin, Briefcase, GraduationCap, Heart, PlayCircle, BookOpen, ShieldAlert, AlertCircle, ChevronDown, ChevronRight, Lock, Award, BarChart2, Star } from 'lucide-react';
+import { supabase } from '../supabase';
 
 export default function UserDashboard({ activeTab, setActiveTab }) {
-  const { user, cvs, setCvs, taarufRequests, setTaarufRequests, showAlert } = useContext(AppContext);
+  const { user, cvs, setCvs, taarufRequests, setTaarufRequests, showAlert, addNotification, messages, setMessages } = useContext(AppContext);
+
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [chatInput, setChatInput] = useState('');
 
   // My CV form state
   const [myCv, setMyCv] = useState({
@@ -31,12 +35,13 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
   const [cvStep, setCvStep] = useState(1);
   const totalSteps = 6;
 
-  const myExistingCv = cvs.find(cv => cv.email === user.email);
-  const hasSubmittedCv = !!myExistingCv;
+  const [isEditingCv, setIsEditingCv] = useState(false);
+  const myExistingCv = cvs.find(cv => cv.user_id === user.id);
+  const hasSubmittedCv = !!myExistingCv && !isEditingCv;
 
   // Filter state
   const [filters, setFilters] = useState({
-    gender: 'Semua', // Semua, Ikhwan, Akhwat
+    gender: 'Semua',
     location: '',
     suku: '',
     hobi: '',
@@ -45,12 +50,119 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
 
   const [viewingCv, setViewingCv] = useState(null);
 
-  const handleCvSubmit = (e) => {
-    e.preventDefault();
-    setCvs([...cvs, { ...myCv, email: user.email, id: Date.now(), status: 'pending', requestedBy: null }]);
+  // === LMS Learning State ===
+  const lmsCurriculum = [
+    {
+      id: 1, title: 'Modul 1: Fondasi Pernikahan Islami', expanded: true,
+      items: [
+        { id: 'v1-1', type: 'video', title: 'Materi 1: Makna Taaruf yang Sesungguhnya', duration: '18:24', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: true },
+        { id: 'v1-2', type: 'video', title: 'Materi 2: Fiqih Memilih Pasangan', duration: '25:10', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: true },
+        { id: 'q1-1', type: 'quiz', title: 'Latihan Kuis Modul 1', questions: 10, done: false },
+        { id: 'v1-3', type: 'video', title: 'Materi Baru: Kedudukan Wali dalam Islam', duration: '20:00', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: false },
+      ]
+    },
+    {
+      id: 2, title: 'Modul 2: Hak & Kewajiban Suami Istri', expanded: false,
+      items: [
+        { id: 'v2-1', type: 'video', title: 'Materi 1: Hak Nafkah dan Tanggung Jawab', duration: '30:15', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: false },
+        { id: 'v2-2', type: 'video', title: 'Materi 2: Membangun Komunikasi Sehat', duration: '22:40', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: false },
+        { id: 'q2-1', type: 'quiz', title: 'Latihan Kuis Modul 2', questions: 8, done: false },
+      ]
+    },
+    {
+      id: 3, title: 'Modul 3: Bekal Finansial Rumah Tangga', expanded: false,
+      items: [
+        { id: 'v3-1', type: 'video', title: 'Materi 1: Manajemen Keuangan Islami', duration: '35:00', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', done: false },
+        { id: 'q3-1', type: 'quiz', title: 'Latihan Kuis Modul 3', questions: 12, done: false },
+      ]
+    },
+  ];
+
+  const [curriculum, setCurriculum] = useState(lmsCurriculum);
+  const [activeLesson, setActiveLesson] = useState(lmsCurriculum[0].items[0]);
+
+  const toggleModule = (moduleId) => {
+    setCurriculum(prev => prev.map(m => m.id === moduleId ? { ...m, expanded: !m.expanded } : m));
   };
 
-  const handleAjukanTaaruf = (targetCv) => {
+  const markLessonDone = (lessonId) => {
+    setCurriculum(prev => prev.map(m => ({
+      ...m,
+      items: m.items.map(item => item.id === lessonId ? { ...item, done: true } : item)
+    })));
+  };
+
+  const totalLessons = curriculum.reduce((acc, m) => acc + m.items.length, 0);
+  const doneLessons = curriculum.reduce((acc, m) => acc + m.items.filter(i => i.done).length, 0);
+  const progressPercent = Math.round((doneLessons / totalLessons) * 100);
+
+  const handleCvSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    if (cvStep !== totalSteps) {
+      setCvStep(cvStep + 1);
+      return;
+    }
+
+    // Manual Validation for required fields across all steps
+    if (!myCv.job || !myCv.location || !myCv.education || !myCv.worship || !myCv.about || !myCv.criteria || !myCv.marital_status || !myCv.age) {
+        showAlert('Data Belum Lengkap', 'Mohon lengkapi semua field yang wajib diisi pada setiap tahapan (Step 1-6).', 'error');
+        return;
+    }
+
+    try {
+      const cvPayload = {
+        user_id: user.id,
+        alias: myCv.alias,
+        gender: myCv.gender,
+        age: parseInt(myCv.age) || null,
+        location: myCv.location,
+        education: myCv.education,
+        job: myCv.job,
+        worship: myCv.worship,
+        about: myCv.about,
+        criteria: myCv.criteria,
+        suku: myCv.suku,
+        hobi: myCv.hobi,
+        poligami: myCv.poligami,
+        salary: myCv.salary,
+        address: myCv.address,
+        marital_status: myCv.marital_status,
+        tinggi_berat: myCv.tinggi_berat,
+        kesehatan: myCv.kesehatan,
+        kajian: myCv.kajian,
+        karakter: myCv.karakter,
+        status: 'approved' // Langsung publish otomatis
+      };
+
+      if (isEditingCv && myExistingCv) {
+        const { data, error } = await supabase.from('cv_profiles').update(cvPayload).eq('id', myExistingCv.id).select();
+        if (error || !data || data.length === 0) {
+          console.error(error || 'Tidak ada data diperbarui');
+          showAlert('Error', 'Gagal memperbarui CV. ' + (error ? error.message : ''), 'error');
+          return;
+        }
+        setCvs(cvs.map(cv => cv.id === myExistingCv.id ? data[0] : cv));
+        addNotification('Alhamdulillah, CV berhasil diperbarui!');
+        setCvStep(7); // Go to success step instead of closing immediately
+      } else {
+        const { data, error } = await supabase.from('cv_profiles').insert(cvPayload).select();
+        if (error || !data || data.length === 0) {
+          console.error(error);
+          showAlert('Error', 'Gagal mengirim CV. ' + (error ? error.message : ''), 'error');
+          return;
+        }
+        setCvs([...cvs, data[0]]);
+        addNotification('Alhamdulillah, CV berhasil disubmit!');
+        setCvStep(7);
+      }
+    } catch (err) {
+      console.error(err);
+      showAlert('Error', 'Kesalahan sistem saat mengirim CV.', 'error');
+    }
+  };
+
+  const handleAjukanTaaruf = async (targetCv) => {
     if (!myExistingCv) {
       showAlert('CV Belum Lengkap', 'Maaf, Anda wajib melengkapi dan mengirimkan CV Taaruf di tab "CV Saya" sebelum bisa mengajukan.', 'error');
       setActiveTab('my_cv');
@@ -71,25 +183,78 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
       return;
     }
 
-    const newReq = {
-      id: Date.now(),
-      senderEmail: user.email,
-      senderAlias: user.name, // Idealnya ambil dari data CV dia sendiri jika punya
-      targetCvId: targetCv.id,
-      targetAlias: targetCv.alias,
-      status: 'pending_admin',
-      updatedAt: new Date().toISOString()
-    };
+    // Aturan Pembatasan Poligami & Multiple Requests
+    const activeRequests = taarufRequests.filter(req => req.senderEmail === user.email && req.status !== 'rejected');
     
-    setTaarufRequests([...taarufRequests, newReq]);
-    showAlert('Pengajuan Berhasil', 'Alhamdulillah, pengajuan berhasil! Silakan pantau di tab Status Taaruf.', 'success');
-    setActiveTab('status');
+    if (activeRequests.length >= 1) {
+      if (user.gender === 'akhwat') {
+        showAlert('Batas Pengajuan', 'Ukhti hanya dapat menjalani 1 proses taaruf dalam satu waktu. Selesaikan atau batalkan proses sebelumnya.', 'error');
+        return;
+      } else if (user.gender === 'ikhwan') {
+        // Cek apakah kandidat target saat ini TIDAK bersedia poligami
+        if (targetCv.poligami === 'Tidak Bersedia') {
+          showAlert('Pengajuan Ditolak', 'Kandidat akhwat ini berstatus "Tidak Bersedia" dipoligami. Anda tidak dapat mengajukan taaruf karena masih memiliki proses aktif dengan kandidat lain.', 'error');
+          return;
+        }
+
+        // Cek apakah ada proses aktif sebelumnya dengan kandidat yang TIDAK bersedia poligami.
+        // Jika ada proses berjalan dgn akhwat yg tdk mau poligami, dia tidak boleh nambah cabang.
+        const existingAntiPoligami = activeRequests.some(req => {
+          const cv = cvs.find(c => c.id === req.targetCvId);
+          return cv && cv.poligami === 'Tidak Bersedia';
+        });
+
+        if (existingAntiPoligami) {
+          showAlert('Pengajuan Ditolak', 'Anda sedang menjalani proses taaruf dengan akhwat yang berstatus "Tidak Bersedia" dipoligami. Harap hargai komitmen dan batalkan/selesaikan proses tersebut sebelum mengajukan ke kandidat lain.', 'error');
+          return;
+        }
+      }
+    }
+
+    const newReq = {
+      sender_id: user.id,
+      target_cv_id: targetCv.id,
+      target_user_id: targetCv.user_id,
+      status: 'pending_target'
+    };
+
+    try {
+      const { data, error } = await supabase.from('taaruf_requests')
+        .insert(newReq)
+        .select('*, sender:sender_id(email, name), target:target_cv_id(*), target_user:target_user_id(email, name)')
+        .single();
+        
+      if (error) {
+        console.error(error);
+        showAlert('Error', 'Gagal melakukan pengajuan.', 'error');
+        return;
+      }
+      
+      const mappedReq = {
+        id: data.id,
+        senderEmail: data.sender.email,
+        senderAlias: data.sender.name,
+        targetCvId: data.target_cv_id,
+        targetAlias: data.target.alias,
+        targetEmail: data.target_user?.email,
+        status: data.status,
+        updatedAt: data.updated_at
+      };
+      
+      setTaarufRequests([...taarufRequests, mappedReq]);
+      showAlert('Pengajuan Berhasil', 'Alhamdulillah, pengajuan berhasil! Silakan pantau di tab Status Taaruf.', 'success');
+      addNotification(`Pengajuan taaruf kepada ${targetCv.alias} berhasil dikirim.`);
+      setActiveTab('status');
+    } catch (err) {
+      console.error(err);
+      showAlert('Error', 'Kesalahan sistem saat mengajukan taaruf.', 'error');
+    }
   };
 
   const applyFilters = (cvList) => {
     return cvList.filter(cv => {
       // Don't show non-approved CVs or your own
-      if (cv.status !== 'approved' || cv.alias === user.name) return false;
+      if (cv.status !== 'approved' || cv.user_id === user.id) return false;
       
       // Strict Opposites Gender Filter
       if (user.gender === 'ikhwan' && cv.gender !== 'akhwat') return false;
@@ -122,37 +287,176 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease' }}>
-      <div className="hero-section">
-        <div className="hero-text">
-          <h1 className="hero-title">Ahlan wa Sahlan, {user.name}!</h1>
-          <p className="hero-subtitle">Mari menjemput jodoh dengan ikhtiar yang syar'i. Jaga niat, perbaiki diri, dan percayakan proses mediasi kepada ustadz kami.</p>
+
+      {/* ===== HOME / OVERVIEW TAB ===== */}
+      {activeTab === 'home' && (
+        <div style={{ animation: 'fadeIn 0.5s ease' }}>
+          {/* Welcome Hero */}
+
+
+          {/* Quick Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+            {[
+              { label: 'Kandidat Tersedia', value: cvs.filter(cv => cv.status === 'approved' && cv.user_id !== user.id).length, color: 'var(--primary)', icon: <Users size={22} /> },
+              { label: 'Proses Taaruf', value: taarufRequests.filter(r => r.senderEmail === user.email).length, color: 'var(--secondary)', icon: <Heart size={22} /> },
+              { label: 'CV Saya', value: myExistingCv ? '✓ Aktif' : 'Belum Ada', color: myExistingCv ? 'var(--success)' : 'var(--danger)', icon: <FileText size={22} /> },
+              { label: 'Materi Selesai', value: `${doneLessons}/${totalLessons}`, color: '#8b5cf6', icon: <BookOpen size={22} /> },
+            ].map((stat, i) => (
+              <div key={i} className="card" style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: `${stat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', color: stat.color }}>
+                  {stat.icon}
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: stat.color }}>{stat.value}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem', fontWeight: '500' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature Cards */}
+          <h2 style={{ marginBottom: '1.25rem', fontSize: '1.3rem' }}>Jelajahi Fitur Platform</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+            {[
+              {
+                title: 'CV Taaruf Saya',
+                tab: 'my_cv',
+                icon: <FileText size={28} />,
+                color: 'var(--primary)',
+                bg: 'rgba(44,95,77,0.08)',
+                desc: 'Buat dan kelola CV taaruf Anda. Profil Anda akan dipublish setelah diisi dan terverifikasi agar dapat dilihat kandidat lain.',
+                status: myExistingCv ? '✓ CV Sudah Ada' : 'Belum dibuat',
+                statusColor: myExistingCv ? 'var(--success)' : 'var(--danger)',
+                cta: myExistingCv ? 'Lihat CV Saya' : 'Buat CV Sekarang'
+              },
+              {
+                title: 'Pencarian Kandidat',
+                tab: 'find',
+                icon: <Search size={28} />,
+                color: '#0ea5e9',
+                bg: 'rgba(14,165,233,0.08)',
+                desc: 'Telusuri profil kandidat yang tersedia dengan filter lokasi, suku, dan kriteria lainnya. Ajukan taaruf langsung dari halaman profil.',
+                status: `${cvs.filter(cv => cv.status === 'approved' && cv.user_id !== user.id).length} kandidat tersedia`,
+                statusColor: '#0ea5e9',
+                cta: 'Cari Sekarang'
+              },
+              {
+                title: 'Status Taaruf',
+                tab: 'status',
+                icon: <UserCheck size={28} />,
+                color: 'var(--secondary)',
+                bg: 'rgba(212,175,55,0.08)',
+                desc: 'Pantau setiap tahapan proses taaruf Anda secara real-time — mulai dari pengajuan, persetujuan target, review ustadz, hingga sesi Q&A.',
+                status: `${taarufRequests.filter(r => r.senderEmail === user.email).length} pengajuan aktif`,
+                statusColor: 'var(--secondary)',
+                cta: 'Cek Status'
+              },
+              {
+                title: 'Pembelajaran Pra-Nikah',
+                tab: 'materi',
+                icon: <BookOpen size={28} />,
+                color: '#8b5cf6',
+                bg: 'rgba(139,92,246,0.08)',
+                desc: 'Ikuti kursus terstruktur, tonton materi video, dan kerjakan kuis untuk mempersiapkan diri secara ilmu sebelum memasuki jenjang pernikahan.',
+                status: `${progressPercent}% selesai`,
+                statusColor: '#8b5cf6',
+                cta: 'Mulai Belajar'
+              },
+            ].map((feat, i) => (
+              <div key={i} onClick={() => setActiveTab(feat.tab)} className="card" style={{ cursor: 'pointer', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: feat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: feat.color }}>
+                    {feat.icon}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '700', padding: '0.3rem 0.75rem', borderRadius: '99px', background: feat.bg, color: feat.statusColor }}>
+                    {feat.status}
+                  </span>
+                </div>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>{feat.title}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', flex: 1, marginBottom: '1.25rem' }}>{feat.desc}</p>
+                <button className="btn btn-outline" style={{ width: '100%', color: feat.color, borderColor: feat.color, fontSize: '0.9rem' }}>
+                  {feat.cta} →
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Legacy hero only shown on non-home tabs */}
+
 
       {activeTab === 'my_cv' && (
-        <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="card card-no-hover" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div className="card-header" style={{ marginBottom: '2rem' }}>
             <h3 className="card-title">Pembuatan CV Taaruf</h3>
           </div>
           {hasSubmittedCv ? (
-            <div className="empty-state">
-              {myExistingCv.status === 'approved' ? (
-                <>
-                  <CheckCircle size={64} color="var(--success)" style={{ display: 'block', margin: '0 auto 1rem' }} />
-                  <h3>CV Telah Diverifikasi</h3>
-                  <p style={{ color: 'var(--text-muted)' }}>Status CV Anda: <strong>Approved</strong>. Anda sudah bisa mengajukan taaruf ke kandidat lainnya.</p>
-                </>
-              ) : (
-                <>
-                  <FileText size={64} color="var(--primary)" style={{ display: 'block', margin: '0 auto 1rem' }} />
-                  <h3>Alhamdulillah, CV Berhasil Dikirim</h3>
-                  <p style={{ color: 'var(--text-muted)' }}>CV Anda sedang ditinjau oleh Ustadz/Admin. Jika disetujui, Anda dapat menjemput jodoh!</p>
-                </>
-              )}
-            </div>
+            <div className="card-body">
+                <div style={{ textAlign: 'left', animation: 'fadeIn 0.3s ease' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <CheckCircle color="var(--success)" size={24} /> CV Anda Aktif & Terpublish
+                      </h3>
+                      <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Kandidat lain sudah bisa melihat profil Anda di halaman pencarian.</p>
+                    </div>
+                    <button className="btn btn-primary" onClick={() => {
+                        setMyCv({
+                          alias: myExistingCv.alias || '',
+                          gender: myExistingCv.gender || 'ikhwan',
+                          age: myExistingCv.age || '',
+                          location: myExistingCv.location || '',
+                          education: myExistingCv.education || '',
+                          job: myExistingCv.job || '',
+                          worship: myExistingCv.worship || '',
+                          about: myExistingCv.about || '',
+                          criteria: myExistingCv.criteria || '',
+                          suku: myExistingCv.suku || '',
+                          hobi: myExistingCv.hobi || '',
+                          poligami: myExistingCv.poligami || 'Tidak Bersedia',
+                          salary: myExistingCv.salary || '',
+                          address: myExistingCv.address || '',
+                          marital_status: myExistingCv.marital_status || 'Lajang',
+                          tinggi_berat: myExistingCv.tinggi_berat || '',
+                          kesehatan: myExistingCv.kesehatan || '',
+                          kajian: myExistingCv.kajian || '',
+                          karakter: myExistingCv.karakter || ''
+                        });
+                        setCvStep(1);
+                        setIsEditingCv(true);
+                    }}>
+                      <FileText size={18} style={{ marginRight: '0.5rem' }}/> Edit Data CV
+                    </button>
+                  </div>
+                  
+                  <div style={{ background: 'rgba(44, 95, 77, 0.03)', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem', border: '1px solid rgba(44, 95, 77, 0.08)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem', color: 'var(--text-main)', fontSize: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><User size={18} color="var(--primary)" /> <span><strong>Alias:</strong> {myExistingCv.alias}</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><UserCheck size={18} color="var(--primary)" /> <span><strong>Usia:</strong> {myExistingCv.age} Tahun</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><MapPin size={18} color="var(--primary)" /> <span><strong>Lokasi:</strong> {myExistingCv.location}</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Briefcase size={18} color="var(--primary)" /> <span><strong>Pekerjaan:</strong> {myExistingCv.job || '-'}</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><GraduationCap size={18} color="var(--primary)" /> <span><strong>Pendidikan:</strong> {myExistingCv.education}</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Heart size={18} color="var(--primary)" /> <span><strong>Status:</strong> {myExistingCv.marital_status}</span></div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                    <h4 style={{ marginBottom: '0.5rem', color: 'var(--primary)' }}>Visi Pernikahan</h4>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{myExistingCv.about || 'Belum diisi.'}</p>
+                    <h4 style={{ marginBottom: '0.5rem', color: 'var(--primary)', marginTop: '1.5rem' }}>Kriteria Pasangan Harapan</h4>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{myExistingCv.criteria || 'Belum diisi.'}</p>
+                  </div>
+                  
+                  <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                    <button className="btn btn-outline" style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }} onClick={() => { setViewingCv(myExistingCv); setActiveTab('find'); }}>
+                      <Search size={18} style={{ marginRight: '0.5rem' }} /> Lihat Tampilan Full CV Saya
+                    </button>
+                  </div>
+                </div>
+              </div>
           ) : (
-            <form onSubmit={handleCvSubmit}>
+            <div className="cv-form-container">
               {/* Stepper Header */}
+              {cvStep < 7 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '2px solid var(--border)', paddingBottom: '1rem' }}>
                 {[1,2,3,4,5,6].map(step => (
                   <div key={step} style={{ 
@@ -165,6 +469,7 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                   </div>
                 ))}
               </div>
+              )}
 
               {cvStep === 1 && (
                 <div className="animation-fade">
@@ -306,32 +611,66 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                 </div>
               )}
 
+              {cvStep === 7 && (
+                <div className="animation-fade empty-state">
+                  <CheckCircle size={64} color="var(--success)" style={{ display: 'block', margin: '0 auto 1rem' }} />
+                  <h3>Alhamdulillah, Proses Selesai</h3>
+                  <p style={{ color: 'var(--text-muted)' }}>Data CV Anda berhasil disimpan dan langsung dipublish ke dalam sistem.</p>
+                  <button type="button" className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => {
+                     setIsEditingCv(false);
+                     setCvStep(1);
+                  }}>Lihat Status CV &rarr;</button>
+                </div>
+              )}
+
+              {cvStep < 7 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
                 {cvStep > 1 ? (
                   <button type="button" className="btn btn-outline" onClick={() => setCvStep(cvStep - 1)}>Kembali</button>
+                ) : isEditingCv ? (
+                  <button type="button" className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => setIsEditingCv(false)}>Batal Edit</button>
                 ) : <div></div>}
                 
                 {cvStep < totalSteps ? (
                   <button type="button" className="btn btn-primary" onClick={() => setCvStep(cvStep + 1)}>Selanjutnya</button>
                 ) : (
-                  <button type="submit" className="btn btn-success" style={{ padding: '0.8rem 1.75rem' }}>Kirim CV</button>
+                  <button type="button" className="btn btn-success" style={{ padding: '0.8rem 1.75rem' }} onClick={handleCvSubmit}>{isEditingCv ? 'Simpan Perubahan' : 'Kirim CV'}</button>
                 )}
               </div>
-            </form>
+              )}
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'find' && (
         <div style={{ animation: 'fadeIn 0.5s ease' }}>
-          {viewingCv ? (
+          {!myExistingCv ? (
+            <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem', borderTop: '4px solid var(--danger)', maxWidth: '600px', margin: '2rem auto' }}>
+              <AlertCircle size={64} color="var(--danger)" style={{ margin: '0 auto 1.5rem', opacity: 0.8 }} />
+              <h3 style={{ marginBottom: '1rem' }}>CV Belum Dibuat</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: '1.6' }}>
+                Anda wajib melengkapi form CV Taaruf terlebih dahulu sebelum dapat melihat daftar kandidat. Hal ini bertujuan untuk menjaga keseriusan tujuan dan privasi pada platform.
+              </p>
+              <button className="btn btn-primary" onClick={() => setActiveTab('my_cv')} style={{ width: '100%', maxWidth: '300px' }}>
+                Lengkapi CV Sekarang
+              </button>
+            </div>
+          ) : viewingCv ? (
             <div className="cv-detail-view" style={{ animation: 'fadeIn 0.3s ease' }}>
               <button 
                 className="btn btn-outline" 
-                onClick={() => setViewingCv(null)} 
+                onClick={() => {
+                  if (viewingCv.user_id === user.id) {
+                    setViewingCv(null);
+                    setActiveTab('my_cv');
+                  } else {
+                    setViewingCv(null);
+                  }
+                }} 
                 style={{ marginBottom: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', paddingLeft: 0 }}
               >
-                &larr; Kembali ke Daftar Pencarian
+                &larr; {viewingCv.user_id === user.id ? 'Kembali ke CV Saya' : 'Kembali ke Daftar Pencarian'}
               </button>
               
               <div className="card" style={{ maxWidth: '800px', margin: '0 auto', display: 'block' }}>
@@ -395,9 +734,11 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                   )}
                 </div>
 
-                <button className="btn btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '1rem' }} onClick={() => handleAjukanTaaruf(viewingCv)}>
-                  <Send size={20} style={{ marginRight: '0.5rem' }} /> Bismillah, Ajukan Taaruf
-                </button>
+                {viewingCv.user_id !== user.id && (
+                  <button className="btn btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '1rem' }} onClick={() => handleAjukanTaaruf(viewingCv)}>
+                    <Send size={20} style={{ marginRight: '0.5rem' }} /> Bismillah, Ajukan Taaruf
+                  </button>
+                )}
               </div>
             </div>
           ) : (
@@ -430,10 +771,24 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                   <option value="">Semua Suku</option>
                   <option value="Jawa">Jawa</option>
                   <option value="Sunda">Sunda</option>
-                  <option value="Madura">Madura</option>
+                  <option value="Batak">Batak</option>
+                  <option value="Minang">Minangkabau (Minang)</option>
                   <option value="Betawi">Betawi</option>
-                  <option value="Minang">Minang</option>
                   <option value="Bugis">Bugis</option>
+                  <option value="Madura">Madura</option>
+                  <option value="Banjar">Banjar</option>
+                  <option value="Bali">Bali</option>
+                  <option value="Sasak">Sasak</option>
+                  <option value="Dayak">Dayak</option>
+                  <option value="Makassar">Makassar</option>
+                  <option value="Cirebon">Cirebon</option>
+                  <option value="Ambon">Ambon</option>
+                  <option value="Minahasa">Minahasa</option>
+                  <option value="Melayu">Melayu</option>
+                  <option value="Banten">Banten</option>
+                  <option value="Nias">Nias</option>
+                  <option value="Sumbawa">Sumbawa</option>
+                  <option value="Lainnya">Lainnya...</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -516,9 +871,109 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
 
       {activeTab === 'status' && (
         <div className="status-container" style={{ animation: 'fadeIn 0.5s ease' }}>
+          {activeChatId ? (() => {
+            const req = taarufRequests.find(r => r.id === activeChatId);
+            const chatData = messages.find(m => m.taarufId === activeChatId);
+            const isSender = req.senderEmail === user.email;
+            const myAlias = isSender ? req.senderAlias : req.targetAlias;
+            const targetAlias = isSender ? req.targetAlias : req.senderAlias;
+
+            const handleSendMessage = async (e) => {
+              e.preventDefault();
+              if (!chatInput.trim()) return;
+
+              try {
+                const { data, error } = await supabase.from('messages').insert({
+                  taaruf_request_id: activeChatId,
+                  sender_id: user.id,
+                  text: chatInput
+                }).select('*, sender:sender_id(email, name)').single();
+                
+                if (error) {
+                  console.error(error);
+                  showAlert('Gagal Kirim Pesan', error.message, 'error');
+                  return;
+                }
+
+                const newMsg = {
+                  id: data.id,
+                  sender: data.sender.email,
+                  senderAlias: data.sender.name,
+                  text: data.text,
+                  timestamp: data.created_at
+                };
+
+                let newChats = chatData ? [...chatData.chats] : [];
+                newChats.push(newMsg);
+
+                if (chatData) {
+                  setMessages(messages.map(m => m.taarufId === activeChatId ? { ...m, chats: newChats } : m));
+                } else {
+                  setMessages([...messages, { taarufId: activeChatId, chats: newChats }]);
+                }
+                setChatInput('');
+              } catch (err) {
+                console.error('Error send message: ', err);
+                showAlert('Gagal Sistem', 'Terjadi kesalahan sistem saat mengirim pesan.', 'error');
+              }
+            };
+
+            return (
+              <div className="card card-no-hover" style={{ padding: 0, overflow: 'hidden' }}>
+                <div className="modal-header info" style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', flexDirection: 'row', justifyContent: 'space-between', background: 'var(--bg-light)' }}>
+                  <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', border: 'none' }} onClick={() => setActiveChatId(null)}>
+                      &larr; Kembali
+                    </button>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem' }}>Ruang Q&A dengan {targetAlias}</h3>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}><ShieldAlert size={14} style={{ position: 'relative', top: '2px' }}/> Percakapan diawasi oleh Ustadz</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="chat-container" style={{ borderTop: 'none', borderRadius: '0 0 var(--radius-lg) var(--radius-lg)', boxShadow: 'none' }}>
+                  <div className="chat-history">
+                    {(!chatData || chatData.chats.length === 0) ? (
+                      <div className="empty-state" style={{ padding: '2rem' }}>
+                        <MessageCircle size={40} color="var(--border-color)" />
+                        <p style={{ marginTop: '1rem' }}>Sesi Q&A baru dimulai. Ucapkan salam dengan sopan.</p>
+                      </div>
+                    ) : (
+                      chatData.chats.map(msg => {
+                        const isMe = msg.sender === user.email;
+                        const isAdmin = msg.sender.includes('admin');
+                        return (
+                          <div key={msg.id} className={`chat-bubble ${isAdmin ? 'admin' : (isMe ? 'right' : 'left')}`} style={isAdmin ? { alignSelf: 'center', background: 'var(--bg-card)', border: '1px solid var(--secondary)', textAlign: 'center' } : {}}>
+                            <span className="chat-sender-name" style={isAdmin ? { color: 'var(--secondary)' } : {}}>{isAdmin ? 'Ustadz / Admin' : msg.senderAlias}</span>
+                            {msg.text}
+                            <span className="chat-meta">{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  
+                  <form onSubmit={handleSendMessage} className="chat-input-area">
+                    <input 
+                      type="text" 
+                      className="chat-input-field"
+                      placeholder="Ketik pertanyaan atau balasan Anda..." 
+                      value={chatInput} 
+                      onChange={e => setChatInput(e.target.value)} 
+                    />
+                    <button type="submit" className="chat-send-btn">
+                      <Send size={20} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            );
+          })() : (
+            <>
           <h2 style={{ marginBottom: '1.5rem' }}>Status Pengajuan Taaruf Saya</h2>
           
-          {taarufRequests.filter(req => req.senderEmail === user.email).length === 0 ? (
+          {taarufRequests.filter(req => req.senderEmail === user.email || (myExistingCv && req.targetCvId === myExistingCv.id)).length === 0 ? (
             <div className="card empty-state" style={{ maxWidth: '600px', margin: '0 auto' }}>
                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(44, 95, 77, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                  <UserCheck size={40} color="var(--primary)" />
@@ -528,11 +983,11 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                <button className="btn btn-outline" style={{ marginTop: '1rem' }} onClick={() => setActiveTab('find')}>Cari Pasangan</button>
             </div>
           ) : (
-            taarufRequests.filter(req => req.senderEmail === user.email).map(req => {
+            taarufRequests.filter(req => req.senderEmail === user.email || (myExistingCv && req.targetCvId === myExistingCv.id)).map(req => {
               
               // Helper to generate stepper state
               const getStepClass = (stepIndex, status) => {
-                const stages = ['pending_admin', 'pending_target', 'qna', 'wali_process', 'meet', 'completed'];
+                const stages = ['pending_target', 'pending_admin', 'qna', 'wali_process', 'meet', 'completed'];
                 const currentIndex = stages.indexOf(status);
                 
                 if (status === 'rejected') {
@@ -550,7 +1005,7 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                 <div key={req.id} className="card" style={{ marginBottom: '1.5rem' }}>
                   <div className="card-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      <h3 className="card-title">Pengajuan ke {req.targetAlias}</h3>
+                      <h3 className="card-title">{req.senderEmail === user.email ? `Pengajuan ke ${req.targetAlias}` : `Pengajuan dari ${req.senderAlias}`}</h3>
                       <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Update terakhir: {new Date(req.updatedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric'})}</p>
                     </div>
                     {req.status === 'rejected' && <span className="badge badge-warning">Ditolak</span>}
@@ -560,11 +1015,11 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                     <div className="stepper">
                       <div className={`step ${getStepClass(0, req.status)}`}>
                         <div className="step-icon">1</div>
-                        <span className="step-label">Review<br/>Ustadz</span>
+                        <span className="step-label">Tunggu<br/>Calon</span>
                       </div>
                       <div className={`step ${getStepClass(1, req.status)}`}>
                         <div className="step-icon">2</div>
-                        <span className="step-label">Tunggu<br/>Calon</span>
+                        <span className="step-label">Review<br/>Ustadz</span>
                       </div>
                       <div className={`step ${getStepClass(2, req.status)}`}>
                         <div className="step-icon"><MessageCircle size={18} /></div>
@@ -589,19 +1044,46 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
                     <h4 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Clock size={18} color="var(--primary)" /> Status Saat Ini:
                     </h4>
-                    {req.status === 'pending_admin' && <p>Ustadz/Admin sedang meninjau kelayakan pengajuan Anda. Mohon bersabar.</p>}
-                    {req.status === 'pending_target' && <p>Pengajuan telah disetujui Admin. Saat ini sedang diteruskan ke pihak {req.targetAlias} untuk dipertimbangkan.</p>}
-                    {req.status === 'qna' && <p>Alhamdulillah, {req.targetAlias} bersedia lanjut. Sesi tanya jawab melalui platform dibuka. Silakan masuk ke fitur Chat Tersistem.</p>}
-                    {req.status === 'wali_process' && <p>Tanya jawab selesai. Ustadz akan menghubungi wali/pendamping dari {req.targetAlias}.</p>}
+                    {req.status === 'pending_target' && <p>{req.senderEmail === user.email ? 'Pengajuan Anda sedang dipertimbangkan oleh calon. Mohon doanya.' : 'Ada pengajuan masuk untuk Anda. Silakan pelajari profilnya dan putuskan apakah Anda bersedia.'}</p>}
+                    
+                    {req.status === 'pending_target' && req.senderEmail !== user.email && (
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button className="btn btn-primary" onClick={async () => {
+                          const { error } = await supabase.from('taaruf_requests').update({ status: 'pending_admin', updated_at: new Date().toISOString() }).eq('id', req.id);
+                          if (error) {
+                            showAlert('Error', error.message, 'error');
+                            return;
+                          }
+                          setTaarufRequests(taarufRequests.map(r => r.id === req.id ? {...r, status: 'pending_admin'} : r));
+                          addNotification('Alhamdulillah, Anda menyetujui pengajuan. Menunggu verifikasi Ustadz sebelum Q&A.');
+                        }}><CheckCircle size={18}/> Bismillah, Saya Setuju</button>
+                        <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
+                          const { error } = await supabase.from('taaruf_requests').update({ status: 'rejected', updated_at: new Date().toISOString() }).eq('id', req.id);
+                          if (error) {
+                            showAlert('Error', error.message, 'error');
+                            return;
+                          }
+                          setTaarufRequests(taarufRequests.map(r => r.id === req.id ? {...r, status: 'rejected'} : r));
+                          addNotification('Anda telah menolak pengajuan. Semoga Allah berikan yang lebih baik.');
+                        }}><XCircle size={18}/> Maaf, Kurang Cocok</button>
+                      </div>
+                    )}
+
+                    {req.status === 'pending_admin' && <p>{req.senderEmail === user.email ? 'Kandidat telah setuju! Saat ini Ustadz sedang memverifikasi sebelum membuka Ruang Q&A.' : 'Anda telah setuju. Menunggu Ustadz memverifikasi dan membuka Ruang Q&A untuk Anda berdua.'}</p>}
+                    
+                    {req.status === 'qna' && <p>Alhamdulillah, sesi tanya jawab telah dibuka. Silakan masuk ke fitur Chat Tersistem untuk berkomunikasi dengan adab yang baik.</p>}
+                    {req.status === 'wali_process' && <p>Sesi tanya jawab telah dirasa cukup. Ustadz akan segera menjembatani proses wali dan merencanakan nazhar/pertemuan.</p>}
                     {req.status === 'rejected' && <p>Mohon maaf, proses taaruf ini tidak dapat dilanjutkan karena ketidakcocokan kriteria. Tetap semangat menjemput jodoh!</p>}
 
                     {req.status === 'qna' && (
-                      <button className="btn btn-primary" style={{ marginTop: '1rem' }}><MessageCircle size={18} style={{ marginRight: '0.5rem' }}/> Masuk Sesi Q&A</button>
+                      <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => setActiveChatId(req.id)}><MessageCircle size={18} style={{ marginRight: '0.5rem' }}/> Masuk Sesi Q&A</button>
                     )}
                   </div>
                 </div>
               );
             })
+          )}
+          </>
           )}
         </div>
       )}
@@ -638,6 +1120,205 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
             <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => showAlert('Keamanan', 'Hubungi Admin untuk menghapus akun demi alasan keamanan.', 'error')}>
               Hapus Akun
             </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'materi' && (
+        <div style={{ animation: 'fadeIn 0.5s ease' }}>
+          {/* LMS Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ cursor: 'pointer', color: 'var(--primary)' }} onClick={() => setActiveTab('home')}>Home Portal</span>
+            <ChevronRight size={14} />
+            <span>Daftar Kursus</span>
+          </div>
+
+          <div className="lms-layout" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+
+            {/* === LEFT SIDEBAR: Curriculum === */}
+            <div className="lms-sidebar" style={{ width: '300px', flexShrink: 0, background: 'white', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
+              {/* Course Title */}
+              <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)', background: 'linear-gradient(135deg, var(--primary), #1e4537)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <Award size={16} color="var(--secondary)" />
+                  <span style={{ color: 'var(--secondary)', fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Kursus Pra-Nikah</span>
+                </div>
+                <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.75rem', lineHeight: '1.4' }}>Panduan Lengkap Taaruf & Pernikahan Islami</div>
+                {/* Progress Bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem' }}>PROGRESS</span>
+                  <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: '700' }}>{doneLessons}/{totalLessons}</span>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '99px', height: '6px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${progressPercent}%`, background: 'var(--secondary)', borderRadius: '99px', transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
+
+              {/* Sequential Info */}
+              <div style={{ padding: '0.8rem 1.25rem', background: 'rgba(44,95,77,0.04)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <Lock size={12} color="var(--primary)" />
+                <span style={{ fontWeight: '600', color: 'var(--primary)' }}>STRICT SEQUENTIAL</span>
+                <span>ACTIVE</span>
+              </div>
+
+              {/* Module List */}
+              <div style={{ overflowY: 'auto', maxHeight: '520px' }}>
+                {curriculum.map((module, mIdx) => (
+                  <div key={module.id}>
+                    {/* Module Header */}
+                    <button
+                      onClick={() => toggleModule(module.id)}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '1rem 1.25rem', background: 'none', border: 'none',
+                        borderBottom: '1px solid var(--border)', cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-main)' }}>{mIdx + 1} {module.title.replace(`Modul ${mIdx+1}: `, '')}</span>
+                      {module.expanded ? <ChevronDown size={16} color="var(--text-muted)" /> : <ChevronRight size={16} color="var(--text-muted)" />}
+                    </button>
+
+                    {/* Module Items */}
+                    {module.expanded && (
+                      <div>
+                        {module.items.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setActiveLesson(item)}
+                            style={{
+                              width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                              padding: '0.75rem 1.25rem 0.75rem 2rem',
+                              background: activeLesson?.id === item.id ? 'rgba(44,95,77,0.08)' : 'none',
+                              border: 'none', borderBottom: '1px solid rgba(44,95,77,0.05)',
+                              cursor: 'pointer', textAlign: 'left',
+                              borderLeft: activeLesson?.id === item.id ? '3px solid var(--primary)' : '3px solid transparent',
+                            }}
+                          >
+                            {item.done
+                              ? <CheckCircle size={16} color="var(--success)" style={{ flexShrink: 0 }} />
+                              : item.type === 'quiz'
+                                ? <BarChart2 size={16} color="#8b5cf6" style={{ flexShrink: 0 }} />
+                                : <PlayCircle size={16} color={activeLesson?.id === item.id ? 'var(--primary)' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
+                            }
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.8rem', fontWeight: activeLesson?.id === item.id ? '700' : '500', color: activeLesson?.id === item.id ? 'var(--primary)' : 'var(--text-main)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.title}
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                {item.type === 'quiz' ? `Kuis • ${item.questions} soal` : item.duration}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* === RIGHT: Main Content === */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Breadcrumb */}
+              <div style={{ marginBottom: '0.75rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ color: 'var(--primary)' }}>MATERI</span>
+                <span style={{ margin: '0 0.4rem' }}>›</span>
+                <span>{activeLesson?.title?.toUpperCase()}</span>
+              </div>
+
+              {/* Done Badge */}
+              {activeLesson?.done && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+                  <span style={{ background: 'rgba(42,157,143,0.1)', color: 'var(--success)', padding: '0.4rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(42,157,143,0.2)' }}>
+                    <CheckCircle size={14} /> SUDAH SELESAI
+                  </span>
+                </div>
+              )}
+
+              {/* Content Area */}
+              {activeLesson?.type === 'video' ? (
+                <div>
+                  {/* Video Player */}
+                  <div style={{
+                    borderRadius: '16px', overflow: 'hidden', position: 'relative',
+                    background: '#0f172a', boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+                    marginBottom: '1.5rem', aspectRatio: '16/9'
+                  }}>
+                    <iframe
+                      width="100%" height="100%"
+                      src={activeLesson.videoUrl}
+                      title={activeLesson.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ display: 'block', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+                    />
+                  </div>
+
+                  {/* Title & Info */}
+                  <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', border: '1px solid var(--border)', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div>
+                        <h2 style={{ fontSize: '1.3rem', marginBottom: '0.4rem' }}>{activeLesson.title}</h2>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={13} /> {activeLesson.duration}</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={13} color="var(--secondary)" /> Materi Pilihan Ustadz</span>
+                        </div>
+                      </div>
+                      {!activeLesson.done && (
+                        <button className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.6rem 1.25rem' }} onClick={() => { markLessonDone(activeLesson.id); }}>
+                          <CheckCircle size={15} /> Tandai Selesai
+                        </button>
+                      )}
+                    </div>
+                    <hr style={{ margin: '1.25rem 0', borderColor: 'var(--border)' }} />
+                    <p style={{ color: 'var(--text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                      Materi ini membahas secara mendalam tentang <strong>{activeLesson.title.toLowerCase()}</strong> berdasarkan Al-Quran dan Sunnah yang shahih. Tonton hingga selesai dan klik "Tandai Selesai" untuk melanjutkan ke materi berikutnya.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                /* Quiz View */
+                <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', border: '1px solid var(--border)', textAlign: 'center' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#8b5cf6' }}>
+                    <BarChart2 size={40} />
+                  </div>
+                  <h2 style={{ marginBottom: '0.5rem' }}>{activeLesson?.title}</h2>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{activeLesson?.questions} soal pilihan ganda</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
+                    Uji pemahaman Anda terhadap materi yang telah ditonton. Nilai minimum kelulusan adalah 70.
+                  </p>
+                  <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', boxShadow: '0 4px 15px rgba(139,92,246,0.3)' }} onClick={() => { markLessonDone(activeLesson.id); alert('Selamat! Kuis berhasil diselesaikan.'); }}>
+                    <BarChart2 size={18} /> Mulai Kuis Sekarang
+                  </button>
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => {
+                    const allItems = curriculum.flatMap(m => m.items);
+                    const idx = allItems.findIndex(i => i.id === activeLesson?.id);
+                    if (idx > 0) setActiveLesson(allItems[idx - 1]);
+                  }}
+                >
+                  ← Sebelumnya
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    const allItems = curriculum.flatMap(m => m.items);
+                    const idx = allItems.findIndex(i => i.id === activeLesson?.id);
+                    if (idx < allItems.length - 1) setActiveLesson(allItems[idx + 1]);
+                  }}
+                >
+                  Selanjutnya →
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

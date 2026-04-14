@@ -9,7 +9,7 @@ export default function LandingPage({ onEnter }) {
           <Heart size={28} />
           Mawaddah Match
         </div>
-        <button className="btn btn-outline" onClick={onEnter}>Masuk / Daftar</button>
+        <button className="btn btn-primary" onClick={onEnter}>Masuk / Daftar</button>
       </nav>
 
       <main>
@@ -59,6 +59,28 @@ export default function LandingPage({ onEnter }) {
             <div className="geometric-bg"></div>
           </div>
         </div>
+
+        {/* DALIL SECTION */}
+        <section className="landing-section" style={{ background: 'var(--primary)', color: 'white', padding: '4rem 2rem', textAlign: 'center', position: 'relative', overflow: 'hidden', marginTop: '2rem' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+          <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            <Quote size={48} color="var(--secondary)" style={{ margin: '0 auto 1.5rem', opacity: 0.8 }} />
+            <p style={{ 
+              fontSize: '2rem', 
+              lineHeight: '1.8', 
+              fontFamily: '"Amiri", "Traditional Arabic", serif', 
+              marginBottom: '1.5rem', 
+              fontWeight: 'bold',
+              direction: 'rtl'
+            }}>
+              وَمِنْ ءَايَٰتِهِۦٓ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَٰجًا لِّتَسْكُنُوٓا۟ إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِى ذَٰلِكَ لَءَايَٰتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
+            </p>
+            <p style={{ fontSize: '1.25rem', lineHeight: '1.8', fontStyle: 'italic', marginBottom: '1.5rem', fontWeight: '400', opacity: '0.9' }}>
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan-pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih (Mawaddah) dan sayang (Rahmah). Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir."
+            </p>
+            <h4 style={{ color: 'var(--secondary)', fontSize: '1.1rem', letterSpacing: '1px' }}>— QS. AR-RUM: 21 —</h4>
+          </div>
+        </section>
 
         {/* FEATURES SECTION */}
         <section className="landing-section bg-white">
