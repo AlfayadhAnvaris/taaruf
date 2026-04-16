@@ -206,7 +206,7 @@ export default function LearningTab({
           <div style={{ marginBottom: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase' }}>Progress Kelas</span>
-              <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#2C5F4D' }}>{progressPercent}%</span>
+              <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#2C5F4D' }}>{doneLessons}/{totalLessons} Materi</span>
             </div>
             <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
               <div style={{ height: '100%', borderRadius: '99px', background: '#2C5F4D', width: `${progressPercent}%`, transition: 'width 0.4s ease' }} />
@@ -321,7 +321,7 @@ export default function LearningTab({
         </div>
 
         <div style={{ height: '80px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', padding: '0 4rem', justifyContent: 'space-between', background: 'white' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8' }}>{progressPercent}% SELESAI</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8' }}>PROGRES: {doneLessons}/{totalLessons} MATERI SELESAI</div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {activeLesson?.type === 'video' && (
               <button 

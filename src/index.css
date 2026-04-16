@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --primary: #2C5F4D;       /* Mawaddah Green */
@@ -30,7 +30,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   background-color: var(--bg-color);
   background-image: 
     radial-gradient(at 0% 0%, hsla(153,36%,85%,0.3) 0px, transparent 50%),

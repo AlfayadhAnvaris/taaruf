@@ -575,16 +575,62 @@ export default function CourseManagerTab() {
 
                             {isCourseExpanded && (
                               <div style={{ padding: '0.5rem 1rem 1rem', borderTop: '1px solid #f1f5f9' }}>
-                                 {courseLessons.map(lesson => (
-                                   <div key={lesson.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--bg-light)', marginBottom: '0.4rem' }}>
-                                      {lesson.type === 'video' ? <PlayCircle size={14} color="var(--primary)" /> : <FileQuestion size={14} color="#b8861e" />}
-                                      <span style={{ flex: 1, fontSize: '0.8rem', fontWeight: '600' }}>{lesson.title}</span>
-                                      <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                        <button onClick={() => openEditLesson(lesson)} style={BTN_SM({ background: 'white' })}><Edit3 size={11} /></button>
-                                        <button onClick={() => deleteLesson(lesson.id)} style={BTN_SM({ background: 'white', color: '#E63946' })}><Trash2 size={11} /></button>
+                                 {courseLessons.map(lesson => {
+                                    const isQuiz = lesson.type === 'quiz';
+                                    const isLessonExt = expandedLesson === lesson.id;
+                                    const questions = (quizQuestions || []).filter(q => q.lesson_id === lesson.id);
+
+                                    return (
+                                      <div key={lesson.id} style={{ marginBottom: '0.5rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: isLessonExt ? 'rgba(184,134,30,0.05)' : 'var(--bg-light)', border: isLessonExt ? '1px solid rgba(184,134,30,0.2)' : '1px solid transparent' }}>
+                                          {isQuiz ? <FileQuestion size={16} color="#b8861e" /> : <PlayCircle size={16} color="var(--primary)" />}
+                                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: '700' }}>{lesson.title}</span>
+                                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                            {isQuiz && (
+                                              <button 
+                                                onClick={() => setExpandedLesson(isLessonExt ? null : lesson.id)} 
+                                                style={BTN_SM({ background: isLessonExt ? '#b8861e' : 'white', color: isLessonExt ? 'white' : '#b8861e', border: '1px solid #b8861e' })}
+                                              >
+                                                <Zap size={12} /> {isLessonExt ? 'Tutup Soal' : 'Kelola Soal'}
+                                              </button>
+                                            )}
+                                            <button onClick={() => openEditLesson(lesson)} style={BTN_SM({ background: 'white', border: '1px solid var(--border)' })}><Edit3 size={13} /></button>
+                                            <button onClick={() => deleteLesson(lesson.id)} style={BTN_SM({ background: 'white', border: '1px solid var(--border)', color: '#E63946' })}><Trash2 size={13} /></button>
+                                          </div>
+                                        </div>
+
+                                        {isQuiz && isLessonExt && (
+                                          <div style={{ padding: '1rem', background: 'white', border: '1px solid #f1f5f9', borderTop: 'none', borderRadius: '0 0 10px 10px', marginLeft: '0.5rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                               <h6 style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Daftar Soal ({questions.length})</h6>
+                                               <button onClick={() => openNewQuiz(lesson.id)} style={BTN_SM({ background: 'rgba(184,134,30,0.1)', color: '#b8861e' })}>
+                                                 <Plus size={12} /> Tambah Soal
+                                               </button>
+                                            </div>
+
+                                            {questions.length === 0 ? (
+                                              <div style={{ padding: '1.5rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                                                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>Belum ada soal kuis.</p>
+                                              </div>
+                                            ) : (
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                {questions.map((q, qi) => (
+                                                  <div key={q.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0.75rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                                     <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: '800' }}>{qi+1}</div>
+                                                     <div style={{ flex: 1, fontSize: '0.8rem', fontWeight: '600' }}>{q.question_text}</div>
+                                                     <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                                       <button onClick={() => openEditQuiz(q)} style={BTN_SM({ padding: '6px', background: 'white' })}><Edit3 size={12} /></button>
+                                                       <button onClick={() => deleteQuiz(q.id)} style={BTN_SM({ padding: '6px', background: 'white', color: '#E63946' })}><Trash2 size={12} /></button>
+                                                     </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
-                                   </div>
-                                 ))}
+                                    );
+                                  })}
                               </div>
                             )}
                           </div>

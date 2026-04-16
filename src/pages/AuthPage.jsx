@@ -125,6 +125,20 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
     }
     setIsLoading(true);
     try {
+      // 1. Cek apakah email sudah terdaftar di tabel profiles
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingUser) {
+        showAlert('Email Sudah Terdaftar', 'Alamat email ini sudah memiliki akun. Silakan gunakan fitur Login.', 'error');
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Jika belum ada, baru kirim OTP
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true, data: { name } },

@@ -28,26 +28,26 @@ export default function LandingPage() {
     <div className="landing-container">
       {/* NAVBAR */}
       <nav className="landing-nav sticky-nav" style={{ height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
-        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '800', fontSize: '1.4rem', color: 'var(--primary)' }}>
+        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '700', fontSize: '1.4rem', color: 'var(--primary)' }}>
           <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '42px', height: '42px' }} />
           Mawaddah
         </div>
-        <Link to="/login" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none' }}>Masuk / Daftar</Link>
+        <Link to="/login" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none' }}>Masuk / Daftar</Link>
       </nav>
 
       <main>
         {/* HERO SECTION */}
         <section className="landing-split-hero reveal" style={{ padding: '4rem 5% 6rem' }}>
           <div className="landing-hero-text">
-            <div className="badge" style={{ background: 'rgba(44,95,77,0.08)', color: 'var(--primary)', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
+            <div className="badge" style={{ background: 'rgba(44,95,77,0.08)', color: 'var(--primary)', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }}></div> #1 Platform Taaruf Syar'i
             </div>
-            <h1 className="landing-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: '1.1' }}>Menjemput Jodoh<br /><span style={{ color: 'var(--secondary)' }}>Sesuai Sunnah</span></h1>
+            <h1 className="landing-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: '1.1', fontWeight: '700' }}>Menjemput Jodoh<br /><span style={{ color: 'var(--secondary)' }}>Sesuai Sunnah</span></h1>
             <p className="landing-subtitle" style={{ fontSize: '1.1rem', maxWidth: '540px', lineHeight: '1.7', color: '#475569', margin: '1.5rem 0 2.5rem' }}>
               Platform mediasi taaruf online yang mengutamakan privasi, menjaga izzah dan iffah, serta didampingi penuh oleh Asatidzah berpengalaman.
             </p>
             <div className="landing-cta" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-              <Link to="/daftar" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '14px', fontSize: '1.05rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+              <Link to="/daftar" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '14px', fontSize: '1.05rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                 Mulai Ikhtiar <ArrowRight size={20} />
               </Link>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.9rem', fontWeight: '600' }}>
