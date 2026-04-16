@@ -80,7 +80,7 @@ function OTPInput({ value, onChange, disabled }) {
 // ============================================================
 // Komponen Utama AuthPage
 // ============================================================
-export default function AuthPage({ onLogin, onRegister, showAlert }) {
+export default function AuthPage({ onLogin, onRegister, showAlert, onBack }) {
   const [isLogin, setIsLogin] = useState(true);
 
   // Step: 'form' | 'otp' | 'success'
@@ -91,8 +91,6 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
-  const [waliPhone, setWaliPhone] = useState('');
-  const [gender, setGender] = useState('ikhwan');
 
   // OTP state
   const [otpCode, setOtpCode] = useState('');
@@ -132,7 +130,7 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
         email,
         options: {
           shouldCreateUser: true,
-          data: { name, gender, wali_phone: waliPhone },
+          data: { name },
         },
       });
 
@@ -186,13 +184,13 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
       // Update password user yang baru terverifikasi
       const { error: updateError } = await supabase.auth.updateUser({
         password,
-        data: { name, gender, wali_phone: waliPhone },
+        data: { name },
       });
       if (updateError) {
         console.warn('Gagal set password:', updateError.message);
       }
 
-      // Upsert profil ke tabel profiles
+      // Upsert profil ke tabel profiles (profile_complete = false, nanti dilengkapi)
       if (userId) {
         const { error: profileError } = await supabase.from('profiles').upsert(
           {
@@ -200,8 +198,7 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
             name,
             email,
             role: 'user',
-            gender,
-            wali_phone: waliPhone,
+            profile_complete: false,
           },
           { onConflict: 'id', ignoreDuplicates: false }
         );
@@ -265,9 +262,9 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
       <div className="auth-sidebar">
         <div className="auth-sidebar-content">
           <div className="auth-logo">
-            <HeartHandshake size={64} style={{ color: 'var(--secondary)' }} />
+            <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
           </div>
-          <h1>Taaruf Syar'i</h1>
+          <h1>Mawaddah</h1>
           <p>
             Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah, dengan proses yang aman,
             terjaga, dan penuh keberkahan.
@@ -277,9 +274,10 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
           {!isLogin && (
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
-                { label: 'Isi Data Diri', done: step !== 'form' },
+                { label: 'Daftar (Nama, Email, Password)', done: step !== 'form' },
                 { label: 'Verifikasi Email (OTP)', done: step === 'success' },
-                { label: 'Akun Aktif', done: step === 'success' },
+                { label: 'Lengkapi Profil', done: false },
+                { label: 'Akun Siap Digunakan', done: false },
               ].map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div
@@ -316,6 +314,16 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
           {/* ======== STEP: FORM (Login & Register) ======== */}
           {(isLogin || step === 'form') && (
             <>
+              <button 
+                onClick={onBack}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                  gap: '0.4rem', marginBottom: '1.5rem', padding: 0, fontSize: '0.9rem'
+                }}
+              >
+                <ArrowLeft size={16} /> Kembali ke Beranda
+              </button>
               <div className="auth-form-header">
                 <h2>{isLogin ? 'Ahlan wa Sahlan' : 'Daftar Akun Baru'}</h2>
                 <p>
@@ -339,34 +347,8 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
                         required
                       />
                       <small style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>
-                        *Nama asli akan disembunyikan dalam pencarian kandidat
+                        *Setelah mendaftar, Anda akan diminta melengkapi profil
                       </small>
-                    </div>
-
-                    <div className="form-group" style={{ textAlign: 'left', marginBottom: '1rem' }}>
-                      <label className="form-label">No WhatsApp Wali (Opsional)</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Contoh: 081234..."
-                        value={waliPhone}
-                        onChange={(e) => setWaliPhone(e.target.value)}
-                      />
-                      <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                        *Digunakan saat mediasi Taaruf Syar'i
-                      </small>
-                    </div>
-
-                    <div className="form-group" style={{ textAlign: 'left', marginBottom: '1rem' }}>
-                      <label className="form-label">Jenis Kelamin</label>
-                      <select
-                        className="form-control"
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                      >
-                        <option value="ikhwan">Ikhwan (Pria)</option>
-                        <option value="akhwat">Akhwat (Wanita)</option>
-                      </select>
                     </div>
                   </>
                 )}
@@ -572,7 +554,6 @@ export default function AuthPage({ onLogin, onRegister, showAlert }) {
                   setOtpCode('');
                   setPassword('');
                   setName('');
-                  setWaliPhone('');
                 }}
               >
                 Login Sekarang →

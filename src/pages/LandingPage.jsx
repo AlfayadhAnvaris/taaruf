@@ -6,8 +6,8 @@ export default function LandingPage({ onEnter }) {
     <div className="landing-container">
       <nav className="landing-nav sticky-nav">
         <div className="navbar-brand">
-          <Heart size={28} />
-          Mawaddah Match
+          <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '54px', height: '54px', objectFit: 'contain' }} />
+          Mawaddah
         </div>
         <button className="btn btn-primary" onClick={onEnter}>Masuk / Daftar</button>
       </nav>
@@ -84,7 +84,7 @@ export default function LandingPage({ onEnter }) {
 
         {/* FEATURES SECTION */}
         <section className="landing-section bg-white">
-          <h2>Kenapa Memilih Mawaddah Match?</h2>
+          <h2>Kenapa Memilih Mawaddah?</h2>
           <p className="section-desc">Dibangun dengan teliti agar tidak menjadi *dating app* berkedok agama. Murni platform mediasi sesuai syariat Islam.</p>
           <div className="landing-features" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div className="feature-card">
@@ -158,7 +158,7 @@ export default function LandingPage({ onEnter }) {
 
         {/* TESTIMONIALS */}
         <section className="landing-section">
-          <h2>Kisah Berkah Mawaddah Match</h2>
+          <h2>Kisah Berkah Mawaddah</h2>
           <p className="section-desc">Alhamdulillah, telah banyak yang menemukan pasangan seiman melalui wasilah platform ini sesuai koridor syariat.</p>
           <div className="testimonial-grid" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
             <div className="testi-card">
@@ -211,7 +211,7 @@ export default function LandingPage({ onEnter }) {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between', marginBottom: '3rem', textAlign: 'left' }}>
           <div style={{ flex: '1', minWidth: '250px' }}>
             <div className="navbar-brand" style={{ marginBottom: '1rem' }}>
-              <Heart size={24} /> Mawaddah Match
+              <Heart size={24} /> Mawaddah
             </div>
             <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>Platform Taaruf Syar'i terpercaya di Indonesia yang menghubungkan ikhwan dan akhwat dengan penuh berkah dan keamanan, langsung diawasi oleh asatidzah.</p>
           </div>
@@ -223,7 +223,7 @@ export default function LandingPage({ onEnter }) {
           </div>
         </div>
         <div align="center" style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
-          <p>&copy; 2026 Yayasan Keluarga Sakinah - Mawaddah Match. Seluruh hak cipta dilindungi.</p>
+          <p>&copy; 2026 Yayasan Keluarga Sakinah - Mawaddah. Seluruh hak cipta dilindungi.</p>
         </div>
       </footer>
     </div>

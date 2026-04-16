@@ -1,0 +1,24 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2C5F4D" />
+      <stop offset="100%" style="stop-color:#1A3E32" />
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="200%" height="200%">
+      <stop offset="0%" style="stop-color:#000; stop-opacity:0.2" />
+    </filter>
+  </defs>
+  
+  <!-- Outer Heart Base -->
+  <path d="M60 105C60 105 15 80 15 48C15 28 30 15 45 15C53 15 60 21 60 21C60 21 67 15 75 15C90 15 105 28 105 48C105 80 60 105 60 105Z" fill="url(#emeraldGradient)"/>
+  
+  <!-- Islamic Geometric Accent (Golden) -->
+  <path d="M60 30C52 22 35 32 35 50C35 68 60 92 60 92C60 92 85 68 85 50C85 32 68 22 60 30Z" stroke="#D4AF37" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Center Star/Detail -->
+  <path d="M60 42L62.5 48.5L69 51L62.5 53.5L60 60L57.5 53.5L51 51L57.5 48.5L60 42Z" fill="#D4AF37" />
+  
+  <!-- Subtle Curves -->
+  <path d="M35 50Q45 60 60 60" stroke="#D4AF37" stroke-opacity="0.3" stroke-width="2" />
+  <path d="M85 50Q75 60 60 60" stroke="#D4AF37" stroke-opacity="0.3" stroke-width="2" />
+</svg>
