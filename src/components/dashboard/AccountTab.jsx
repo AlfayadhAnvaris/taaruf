@@ -14,6 +14,7 @@ export default function AccountTab({ user, showAlert }) {
     domisili_provinsi: user.domisili_provinsi || '',
     domisili_kota: user.domisili_kota || '',
     domisili_detail: user.domisili_detail || '',
+    gender: user.gender || '',
   });
 
   const isAkhwat = user.gender === 'akhwat';
@@ -30,6 +31,7 @@ export default function AccountTab({ user, showAlert }) {
       domisili_provinsi: form.domisili_provinsi.trim() || null,
       domisili_kota: form.domisili_kota.trim() || null,
       domisili_detail: form.domisili_detail.trim() || null,
+      gender: form.gender,
     }).eq('id', user.id);
     setIsSaving(false);
     if (error) { showAlert('Gagal Menyimpan', error.message, 'error'); return; }
@@ -133,11 +135,31 @@ export default function AccountTab({ user, showAlert }) {
             <Field label="Provinsi" value={user.domisili_provinsi} icon={<MapPin size={16} />} />
             <Field label="Kota / Kabupaten" value={user.domisili_kota} icon={<MapPin size={16} />} />
             <Field label="Keterangan Tambahan" value={user.domisili_detail} icon={<MapPin size={16} />} />
+            <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '1.25rem' }}>— Data Akun</div>
+            <Field label="Email" value={user.email} icon={<User size={16} />} />
+            <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? '👨 Ikhwan (Pria)' : '👩 Akhwat (Wanita)'} icon={<Users size={16} />} />
           </div>
         ) : (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>— Data Diri</div>
             <InputField label="Nama Lengkap" fieldKey="name" placeholder="Nama Anda..." />
+            
+            <div className="form-group" style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <label className="form-label" style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                Jenis Kelamin
+              </label>
+              <select 
+                className="form-control" 
+                value={form.gender} 
+                onChange={e => set('gender', e.target.value)}
+                style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: 'white', fontSize: '1rem', fontWeight: '600' }}
+              >
+                <option value="ikhwan">👨 Ikhwan (Pria)</option>
+                <option value="akhwat">👩 Akhwat (Wanita)</option>
+              </select>
+              <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.4rem', display: 'block' }}>Pilih sesuai kartu identitas Anda</small>
+            </div>
+
             <div className="form-group" style={{ marginBottom: '1rem' }}>
               <label className="form-label">Email <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>(tidak bisa diubah)</span></label>
               <input type="email" className="form-control" value={user.email} disabled style={{ opacity: 0.6 }} />

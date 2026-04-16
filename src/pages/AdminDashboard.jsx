@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { BookOpen, LayoutDashboard, FileText, Activity } from 'lucide-react';
 import CourseManagerTab from '../components/dashboard/CourseManagerTab';
@@ -6,8 +7,10 @@ import AdminHomeTab from '../components/dashboard/AdminHomeTab';
 import AdminReviewTab from '../components/dashboard/AdminReviewTab';
 import AdminMediateTab from '../components/dashboard/AdminMediateTab';
 
-export default function AdminDashboard({ activeTab, setActiveTab }) {
+export default function AdminDashboard() {
   const { user } = useContext(AppContext);
+  const { tab } = useParams();
+  const activeTab = tab || 'home';
   const adminName = user?.name || 'Ustadz';
 
   return (

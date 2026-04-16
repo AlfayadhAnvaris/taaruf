@@ -1,114 +1,145 @@
-import React from 'react';
-import { Heart, ShieldCheck, UserCheck, MessageCircle, ArrowRight, CheckCircle, Users, Star, Quote, BookOpen } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Heart, ShieldCheck, UserCheck, MessageCircle, ArrowRight, CheckCircle, Users, Star, Quote, BookOpen, GraduationCap, Shield } from 'lucide-react';
 
-export default function LandingPage({ onEnter }) {
+export default function LandingPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, observerOptions);
+
+    const elements = document.querySelectorAll('.reveal');
+    elements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="landing-container">
-      <nav className="landing-nav sticky-nav">
-        <div className="navbar-brand">
-          <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '54px', height: '54px', objectFit: 'contain' }} />
+      {/* NAVBAR */}
+      <nav className="landing-nav sticky-nav" style={{ height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
+        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '800', fontSize: '1.4rem', color: 'var(--primary)' }}>
+          <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '42px', height: '42px' }} />
           Mawaddah
         </div>
-        <button className="btn btn-primary" onClick={onEnter}>Masuk / Daftar</button>
+        <Link to="/login" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none' }}>Masuk / Daftar</Link>
       </nav>
 
       <main>
         {/* HERO SECTION */}
-        <div className="landing-split-hero">
+        <section className="landing-split-hero reveal" style={{ padding: '4rem 5% 6rem' }}>
           <div className="landing-hero-text">
-            <div className="badge badge-success mb-4" style={{ display: 'inline-block', marginBottom: '1.5rem', padding: '0.5rem 1rem' }}>#1 Platform Taaruf Syar'i</div>
-            <h1 className="landing-title">Menjemput Jodoh<br /><span style={{ color: 'var(--primary)' }}>Sesuai Sunnah</span></h1>
-            <p className="landing-subtitle">
-              Platform taaruf online yang mengutamakan privasi, menjaga izzah dan iffah, serta diawasi sepenuhnya oleh Ustadz dan Moderator berpengalaman.
+            <div className="badge" style={{ background: 'rgba(44,95,77,0.08)', color: 'var(--primary)', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
+               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }}></div> #1 Platform Taaruf Syar'i
+            </div>
+            <h1 className="landing-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: '1.1' }}>Menjemput Jodoh<br /><span style={{ color: 'var(--secondary)' }}>Sesuai Sunnah</span></h1>
+            <p className="landing-subtitle" style={{ fontSize: '1.1rem', maxWidth: '540px', lineHeight: '1.7', color: '#475569', margin: '1.5rem 0 2.5rem' }}>
+              Platform mediasi taaruf online yang mengutamakan privasi, menjaga izzah dan iffah, serta didampingi penuh oleh Asatidzah berpengalaman.
             </p>
-            <div className="landing-cta">
-              <button className="btn btn-primary btn-large" onClick={onEnter}>
+            <div className="landing-cta" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <Link to="/daftar" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '14px', fontSize: '1.05rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                 Mulai Ikhtiar <ArrowRight size={20} />
-              </button>
-              <span className="info-text"><CheckCircle size={14} /> Gratis & Privasi Terjamin</span>
+              </Link>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.9rem', fontWeight: '600' }}>
+                <ShieldCheck size={18} color="var(--success)" /> Privasi Terjamin
+              </div>
             </div>
           </div>
           
           <div className="landing-hero-visual">
-            <div className="glass-card mockup-card">
-              <div className="mockup-header">
-                <ShieldCheck fill="white" color="var(--primary)" size={28} />
-                <h4>Notifikasi Mediasi Sistem</h4>
+            <div className="glass-card mockup-card" style={{ background: 'rgba(255,255,255,0.9)', border: '1px solid white', boxShadow: '0 30px 60px rgba(0,0,0,0.12)', borderRadius: '24px', padding: '1.5rem' }}>
+              <div className="mockup-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(44,95,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldCheck color="var(--primary)" size={24} />
+                </div>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Mediasi Sedang Berlangsung</h4>
               </div>
               <div className="mockup-body">
-                <p><strong>Ustadz Fulan</strong> menyetujui proses Taaruf Anda dengan kandidat terpilih. Ruang Mediasi Sesi Q&A telah dibuka. Harap perhatikan batasan syariat.</p>
-                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.8rem' }} onClick={onEnter}>Masuk Ruang Mediasi</button>
+                <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}><strong>Ustadz Pembimbing</strong> telah membuka ruang diskusi. Silakan sampaikan pertanyaan Anda kepada kandidat sesuai koridor syariat.</p>
+                <div style={{ marginTop: '1.25rem', height: '1px', background: '#f1f5f9', width: '100%' }}></div>
+                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.8rem', borderRadius: '12px' }} onClick={() => navigate('/login')}>Masuk Ruang Mediasi</button>
               </div>
             </div>
-            
-            <div className="glass-card stat-bubble stat-1">
-              <Users size={24} color="var(--primary)" />
+            <div className="glass-card stat-bubble stat-1" style={{ right: '-20px', top: '15%' }}>
+              <Users size={20} color="var(--primary)" />
               <div>
-                <strong>1,200+</strong>
-                <span>Pendaftar Aktif</span>
+                <strong style={{ display: 'block' }}>1,200+</strong>
+                <span style={{ fontSize: '0.7rem' }}>Ikhwan & Akhwat</span>
               </div>
             </div>
-            <div className="glass-card stat-bubble stat-2">
-              <Heart size={24} color="var(--danger)" />
-              <div>
-                <strong>300+</strong>
-                <span>Pasangan Bertemu</span>
-              </div>
-            </div>
-            
             <div className="geometric-bg"></div>
-          </div>
-        </div>
-
-        {/* DALIL SECTION */}
-        <section className="landing-section" style={{ background: 'var(--primary)', color: 'white', padding: '4rem 2rem', textAlign: 'center', position: 'relative', overflow: 'hidden', marginTop: '2rem' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
-          <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-            <Quote size={48} color="var(--secondary)" style={{ margin: '0 auto 1.5rem', opacity: 0.8 }} />
-            <p style={{ 
-              fontSize: '2rem', 
-              lineHeight: '1.8', 
-              fontFamily: '"Amiri", "Traditional Arabic", serif', 
-              marginBottom: '1.5rem', 
-              fontWeight: 'bold',
-              direction: 'rtl'
-            }}>
-              وَمِنْ ءَايَٰتِهِۦٓ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَٰجًا لِّتَسْكُنُوٓا۟ إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِى ذَٰلِكَ لَءَايَٰتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
-            </p>
-            <p style={{ fontSize: '1.25rem', lineHeight: '1.8', fontStyle: 'italic', marginBottom: '1.5rem', fontWeight: '400', opacity: '0.9' }}>
-              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan-pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih (Mawaddah) dan sayang (Rahmah). Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir."
-            </p>
-            <h4 style={{ color: 'var(--secondary)', fontSize: '1.1rem', letterSpacing: '1px' }}>— QS. AR-RUM: 21 —</h4>
           </div>
         </section>
 
-        {/* FEATURES SECTION */}
-        <section className="landing-section bg-white">
-          <h2>Kenapa Memilih Mawaddah?</h2>
-          <p className="section-desc">Dibangun dengan teliti agar tidak menjadi *dating app* berkedok agama. Murni platform mediasi sesuai syariat Islam.</p>
-          <div className="landing-features" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div className="feature-card">
-              <ShieldCheck size={40} color="var(--secondary)" />
-              <h3>Privasi Kunci Utama</h3>
-              <p>Data diri dan foto wajah (CV) Anda dirahasiakan ke publik. Sistem blur foto diterapkan sampai disepakati tukar profil.</p>
+        {/* DALIL SECTION */}
+        <section className="landing-section reveal" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <Quote size={40} color="var(--secondary)" style={{ margin: '0 auto 2rem', opacity: 0.6 }} />
+            <p style={{ fontSize: '2rem', lineHeight: '1.6', fontFamily: 'serif', marginBottom: '2rem', fontWeight: '700', direction: 'rtl' }}>
+              وَمِنْ ءَايَٰتِهِۦٓ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَٰجًا لِّتَسْكُنُوٓا۟ إِلَيْهَا ...
+            </p>
+            <p style={{ fontSize: '1.2rem', lineHeight: '1.8', fontStyle: 'italic', opacity: '0.9' }}>
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan-pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya..." (QS. Ar-Rum: 21)
+            </p>
+          </div>
+        </section>
+
+        {/* WHY MAWADDAH & ACADEMY SECTION */}
+        <section className="reveal" style={{ padding: '8rem 5%', background: '#fff' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+              <span style={{ color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.75rem' }}>Keunggulan Platform</span>
+              <h2 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', fontWeight: '900', color: '#1A2E25', margin: '1rem 0' }}>Kenapa Ikhtiar di Mawaddah?</h2>
+              <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>Satu-satunya platform taaruf yang membekali Anda dengan ilmu, keamanan, dan pendampingan syar'i.</p>
             </div>
-            <div className="feature-card">
-              <UserCheck size={40} color="var(--primary)" />
-              <h3>Pengawasan Super Ketat</h3>
-              <p>Semua interaksi dipantau oleh admin/moderator khusus, menutup celah masuknya fitnah kholwat di ranah digital.</p>
-            </div>
-            <div className="feature-card">
-              <MessageCircle size={40} color="var(--success)" />
-              <h3>Q&A Terstruktur</h3>
-              <p>Tidak ada *free chat*. Komunikasi dikunci dengan tanya-jawab template untuk mengukur kecocokan visi misi keluarga.</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem' }}>
+              {/* Card 1: Academy */}
+              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: 'linear-gradient(145deg, var(--primary), #1A2E25)', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 30px 60px rgba(44,95,77,0.25)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.15 }}><BookOpen size={160} /></div>
+                <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
+                  <div style={{ display: 'inline-block', padding: '0.4rem 1.2rem', background: 'var(--secondary)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', color: '#1A2E25', marginBottom: '2rem' }}>PROGRAM AKADEMI</div>
+                  <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Mawaddah Academy</h3>
+                  <p style={{ opacity: 0.9, lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1.05rem' }}>Bekali diri Anda lewat kurikulum video eksklusif, kuis pemahaman, dan raih E-Sertifikat Kelulusan Resmi sebelum melangkah ke jenjang pernikahan.</p>
+                </div>
+                <button className="btn btn-secondary" style={{ width: '100%', padding: '1.2rem', borderRadius: '16px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
+              </div>
+
+              {/* Card 2: Security */}
+              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
+                  <ShieldCheck size={36} color="var(--primary)" />
+                </div>
+                <h3 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', color: '#1A2E25', fontWeight: '800' }}>Proteksi Izzah & Iffah</h3>
+                <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Data diri dan foto wajah dirahasiakan sepenuhnya. Sistem Blur Foto Profil memastikan kehormatan Anda terjaga hingga kedua belah pihak sepakat.</p>
+              </div>
+
+              {/* Card 3: Guidance */}
+              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
+                  <UserCheck size={36} color="var(--primary)" />
+                </div>
+                <h3 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', color: '#1A2E25', fontWeight: '800' }}>Didampingi Asatidzah</h3>
+                <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Proses mediasi, tanya-jawab visi misi, hingga pertemuan diawasi penuh oleh tim asatidzah berkompeten untuk menjaga niat dan keberkahan.</p>
+              </div>
             </div>
           </div>
         </section>
 
         {/* HOW IT WORKS */}
-        <section className="landing-section">
-          <h2>Alur Proses Taaruf</h2>
-          <p className="section-desc">Langkah demi langkah yang teratur, mencegah harapan palsu (*ghosting*) dan memperjelas arah.</p>
+        <section className="landing-section reveal" style={{ background: '#f8fafc', padding: '8rem 2rem' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>Alur Proses Taaruf</h2>
+          <p className="section-desc" style={{ marginBottom: '4rem' }}>Langkah demi langkah yang teratur, mencegah harapan palsu (*ghosting*) dan memperjelas arah.</p>
           <div className="process-timeline">
             <div className="process-step">
               <div className="step-number">1</div>
@@ -128,102 +159,56 @@ export default function LandingPage({ onEnter }) {
             <div className="process-step">
               <div className="step-number">4</div>
               <h4>Libatkan Wali</h4>
-              <p>Jika serasi, nomor kontak wali perempuan diambil oleh ikhwan untuk menjadwalkan Nadzhor/Pertemuan.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* MENTOR SECTION */}
-        <section className="landing-section bg-white">
-          <h2>Ustadz & Pembimbing Mediasi</h2>
-          <p className="section-desc">Proses mediasi taaruf Anda akan diedukasi dan diawasi langsung oleh Ustadz-ustadz bersanad dan berpengalaman.</p>
-          <div className="mentor-grid" style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-            <div className="mentor-card">
-              <div className="mentor-avatar bg-primary" style={{ backgroundColor: 'var(--primary-light)' }}></div>
-              <h4>Ustadz Abdullah Taslim,Lc. Ma</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Alumni S2 Hadits Universitas Islam Madinah</p>
-            </div>
-            <div className="mentor-card">
-              <div className="mentor-avatar bg-secondary" style={{ backgroundColor: '#D4AF37' }}></div>
-              <h4>Ustadz Fulan</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Konsultan Pernikahan Syar'i dengan pengalaman luas.</p>
-            </div>
-            <div className="mentor-card">
-              <div className="mentor-avatar bg-info" style={{ backgroundColor: 'var(--success)' }}></div>
-              <h4>Ustadzah Fulanah</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Pembimbing khusus akhwat & persiapan kerumahtanggaan.</p>
+              <p>Jika serasi, nomor kontak wali perempuan diambil oleh ikhwan untuk menjadwalkan Nadzhor.</p>
             </div>
           </div>
         </section>
 
         {/* TESTIMONIALS */}
-        <section className="landing-section">
+        <section className="landing-section reveal" style={{ background: '#fff', padding: '8rem 2rem' }}>
           <h2>Kisah Berkah Mawaddah</h2>
-          <p className="section-desc">Alhamdulillah, telah banyak yang menemukan pasangan seiman melalui wasilah platform ini sesuai koridor syariat.</p>
           <div className="testimonial-grid" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
             <div className="testi-card">
               <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi Ustadz sehingga interaksi terfokus pada pertanyaan visi dan misi pernikahan. InsyaAllah terhindar dari khalwat online."</p>
+              <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut."</p>
               <div className="testi-author">
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
-                  <Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} />
-                </div>
-                <strong>Hamba Allah (Ikhwan)</strong>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Menikah 2025</span>
+                <strong>Hamba Allah</strong>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ikhwan, Menikah 2025</span>
               </div>
             </div>
             <div className="testi-card">
               <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"MasyaAllah, sistem blur fotonya sangat menjaga izzah dan iffah kami sebagai akhwat. Tidak perlu takut foto tersebar luas, hanya dibuka ketika sama-sama sepakat untuk lanjut."</p>
+              <p className="testi-text">"Sistem blur foto dan academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
               <div className="testi-author">
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
-                  <Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} />
-                </div>
-                <strong>Ukhti Fulanah (Akhwat)</strong>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Menikah 2026</span>
-              </div>
-            </div>
-            <div className="testi-card">
-              <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"Platform yang sangat ditunggu umat. Saya wali dari pendaftar akhwat merasa tenang karena semua data anak saya diverifikasi dan dilindungi oleh Yayasan yang amanah."</p>
-              <div className="testi-author">
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
-                  <Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} /><Star fill="var(--secondary)" color="var(--secondary)" size={16} />
-                </div>
-                <strong>Bapak Abu (Wali)</strong>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mendampingi Nadzhor</span>
+                <strong>Ukhti Fulanah</strong>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Akhwat, Menikah 2026</span>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA BANNER */}
-        <section className="landing-cta-banner">
-          <h2>Siap Menjemput Jodoh Anda Sekarang?</h2>
-          <p>Daftarkan diri Anda, niatkan ibadah, dan izinkan sistem ami menjadi *wasilah* kebaikan hidup Anda.</p>
-          <button className="btn btn-secondary btn-large" onClick={onEnter} style={{ margin: '2rem auto 0', color: 'var(--text-main)' }}>
-            Buat Akun Gratis Sekarang
+        <section className="landing-cta-banner reveal" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center', borderRadius: '40px', margin: '4rem 5%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1.2rem', color: 'white' }}>Siap Menjemput Jodoh Anda?</h2>
+          <p style={{ opacity: 0.9, marginBottom: '2.5rem', fontSize: '1.1rem' }}>Daftarkan diri secara gratis dan mulai perjalanan ibadah Anda sekarang.</p>
+          <button className="btn btn-secondary btn-large" onClick={() => navigate('/daftar')} style={{ color: '#1A2E25', fontWeight: '900', padding: '1.2rem 3rem', borderRadius: '16px', boxShadow: '0 15px 30px rgba(0,0,0,0.2)' }}>
+            Mulai Sekarang
           </button>
         </section>
       </main>
 
       <footer className="landing-footer" style={{ padding: '4rem 2rem 2rem', color: 'var(--text-muted)', background: 'white', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between', marginBottom: '3rem', textAlign: 'left' }}>
-          <div style={{ flex: '1', minWidth: '250px' }}>
-            <div className="navbar-brand" style={{ marginBottom: '1rem' }}>
-              <Heart size={24} /> Mawaddah
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between' }}>
+          <div>
+            <div className="navbar-brand" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '1.2rem', color: 'var(--primary)' }}>
+              <Heart size={24} color="var(--primary)" /> Mawaddah
             </div>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>Platform Taaruf Syar'i terpercaya di Indonesia yang menghubungkan ikhwan dan akhwat dengan penuh berkah dan keamanan, langsung diawasi oleh asatidzah.</p>
+            <p style={{ maxWidth: '300px', fontSize: '0.9rem', lineHeight: '1.6' }}>Platform Taaruf Syar'i terpercaya yang diawasi oleh asatidzah berkompeten.</p>
           </div>
-          <div style={{ flex: '1', minWidth: '250px' }}>
-            <h4 style={{ color: 'var(--text-main)', marginBottom: '1.2rem', fontSize: '1.1rem' }}>Informasi Yayasan</h4>
-            <p style={{ fontSize: '0.95rem', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}><BookOpen size={18} color="var(--primary)" /> <strong>Yayasan Keluarga Sakinah</strong></p>
-            <p style={{ fontSize: '0.95rem', marginBottom: '0.8rem', lineHeight: '1.5' }}>Gedung Islamic Center, Lt. 2<br/>Jl. Sunnah Raya No. 1, Jakarta Selatan<br/>DKI Jakarta, Indonesia</p>
-            <p style={{ fontSize: '0.85rem', color: '#9CA3AF' }}>SK Kemenkumham: AHU-12345.01.02.Tahun 2026</p>
+          <div>
+            <h4 style={{ color: 'var(--text-main)', marginBottom: '1rem' }}>Yayasan Keluarga Sakinah</h4>
+            <p style={{ fontSize: '0.9rem' }}>Jakarta Selatan, Indonesia</p>
           </div>
-        </div>
-        <div align="center" style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
-          <p>&copy; 2026 Yayasan Keluarga Sakinah - Mawaddah. Seluruh hak cipta dilindungi.</p>
         </div>
       </footer>
     </div>

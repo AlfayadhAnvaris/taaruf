@@ -1,6 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, HeartHandshake, Mail, ArrowLeft, CheckCircle, Loader, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { supabase } from '../supabase';
+import { AppContext } from '../App';
 
 // ============================================================
 // Komponen Input OTP (6 digit)
@@ -80,10 +82,10 @@ function OTPInput({ value, onChange, disabled }) {
 // ============================================================
 // Komponen Utama AuthPage
 // ============================================================
-export default function AuthPage({ onLogin, onRegister, showAlert, onBack }) {
-  const [isLogin, setIsLogin] = useState(true);
-
-  // Step: 'form' | 'otp' | 'success'
+export default function AuthPage({ initialIsLogin = true, showAlert }) {
+  const navigate = useNavigate();
+  const { user } = useContext(AppContext);
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [step, setStep] = useState('form');
 
   // Form fields
@@ -97,6 +99,16 @@ export default function AuthPage({ onLogin, onRegister, showAlert, onBack }) {
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
+  // Sync isLogin with prop if it changes
+  useEffect(() => {
+    setIsLogin(initialIsLogin);
+  }, [initialIsLogin]);
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) navigate('/app');
+  }, [user, navigate]);
+
   // Countdown resend OTP
   useEffect(() => {
     if (countdown > 0) {
@@ -105,201 +117,84 @@ export default function AuthPage({ onLogin, onRegister, showAlert, onBack }) {
     }
   }, [countdown]);
 
-  // ============================================================
-  // STEP 1: Submit form → kirim OTP ke email
-  // ============================================================
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !password) {
       showAlert('Input Tidak Lengkap', 'Nama, Email, dan Password wajib diisi.', 'error');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showAlert('Email Tidak Valid', 'Masukkan alamat email yang valid.', 'error');
-      return;
-    }
-    if (password.length < 6) {
-      showAlert('Password Terlalu Pendek', 'Password minimal 6 karakter.', 'error');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // Kirim OTP 6-digit ke email via Supabase magic link / OTP
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: {
-          shouldCreateUser: true,
-          data: { name },
-        },
+        options: { shouldCreateUser: true, data: { name } },
       });
-
       if (error) {
-        showAlert('Gagal Kirim OTP', 'Gagal mengirim kode verifikasi: ' + error.message, 'error');
-        setIsLoading(false);
-        return;
+        showAlert('Gagal Kirim OTP', error.message, 'error');
+      } else {
+        setStep('otp');
+        setCountdown(60);
       }
-
-      setStep('otp');
-      setCountdown(60);
     } catch (err) {
-      showAlert('Error Sistem', 'Terjadi kesalahan: ' + err.message, 'error');
+      showAlert('Error Sistem', err.message, 'error');
     }
     setIsLoading(false);
   };
 
-  // ============================================================
-  // STEP 2: Verifikasi kode OTP dari email
-  // ============================================================
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const code = otpCode.replace(/\s/g, '');
-    if (code.length < 6) {
-      showAlert('OTP Belum Lengkap', 'Masukkan 6 digit kode OTP dari email Anda.', 'error');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: 'email',
-      });
-
+      const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
       if (error) {
-        showAlert(
-          'Kode Salah / Kadaluarsa',
-          'Kode OTP tidak valid atau sudah habis masa berlakunya. Silakan kirim ulang.',
-          'error'
-        );
+        showAlert('Kode Salah', error.message, 'error');
         setOtpCode('');
-        setIsLoading(false);
-        return;
-      }
-
-      // OTP valid → update password & metadata, simpan profil
-      const userId = data.user?.id;
-
-      // Update password user yang baru terverifikasi
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
-        data: { name },
-      });
-      if (updateError) {
-        console.warn('Gagal set password:', updateError.message);
-      }
-
-      // Upsert profil ke tabel profiles (profile_complete = false, nanti dilengkapi)
-      if (userId) {
-        const { error: profileError } = await supabase.from('profiles').upsert(
-          {
-            id: userId,
-            name,
-            email,
-            role: 'user',
-            profile_complete: false,
-          },
-          { onConflict: 'id', ignoreDuplicates: false }
-        );
-        if (profileError) {
-          console.warn('Profil gagal disimpan:', profileError.message);
+      } else {
+        const userId = data.user?.id;
+        await supabase.auth.updateUser({ password, data: { name } });
+        if (userId) {
+          await supabase.from('profiles').upsert({ id: userId, name, email, role: 'user', profile_complete: false }, { onConflict: 'id' });
         }
+        setStep('success');
       }
-
-      setStep('success');
     } catch (err) {
-      showAlert('Error Sistem', 'Terjadi kesalahan saat verifikasi: ' + err.message, 'error');
+      showAlert('Error Sistem', err.message, 'error');
     }
     setIsLoading(false);
   };
 
-  // ============================================================
-  // Kirim ulang OTP
-  // ============================================================
   const handleResendOtp = async () => {
     if (countdown > 0) return;
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true },
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     setIsLoading(false);
-    if (error) {
-      showAlert('Gagal Kirim Ulang', error.message, 'error');
-    } else {
-      setCountdown(60);
-      setOtpCode('');
-      showAlert('OTP Dikirim', 'Kode OTP baru telah dikirim ke email Anda.', 'info');
-    }
+    if (!error) { setCountdown(60); setOtpCode(''); showAlert('OTP Dikirim', 'Kode OTP baru telah dikirim.', 'info'); }
   };
 
-  // ============================================================
-  // Login biasa
-  // ============================================================
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      showAlert('Input Tidak Lengkap', 'Email dan Password harus diisi.', 'error');
-      return;
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      showAlert('Gagal Masuk', 'Email atau Password salah.', 'error');
     }
-    onLogin(email, password);
-  };
-
-  const resetToForm = () => {
-    setStep('form');
-    setOtpCode('');
     setIsLoading(false);
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <div className="auth-split-container">
-
-      {/* ===== SIDEBAR KIRI ===== */}
       <div className="auth-sidebar">
         <div className="auth-sidebar-content">
-          <div className="auth-logo">
-            <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-          </div>
+          <Link to="/" className="auth-logo"><img src="/assets/logo.svg" alt="Mawaddah" style={{ width: '80px' }} /></Link>
           <h1>Mawaddah</h1>
-          <p>
-            Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah, dengan proses yang aman,
-            terjaga, dan penuh keberkahan.
-          </p>
-
-          {/* Step indicator saat registrasi */}
+          <p>Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah.</p>
           {!isLogin && (
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {[
-                { label: 'Daftar (Nama, Email, Password)', done: step !== 'form' },
-                { label: 'Verifikasi Email (OTP)', done: step === 'success' },
-                { label: 'Lengkapi Profil', done: false },
-                { label: 'Akun Siap Digunakan', done: false },
-              ].map((s, i) => (
+              {['Daftar Akun', 'Verifikasi OTP', 'Lengkapi Profil', 'Siap Berikhtiar'].map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div
-                    style={{
-                      width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-                      background: s.done ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: '2px solid rgba(255,255,255,0.4)',
-                      fontSize: '0.8rem', fontWeight: '700', color: 'white',
-                    }}
-                  >
-                    {s.done ? '✓' : i + 1}
-                  </div>
-                  <span
-                    style={{
-                      color: s.done ? 'var(--secondary)' : 'rgba(255,255,255,0.7)',
-                      fontSize: '0.9rem',
-                      fontWeight: s.done ? '600' : '400',
-                    }}
-                  >
-                    {s.label}
-                  </span>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>{i + 1}</div>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{s}</span>
                 </div>
               ))}
             </div>
@@ -307,260 +202,68 @@ export default function AuthPage({ onLogin, onRegister, showAlert, onBack }) {
         </div>
       </div>
 
-      {/* ===== FORM KANAN ===== */}
       <div className="auth-form-side">
         <div className="auth-form-wrapper">
-
-          {/* ======== STEP: FORM (Login & Register) ======== */}
           {(isLogin || step === 'form') && (
             <>
-              <button 
-                onClick={onBack}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                  gap: '0.4rem', marginBottom: '1.5rem', padding: 0, fontSize: '0.9rem'
-                }}
-              >
+              <Link to="/" className="btn-back" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
                 <ArrowLeft size={16} /> Kembali ke Beranda
-              </button>
+              </Link>
               <div className="auth-form-header">
                 <h2>{isLogin ? 'Ahlan wa Sahlan' : 'Daftar Akun Baru'}</h2>
-                <p>
-                  {isLogin
-                    ? 'Silakan masuk ke akun Anda'
-                    : 'Lengkapi data berikut. Kode verifikasi akan dikirim ke email Anda.'}
-                </p>
+                <p>{isLogin ? 'Silakan masuk ke akun Anda' : 'Lengkapi data verifikasi email Anda'}</p>
               </div>
 
               <form onSubmit={isLogin ? handleLoginSubmit : handleRegisterSubmit}>
                 {!isLogin && (
-                  <>
-                    <div className="form-group" style={{ textAlign: 'left', marginBottom: '1rem' }}>
-                      <label className="form-label">Nama Lengkap (Sesuai KTP)</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nama Lengkap..."
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                      <small style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>
-                        *Setelah mendaftar, Anda akan diminta melengkapi profil
-                      </small>
-                    </div>
-                  </>
+                  <div className="form-group">
+                    <label className="form-label">Nama Lengkap</label>
+                    <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required />
+                  </div>
                 )}
-
-                <div className="form-group" style={{ textAlign: 'left', marginBottom: '1rem' }}>
-                  <label className="form-label">
-                    <Mail size={13} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} />
-                    Alamat Email Aktif
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="email@contoh.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  {!isLogin && (
-                    <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                      *Kode OTP 6 digit akan dikirim ke email ini
-                    </small>
-                  )}
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
-
-                <div className="form-group" style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+                <div className="form-group">
                   <label className="form-label">Password</label>
                   <div style={{ position: 'relative' }}>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="form-control"
-                      placeholder="Minimal 6 karakter..."
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      style={{ paddingRight: '3rem' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)',
-                        background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0,
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                    <input type={showPassword ? 'text' : 'password'} className="form-control" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8' }}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                   </div>
                 </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', padding: '1.2rem', fontSize: '1.05rem', marginBottom: '1.5rem', borderRadius: '12px' }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                      <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                      Mengirim OTP...
-                    </span>
-                  ) : isLogin ? (
-                    'Masuk Sekarang'
-                  ) : (
-                    <>
-                      <Mail size={18} /> Kirim Kode OTP ke Email
-                    </>
-                  )}
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '12px' }} disabled={isLoading}>
+                  {isLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Kirim Kode OTP')}
                 </button>
               </form>
-
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+              <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b' }}>
                 {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-                <button
-                  type="button"
-                  style={{ color: 'var(--secondary)', fontWeight: '700', background: 'none', padding: 0, border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setIsLogin(!isLogin); setStep('form'); setOtpCode(''); setPassword(''); }}
-                >
-                  {isLogin ? 'Buat Akun' : 'Login di sini'}
+                <button onClick={() => { setIsLogin(!isLogin); navigate(isLogin ? '/daftar' : '/login'); }} style={{ color: 'var(--secondary)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}>
+                  {isLogin ? 'Daftar di sini' : 'Login di sini'}
                 </button>
               </p>
             </>
           )}
 
-          {/* ======== STEP: OTP ======== */}
           {!isLogin && step === 'otp' && (
-            <div style={{ animation: 'fadeIn 0.4s ease' }}>
-              <button
-                onClick={resetToForm}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--primary)', display: 'flex', alignItems: 'center',
-                  gap: '0.4rem', marginBottom: '2rem', padding: 0, fontWeight: '600',
-                }}
-              >
-                <ArrowLeft size={18} /> Kembali ke Form
-              </button>
-
-              <div className="auth-form-header" style={{ textAlign: 'center' }}>
-                {/* Icon email animasi */}
-                <div style={{
-                  width: '80px', height: '80px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, rgba(44,95,77,0.1), rgba(212,175,55,0.1))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 1.5rem',
-                  border: '2px solid rgba(44,95,77,0.15)',
-                }}>
-                  <Mail size={36} color="var(--primary)" />
-                </div>
-                <h2>Cek Email Anda</h2>
-                <p style={{ lineHeight: '1.7' }}>
-                  Kami telah mengirim kode OTP 6 digit ke<br />
-                  <strong style={{ color: 'var(--primary)', fontSize: '1rem' }}>{email}</strong>
-                </p>
-              </div>
-
-              <form onSubmit={handleVerifyOtp}>
-                <OTPInput value={otpCode} onChange={setOtpCode} disabled={isLoading} />
-
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{
-                    width: '100%', padding: '1.2rem', fontSize: '1.05rem',
-                    marginBottom: '1rem', borderRadius: '12px',
-                    opacity: otpCode.replace(/\s/g, '').length < 6 ? 0.6 : 1,
-                  }}
-                  disabled={isLoading || otpCode.replace(/\s/g, '').length < 6}
-                >
-                  {isLoading ? (
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                      <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                      Memverifikasi...
-                    </span>
-                  ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                      <ShieldCheck size={20} /> Verifikasi & Buat Akun
-                    </span>
-                  )}
-                </button>
-              </form>
-
-              {/* Resend countdown */}
-              <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-                {countdown > 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    Kirim ulang dalam{' '}
-                    <strong style={{ color: 'var(--primary)' }}>{countdown}s</strong>
-                  </p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={isLoading}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'var(--secondary)', fontWeight: '700', fontSize: '0.95rem',
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                    }}
-                  >
-                    <RefreshCw size={16} /> Kirim Ulang OTP
-                  </button>
-                )}
-              </div>
-
-              {/* Tips */}
-              <div style={{
-                marginTop: '1.5rem', padding: '1rem',
-                borderRadius: '12px', background: 'rgba(44,95,77,0.04)',
-                border: '1px solid rgba(44,95,77,0.12)',
-                fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.6',
-              }}>
-                <strong>💡 Tips:</strong> Cek folder <em>Spam / Junk</em> jika email tidak masuk ke inbox.
-                Kode berlaku selama <strong>10 menit</strong>. Anda bisa paste langsung kode dari email.
-              </div>
+            <div style={{ textAlign: 'center' }}>
+               <h2 style={{ marginBottom: '1rem' }}>Cek Email Anda</h2>
+               <p style={{ marginBottom: '2rem' }}>Kode OTP dikirim ke <strong>{email}</strong></p>
+               <OTPInput value={otpCode} onChange={setOtpCode} disabled={isLoading} />
+               <button onClick={handleVerifyOtp} className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '12px' }} disabled={isLoading || otpCode.length < 6}>
+                 {isLoading ? 'Verifikasi...' : 'Verifikasi & Buat Akun'}
+               </button>
             </div>
           )}
 
-          {/* ======== STEP: SUCCESS ======== */}
           {!isLogin && step === 'success' && (
-            <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease', padding: '1rem 0' }}>
-              <div style={{
-                width: '96px', height: '96px', borderRadius: '50%',
-                background: 'rgba(42, 157, 143, 0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.5rem',
-                border: '3px solid rgba(42, 157, 143, 0.25)',
-              }}>
-                <CheckCircle size={52} color="var(--success)" />
-              </div>
-              <h2 style={{ marginBottom: '0.5rem' }}>Alhamdulillah! 🎉</h2>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                Email Anda berhasil diverifikasi dan akun telah aktif.
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem' }}>
-                Silakan login menggunakan email dan password yang Anda daftarkan.
-              </p>
-              <button
-                className="btn btn-primary"
-                style={{ width: '100%', padding: '1.2rem', fontSize: '1.05rem', borderRadius: '12px' }}
-                onClick={() => {
-                  setIsLogin(true);
-                  setStep('form');
-                  setOtpCode('');
-                  setPassword('');
-                  setName('');
-                }}
-              >
-                Login Sekarang →
-              </button>
+            <div style={{ textAlign: 'center' }}>
+               <div style={{ width: 80, height: 80, background: 'rgba(44,95,77,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><CheckCircle size={40} color="var(--primary)" /></div>
+               <h2>Alhamdulillah! 🎉</h2>
+               <p>Registrasi berhasil. Silakan login ke akun Anda.</p>
+               <button onClick={() => { setIsLogin(true); setStep('form'); navigate('/login'); }} className="btn btn-primary" style={{ width: '100%', marginTop: '2rem' }}>Login Sekarang</button>
             </div>
           )}
-
         </div>
       </div>
     </div>

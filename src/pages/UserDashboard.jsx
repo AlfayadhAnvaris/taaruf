@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import {
   FileText, Search, UserCheck, Send, Clock, MessageCircle,
@@ -39,8 +40,13 @@ const INDONESIA_REGIONS = {
 
 // ── Curriculum Data (fetched from Supabase) ──────────────────────────────────
 
-export default function UserDashboard({ activeTab, setActiveTab }) {
+export default function UserDashboard() {
   const { user, cvs, setCvs, taarufRequests, setTaarufRequests, showAlert, addNotification, messages, setMessages } = useContext(AppContext);
+  const navigate = useNavigate();
+  const { tab } = useParams();
+  const activeTab = tab || 'home';
+
+  const setActiveTab = (newTab) => navigate(`/app/${newTab}`);
 
   // ── Chat State ──
   const [activeChatId, setActiveChatId] = useState(null);
@@ -48,7 +54,7 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
 
   // ── CV Form State ──
   const [myCv, setMyCv] = useState({
-    alias: user.name, gender: user.gender || 'ikhwan', age: '', location: '',
+    alias: user?.name || '', gender: user?.gender || 'ikhwan', age: '', location: '',
     education: '', job: '', worship: '', about: '', criteria: '', suku: '',
     hobi: '', poligami: 'Tidak Bersedia', salary: '', address: '',
     marital_status: 'Lajang', tinggi_berat: '', kesehatan: '', kajian: '', karakter: ''
@@ -170,10 +176,14 @@ export default function UserDashboard({ activeTab, setActiveTab }) {
         completed_at: new Date().toISOString()
       }, { onConflict: 'user_id,lesson_id' });
       
-      // Check if this was the last lesson in the class
-      const allLessons = curriculum.flatMap(m => m.items);
-      const doneCount = allLessons.filter(l => l.done).length + 1;
-      if (doneCount === allLessons.length && activeClass) {
+      // Check if this was the last lesson in the ACTIVE class
+      const lessonsInThisClass = curriculum
+        .filter(cls => cls.id === activeClass.id)
+        .flatMap(cls => cls.modules.flatMap(m => m.items));
+      
+      const doneCount = lessonsInThisClass.filter(l => l.done).length + 1;
+      
+      if (doneCount === lessonsInThisClass.length && activeClass) {
          addNotification(`Alhamdulillah! Anda telah menyelesaikan seluruh materi di kelas "${activeClass.title}". Klik untuk lihat sertifikat!`);
       }
     } catch (err) {
