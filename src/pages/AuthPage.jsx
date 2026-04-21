@@ -138,16 +138,31 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
         return;
       }
 
-      // 2. Jika belum ada, baru kirim OTP
-      const { error } = await supabase.auth.signInWithOtp({
+      // 2. Registrasi langsung (OTP Dinonaktifkan untuk testing)
+      const { data, error } = await supabase.auth.signUp({
         email,
-        options: { shouldCreateUser: true, data: { name } },
+        password,
+        options: {
+          data: { name }
+        }
       });
+
       if (error) {
-        showAlert('Gagal Kirim OTP', error.message, 'error');
+        showAlert('Gagal Registrasi', error.message, 'error');
       } else {
-        setStep('otp');
-        setCountdown(60);
+        const userId = data.user?.id;
+        if (userId) {
+          // Buat profil di tabel profiles
+          await supabase.from('profiles').upsert({ 
+            id: userId, 
+            name, 
+            email, 
+            role: 'user', 
+            profile_complete: false 
+          }, { onConflict: 'id' });
+        }
+        setStep('success');
+        showAlert('Registrasi Berhasil', 'Akun berhasil dibuat.', 'success');
       }
     } catch (err) {
       showAlert('Error Sistem', err.message, 'error');
@@ -205,7 +220,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
           <p>Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah.</p>
           {!isLogin && (
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {['Daftar Akun', 'Verifikasi OTP', 'Lengkapi Profil', 'Siap Berikhtiar'].map((s, i) => (
+              {['Daftar Akun', 'Lengkapi Profil', 'Siap Berikhtiar'].map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>{i + 1}</div>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{s}</span>
@@ -247,7 +262,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
                   </div>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '12px' }} disabled={isLoading}>
-                  {isLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Kirim Kode OTP')}
+                  {isLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Daftar Sekarang')}
                 </button>
               </form>
               <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b' }}>

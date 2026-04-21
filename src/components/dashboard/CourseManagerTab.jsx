@@ -4,7 +4,7 @@ import {
   BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown,
   PlayCircle, FileQuestion, GraduationCap, CheckCircle,
   AlertCircle, Loader, ToggleLeft, ToggleRight, ArrowUp, ArrowDown,
-  Activity, Zap, Upload
+  Activity, Zap, Upload, GripVertical, Search
 } from 'lucide-react';
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ const CARD = { borderRadius: '14px', border: '1px solid var(--border)', backgrou
 const BTN_SM = (extra = {}) => ({
   display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
   padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem',
-  fontWeight: '700', cursor: 'pointer', border: 'none', transition: 'all 0.15s',
+  fontWeight: '700', cursor: 'pointer', border: 'none', transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
   ...extra
 });
 
@@ -24,6 +24,7 @@ export default function CourseManagerTab() {
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
   const [toast, setToast] = useState(null);
 
   // Modal states (using new view/editor system for class/course)
@@ -33,7 +34,7 @@ export default function CourseManagerTab() {
   // Form states
   const [classForm, setClassForm] = useState({ title: '', description: '', banner_url: '' });
   const [courseForm, setCourseForm] = useState({ title: '', description: '', thumbnail_url: '' });
-  const [lessonForm, setLessonForm] = useState({ id: '', title: '', type: 'video', video_url: '', duration: '' });
+  const [lessonForm, setLessonForm] = useState({ id: '', title: '', type: 'video', video_url: '', duration: '', content: '' });
   const [quizForm, setQuizForm] = useState({ question_text: '', options: ['', '', '', ''], correct_index: 0 });
   
   // UI states
@@ -47,6 +48,8 @@ export default function CourseManagerTab() {
   const [subTab, setSubTab] = useState('curriculum'); // 'curriculum' | 'progress'
   const [userProgressList, setUserProgressList] = useState([]);
   const [progressLoading, setProgressLoading] = useState(false);
+  const [progPage, setProgPage] = useState(1);
+  const progPerPage = 10;
 
   // Image states
   const [bannerFile, setBannerFile] = useState(null);
@@ -68,7 +71,8 @@ export default function CourseManagerTab() {
     ]);
     setClasses(cl.data || []);
     setCourses(c.data || []);
-    setLessons(l.data || []);
+    const lessonData = l.data || [];
+    setLessons(lessonData);
     setQuizQuestions(q.data || []);
     setLoading(false);
   };
@@ -76,9 +80,23 @@ export default function CourseManagerTab() {
   const fetchUserProgress = async () => {
     setProgressLoading(true);
     try {
-      // 1. Ambil jumlah total lesson yang aktif
-      const { data: activeLessonsData } = await supabase.from('lessons').select('id');
-      const totalLessonsCount = activeLessonsData?.length || 0;
+      // 1. Ambil infrastruktur akademi (Kelas -> Modul -> Materi)
+      const { data: allClasses } = await supabase.from('lms_classes').select('id, title');
+      const { data: allCourses } = await supabase.from('courses').select('id, class_id, title');
+      const { data: allLessons } = await supabase.from('lessons').select('id, course_id');
+      
+      // Map lesson_id ke class_id
+      const lessonToClass = {};
+      const classRequiredLessons = {}; // class_id -> Set of lesson_ids
+      
+      allCourses?.forEach(c => {
+        const courseLessons = allLessons?.filter(l => l.course_id === c.id) || [];
+        if (!classRequiredLessons[c.class_id]) classRequiredLessons[c.class_id] = new Set();
+        courseLessons.forEach(l => {
+          classRequiredLessons[c.class_id].add(l.id);
+          lessonToClass[l.id] = c.class_id;
+        });
+      });
 
       // 2. Ambil semua profiles candidate
       const { data: profiles, error: pErr } = await supabase
@@ -88,25 +106,36 @@ export default function CourseManagerTab() {
         
       if (pErr) throw pErr;
 
-      // 3. Ambil semua progress (Admin butuh policy RLS agar bisa baca ini)
-      // Jika hasil masih [], berarti kebijakan RLS di Supabase perlu diperbarui
+      // 3. Ambil semua progress (hanya yang sudah selesai)
       const { data: progressData, error: prErr } = await supabase
         .from('user_lesson_progress')
-        .select('user_id, lesson_id');
+        .select('user_id, lesson_id')
+        .eq('completed', true);
         
       if (prErr) throw prErr;
-      
-      console.log('Total Records Progress:', progressData?.length);
 
       const combined = (profiles || []).map(p => {
-        // Cocokkan berdasarkan user_id (UUID)
-        const userProgress = (progressData || []).filter(up => up.user_id === p.id);
-        const percent = totalLessonsCount > 0 ? Math.round((userProgress.length / totalLessonsCount) * 100) : 0;
+        const userDoneLessons = new Set((progressData || []).filter(up => up.user_id === p.id).map(up => up.lesson_id));
+        
+        // Hitung sertifikat berdasarkan KELAS yang selesai (bukan MODUL)
+        const earnedCertificates = [];
+        
+        allClasses?.forEach(cls => {
+           const requiredIds = Array.from(classRequiredLessons[cls.id] || []);
+           // Syarat: Ada materinya DAN semua materi selesai
+           if (requiredIds.length > 0 && requiredIds.every(lid => userDoneLessons.has(lid))) {
+             earnedCertificates.push(cls.title);
+           }
+        });
+
+        const totalClasses = allClasses?.length || 0;
+
         return {
           ...p,
-          completedCount: userProgress.length,
-          totalCount: totalLessonsCount,
-          percent
+          certificatesCount: earnedCertificates.length,
+          earnedCertificates,
+          totalCourses: totalClasses, // Sekarang menggunakan Kelas sebagai unit utama
+          percent: totalClasses > 0 ? Math.round((earnedCertificates.length / totalClasses) * 100) : 0
         };
       });
       setUserProgressList(combined);
@@ -188,7 +217,7 @@ export default function CourseManagerTab() {
 
     if (activeClassEdit === 'new') {
       const maxOrder = classes.length > 0 ? Math.max(...classes.map(c => c.order_index)) : 0;
-      const { error } = await supabase.from('lms_classes').insert({ ...payload, order_index: maxOrder + 1 });
+      const { error } = await supabase.from('lms_classes').insert({ ...payload, order_index: maxOrder + 1, is_published: false });
       if (error) showToast('Gagal simpan kelas: ' + error.message, 'error');
       else showToast('Kelas baru berhasil ditambahkan!');
     } else {
@@ -267,7 +296,7 @@ export default function CourseManagerTab() {
       if (error) showToast('Gagal update: ' + error.message, 'error');
       else showToast('Modul berhasil diperbarui!');
     } else {
-      const { error } = await supabase.from('courses').insert({ ...payload, order_index: maxOrder + 1, is_active: true });
+      const { error } = await supabase.from('courses').insert({ ...payload, order_index: maxOrder + 1, is_active: false });
       if (error) showToast('Gagal simpan: ' + error.message, 'error');
       else showToast('Modul berhasil ditambahkan!');
     }
@@ -289,13 +318,27 @@ export default function CourseManagerTab() {
     setCourses(prev => prev.map(c => c.id === course.id ? { ...c, is_active: !c.is_active } : c));
   };
 
+  const toggleClassPublished = async (cls) => {
+    const newVal = !cls.is_published;
+    const { error } = await supabase.from('lms_classes').update({ is_published: newVal }).eq('id', cls.id);
+    if (error) showToast('Gagal update status: ' + error.message, 'error');
+    else setClasses(prev => prev.map(c => c.id === cls.id ? { ...c, is_published: newVal } : c));
+  };
+
+  const toggleLessonPublished = async (lesson) => {
+    const newVal = !lesson.is_published;
+    const { error } = await supabase.from('lessons').update({ is_published: newVal }).eq('id', lesson.id);
+    if (error) showToast('Gagal update status: ' + error.message, 'error');
+    else setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, is_published: newVal } : l));
+  };
+
   // ─── Lesson CRUD ──────────────────────────────────────────────────────────
   const openNewLesson = (courseId) => {
-    setLessonForm({ id: `${courseId}-${uid()}`, title: '', type: 'video', video_url: '', duration: '' });
+    setLessonForm({ id: `${courseId}-${uid()}`, title: '', type: 'video', video_url: '', duration: '', content: '' });
     setLessonModal({ courseId });
   };
   const openEditLesson = (lesson) => {
-    setLessonForm({ id: lesson.id, title: lesson.title, type: lesson.type, video_url: lesson.video_url || '', duration: lesson.duration || '' });
+    setLessonForm({ id: lesson.id, title: lesson.title, type: lesson.type, video_url: lesson.video_url || '', duration: lesson.duration || '', content: lesson.content || '' });
     setLessonModal({ courseId: lesson.course_id, lesson });
   };
   const saveLesson = async () => {
@@ -311,21 +354,168 @@ export default function CourseManagerTab() {
       type: lessonForm.type,
       video_url: lessonForm.type === 'video' ? (lessonForm.video_url.trim() || null) : null,
       duration: lessonForm.type === 'video' ? (lessonForm.duration.trim() || null) : null,
+      content: lessonForm.content.trim() || null,
       order_index: lessonModal.lesson ? lessonModal.lesson.order_index : maxOrder + 1,
     };
     if (lessonModal.lesson) {
       const { error } = await supabase.from('lessons').update(payload).eq('id', lessonModal.lesson.id);
-      if (error) showToast('Gagal update lesson: ' + error.message, 'error');
-      else showToast('Lesson berhasil diperbarui!');
+      if (error) {
+        console.error('Supabase Update Error:', error);
+        showToast('Gagal update lesson: ' + error.message, 'error');
+      } else {
+        showToast('Lesson berhasil diperbarui!');
+      }
     } else {
-      const { error } = await supabase.from('lessons').insert(payload);
-      if (error) showToast('Gagal simpan lesson: ' + error.message, 'error');
-      else showToast('Lesson berhasil ditambahkan!');
+      // Logic to handle missing default ID in database
+      let finalId = lessonForm.id.trim();
+      
+      // If existing IDs are numbers, we must send a number
+      const numericIds = lessons.map(l => Number(l.id)).filter(n => !isNaN(n));
+      if (numericIds.length > 0) {
+        // Use max ID + 1 if the table seems to use numeric IDs
+        const maxId = Math.max(...numericIds);
+        finalId = maxId + 1;
+      }
+      
+      const { error } = await supabase.from('lessons').insert({ ...payload, id: finalId, is_published: false });
+      if (error) {
+        console.error('Supabase Insert Error:', error);
+        showToast('Gagal simpan lesson: ' + error.message, 'error');
+      } else {
+        showToast('Lesson berhasil ditambahkan!');
+      }
     }
     setLessonModal(null);
     setSaving(false);
     fetchAll();
   };
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.style.opacity = '0.4';
+    console.log('Drag Start:', item.id);
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedItem(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  };
+
+  const handleDrop = async (e, targetLesson) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+    
+    // Compare as Strings to avoid type mismatch (string vs number)
+    const dragId = String(draggedItem.id);
+    const targetId = String(targetLesson.id);
+
+    if (dragId === targetId) return;
+    if (draggedItem.course_id !== targetLesson.course_id) return;
+
+    console.log('Dropping', dragId, 'onto', targetId);
+
+    const courseLessons = [...lessons]
+      .filter(l => l.course_id === targetLesson.course_id)
+      .sort((a, b) => a.order_index - b.order_index);
+    
+    const dragIdx = courseLessons.findIndex(l => String(l.id) === dragId);
+    const dropIdx = courseLessons.findIndex(l => String(l.id) === targetId);
+    
+    if (dragIdx < 0 || dropIdx < 0) return;
+
+    const newItems = [...courseLessons];
+    const [removed] = newItems.splice(dragIdx, 1);
+    newItems.splice(dropIdx, 0, removed);
+
+    // Instant local update
+    const finalLessons = lessons.map(l => {
+      const matchIdx = newItems.findIndex(ni => String(ni.id) === String(l.id));
+      if (matchIdx !== -1) return { ...l, order_index: matchIdx + 1 };
+      return l;
+    });
+    setLessons(finalLessons);
+
+    try {
+      const updates = newItems.map((item, idx) => ({
+        id: item.id,
+        course_id: item.course_id,
+        title: item.title,
+        type: item.type,
+        order_index: idx + 1
+      }));
+      const { error } = await supabase.from('lessons').upsert(updates);
+      if (error) throw error;
+      showToast('Urutan materi diperbarui');
+    } catch (err) {
+      console.error('Drop Error:', err);
+      showToast('Gagal update database', 'error');
+      fetchAll();
+    }
+  };
+
+  const handleCourseDragStart = (e, course) => {
+    setDraggedItem(course);
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.style.opacity = '0.4';
+    console.log('Course Drag Start:', course.id);
+  };
+
+  const handleCourseDrop = async (e, targetCourse) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    const dragId = String(draggedItem.id);
+    const targetId = String(targetCourse.id);
+
+    if (dragId === targetId) return;
+    if (draggedItem.class_id !== targetCourse.class_id) return;
+
+    console.log('Dropping Module', dragId, 'onto', targetId);
+
+    const classCourses = [...courses]
+      .filter(c => c.class_id === targetCourse.class_id)
+      .sort((a, b) => a.order_index - b.order_index);
+    
+    const dragIdx = classCourses.findIndex(c => String(c.id) === dragId);
+    const dropIdx = classCourses.findIndex(c => String(c.id) === targetId);
+    
+    if (dragIdx < 0 || dropIdx < 0) return;
+
+    const newItems = [...classCourses];
+    const [removed] = newItems.splice(dragIdx, 1);
+    newItems.splice(dropIdx, 0, removed);
+
+    // Local update
+    const finalCourses = courses.map(c => {
+      const matchIdx = newItems.findIndex(ni => String(ni.id) === String(c.id));
+      if (matchIdx !== -1) return { ...c, order_index: matchIdx + 1 };
+      return c;
+    });
+    setCourses(finalCourses);
+
+    try {
+      const updates = newItems.map((item, idx) => ({
+        id: item.id,
+        class_id: item.class_id,
+        title: item.title,
+        order_index: idx + 1
+      }));
+      const { error } = await supabase.from('courses').upsert(updates);
+      if (error) throw error;
+      showToast('Urutan modul diperbarui');
+    } catch (err) {
+      console.error('Course Drop Error:', err);
+      showToast('Gagal update urutan', 'error');
+      fetchAll();
+    }
+  };
+
   const deleteLesson = async (id) => {
     if (!window.confirm('Hapus lesson ini? Soal quiz di dalamnya juga akan terhapus.')) return;
     setSaving(true);
@@ -389,6 +579,19 @@ export default function CourseManagerTab() {
     await Promise.all([
       supabase.from('courses').update({ order_index: swap.order_index }).eq('id', course.id),
       supabase.from('courses').update({ order_index: course.order_index }).eq('id', swap.id),
+    ]);
+    fetchAll();
+  };
+
+  const reorderLesson = async (lesson, dir) => {
+    const courseLessons = lessons.filter(l => l.course_id === lesson.course_id).sort((a,b) => a.order_index - b.order_index);
+    const idx = courseLessons.findIndex(l => l.id === lesson.id);
+    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= courseLessons.length) return;
+    const swap = courseLessons[swapIdx];
+    await Promise.all([
+      supabase.from('lessons').update({ order_index: swap.order_index }).eq('id', lesson.id),
+      supabase.from('lessons').update({ order_index: lesson.order_index }).eq('id', swap.id),
     ]);
     fetchAll();
   };
@@ -526,7 +729,25 @@ export default function CourseManagerTab() {
                     <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{cls.title}</h4>
                     <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{classModules.length} Modul Terdaftar</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                    <button 
+                      onClick={() => toggleClassPublished(cls)}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      style={BTN_SM({ 
+                        background: cls.is_published ? 'rgba(44,95,77,0.12)' : 'rgba(148,163,184,0.12)', 
+                        color: cls.is_published ? 'var(--primary)' : '#64748b',
+                        padding: '0.4rem 0.75rem',
+                        border: cls.is_published ? '1.5px solid rgba(44,95,77,0.2)' : '1.5px solid rgba(148,163,184,0.2)'
+                      })}
+                      title={cls.is_published ? 'Archive Kelas' : 'Publish Kelas'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', animation: cls.is_published ? 'pulse-green 2s infinite' : 'none' }}>
+                        {cls.is_published ? <ToggleRight size={20} style={{ color: 'var(--primary)', transition: 'all 0.3s' }} /> : <ToggleLeft size={20} style={{ color: '#94a3b8', transition: 'all 0.3s' }} />}
+                        <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>{cls.is_published ? 'PUBLISHED' : 'DRAFT'}</span>
+                      </div>
+                    </button>
+                    <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.5rem' }} />
                     <button onClick={() => openEditClass(cls)} style={BTN_SM({ background: 'rgba(44,95,77,0.07)', color: 'var(--primary)' })}><Edit3 size={15} /></button>
                     <button onClick={() => deleteClass(cls.id)} style={BTN_SM({ background: 'rgba(230,57,70,0.07)', color: '#E63946' })}><Trash2 size={15} /></button>
                     <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.5rem' }} />
@@ -555,11 +776,20 @@ export default function CourseManagerTab() {
                         const courseLessons = lessons.filter(l => l.course_id === course.id).sort((a,b) => a.order_index - b.order_index);
                         const isCourseExpanded = expandedCourse === course.id;
                         return (
-                          <div key={course.id} style={{ background: 'white', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '0.75rem', overflow: 'hidden' }}>
+                          <div 
+                            key={course.id} 
+                            style={{ background: 'white', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '0.75rem', overflow: 'hidden' }}
+                            draggable
+                            onDragStart={(e) => handleCourseDragStart(e, course)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleCourseDrop(e, course)}
+                          >
                             <div 
                               onClick={() => setExpandedCourse(isCourseExpanded ? null : course.id)}
-                              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', cursor: 'pointer' }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', cursor: 'grab' }}
                             >
+                              <GripVertical size={14} color="#94a3b8" />
                               <div style={{ width: 40, height: 40, borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
                                 {course.thumbnail_url ? <img src={course.thumbnail_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <BookOpen size={16} color="#cbd5e1" style={{ margin: '12px' }} />}
                               </div>
@@ -567,8 +797,22 @@ export default function CourseManagerTab() {
                                 <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)' }}>{course.title}</div>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{courseLessons.length} Lesson</div>
                               </div>
-                              <div style={{ display: 'flex', gap: '0.4rem' }} onClick={e => e.stopPropagation()}>
+                              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                                <button 
+                                  onClick={() => toggleCourseActive(course)}
+                                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                  style={BTN_SM({ 
+                                    background: course.is_active ? 'rgba(44,95,77,0.12)' : 'rgba(0,0,0,0.05)', 
+                                    color: course.is_active ? 'var(--primary)' : '#94a3b8',
+                                    padding: '0.35rem 0.5rem',
+                                    borderRadius: '10px'
+                                  })}
+                                >
+                                  {course.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                                </button>
                                 <button onClick={() => openEditCourse(course)} style={BTN_SM({ background: 'rgba(0,0,0,0.03)' })}><Edit3 size={12} /></button>
+                                <button onClick={() => deleteCourse(course.id)} style={BTN_SM({ background: 'rgba(230,57,70,0.05)', color: '#E63946' })}><Trash2 size={12} /></button>
                                 <button onClick={() => openNewLesson(course.id)} style={BTN_SM({ background: 'var(--bg-light)', color: 'var(--primary)' })}><Plus size={12} /> Add Lesson</button>
                               </div>
                             </div>
@@ -581,11 +825,41 @@ export default function CourseManagerTab() {
                                     const questions = (quizQuestions || []).filter(q => q.lesson_id === lesson.id);
 
                                     return (
-                                      <div key={lesson.id} style={{ marginBottom: '0.5rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: isLessonExt ? 'rgba(184,134,30,0.05)' : 'var(--bg-light)', border: isLessonExt ? '1px solid rgba(184,134,30,0.2)' : '1px solid transparent' }}>
+                                      <div 
+                                        key={lesson.id} 
+                                        style={{ marginBottom: '0.5rem' }}
+                                        draggable
+                                        onDragStart={(e) => {
+                                          e.stopPropagation();
+                                          handleDragStart(e, lesson);
+                                        }}
+                                        onDragEnd={handleDragEnd}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => {
+                                          e.stopPropagation();
+                                          handleDrop(e, lesson);
+                                        }}
+                                      >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: isLessonExt ? 'rgba(184,134,30,0.05)' : 'var(--bg-light)', border: isLessonExt ? '1px solid rgba(184,134,30,0.2)' : '1px solid transparent', cursor: 'grab' }}>
+                                          <GripVertical size={14} color="#94a3b8" />
                                           {isQuiz ? <FileQuestion size={16} color="#b8861e" /> : <PlayCircle size={16} color="var(--primary)" />}
-                                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: '700' }}>{lesson.title}</span>
-                                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>{lesson.title}</span>
+                                          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                                            <button 
+                                              onClick={() => toggleLessonPublished(lesson)}
+                                              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                                              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                              style={BTN_SM({ 
+                                                background: lesson.is_published ? 'rgba(44,95,77,0.12)' : 'rgba(0,0,0,0.05)',
+                                                color: lesson.is_published ? 'var(--primary)' : '#94a3b8',
+                                                padding: '0.3rem 0.5rem',
+                                                borderRadius: '8px'
+                                              })}
+                                              title={lesson.is_published ? 'Unpublish' : 'Publish'}
+                                            >
+                                              {lesson.is_published ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                                            </button>
+                                            <div style={{ width: '1px', background: '#e2e8f0', margin: '0 4px', height: '14px' }} />
                                             {isQuiz && (
                                               <button 
                                                 onClick={() => setExpandedLesson(isLessonExt ? null : lesson.id)} 
@@ -676,42 +950,90 @@ export default function CourseManagerTab() {
                     <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="spin" size={20} /></td></tr>
                   ) : userProgressList.length === 0 ? (
                     <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada data progres kandidat.</td></tr>
-                  ) : userProgressList.map(item => (
-                    <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                       <td style={{ padding: '1rem 1.5rem' }}>
-                          <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.email}</div>
-                       </td>
-                       <td style={{ padding: '1rem' }}>
-                          <span style={{ 
-                            fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
-                            color: item.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
-                            background: item.gender === 'ikhwan' ? 'rgba(14,165,233,0.1)' : 'rgba(236,72,153,0.1)',
-                            padding: '3px 8px', borderRadius: '4px'
-                          }}>
-                            {item.gender || '-'}
-                          </span>
-                       </td>
-                       <td style={{ padding: '1rem', width: '30%' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontWeight: '700' }}>
-                             <span>{item.percent}% Selesai</span>
-                             <span>{item.completedCount}/{item.totalCount}</span>
-                          </div>
-                          <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                             <div style={{ width: `${item.percent}%`, height: '100%', background: 'var(--primary)', borderRadius: '10px' }}></div>
-                          </div>
-                       </td>
-                       <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                          {item.percent === 100 ? (
-                            <span style={{ color: 'var(--success)', fontWeight: '700', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                              Lulus <CheckCircle size={14} />
-                            </span>
-                          ) : (
-                            <span style={{ color: '#94a3b8', fontWeight: '700', fontSize: '0.75rem' }}>In Progress</span>
-                          )}
-                       </td>
-                    </tr>
-                  ))}
+                  ) : (() => {
+                    const totalPages = Math.ceil(userProgressList.length / progPerPage);
+                    const startIndex = (progPage - 1) * progPerPage;
+                    const paginatedList = userProgressList.slice(startIndex, startIndex + progPerPage);
+                    return (
+                      <>
+                        {paginatedList.map(item => (
+                          <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                             <td style={{ padding: '1rem 1.5rem' }}>
+                                <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.email}</div>
+                             </td>
+                             <td style={{ padding: '1rem' }}>
+                                <span style={{ 
+                                  fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
+                                  color: item.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
+                                  background: item.gender === 'ikhwan' ? 'rgba(14,165,233,0.1)' : 'rgba(236,72,153,0.1)',
+                                  padding: '3px 8px', borderRadius: '4px'
+                                }}>
+                                  {item.gender || '-'}
+                                </span>
+                             </td>
+                             <td style={{ padding: '1rem', width: '38%' }}>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                  {item.certificatesCount} Sertifikat Diperoleh:
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {item.earnedCertificates?.length > 0 ? (
+                                     item.earnedCertificates.map((title, idx) => (
+                                       <span key={idx} style={{ 
+                                         fontSize: '0.65rem', fontWeight: '800', 
+                                         background: 'rgba(212,175,55,0.1)', color: '#B8860B', 
+                                         padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.2)' 
+                                       }}>
+                                         {title}
+                                       </span>
+                                     ))
+                                  ) : (
+                                     <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>
+                                  )}
+                                </div>
+                             </td>
+                             <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                {item.percent === 100 ? (
+                                   <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', background: 'rgba(34,197,94,0.1)', padding: '4px 10px', borderRadius: '10px' }}>
+                                     MASTERY <CheckCircle size={14} />
+                                   </span>
+                                ) : (
+                                   <span style={{ color: '#94a3b8', fontWeight: '800', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Belajar</span>
+                                )}
+                             </td>
+                          </tr>
+                        ))}
+                        {/* 🔢 PAGINATION CONTROLS */}
+                        {userProgressList.length > progPerPage && (
+                          <tr>
+                            <td colSpan={4} style={{ padding: '1.25rem 1.5rem', background: '#f8fafc' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700' }}>
+                                  Halaman {progPage} dari {totalPages} ({userProgressList.length} Total Kandidat)
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <button 
+                                    disabled={progPage === 1}
+                                    onClick={() => setProgPage(progPage - 1)}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', cursor: progPage === 1 ? 'not-allowed' : 'pointer', fontSize: '0.7rem', fontWeight: '800', color: progPage === 1 ? '#cbd5e1' : 'var(--primary)' }}
+                                  >
+                                    Sebelumnya
+                                  </button>
+                                  <button 
+                                    disabled={progPage === totalPages}
+                                    onClick={() => setProgPage(progPage + 1)}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', cursor: progPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '0.7rem', fontWeight: '800', color: progPage === totalPages ? '#cbd5e1' : 'var(--primary)' }}
+                                  >
+                                    Selanjutnya
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })()}
                 </tbody>
              </table>
             </div>
@@ -854,11 +1176,7 @@ export default function CourseManagerTab() {
               <button onClick={() => setLessonModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
             </div>
             <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">ID Unik Lesson <span style={{ color: 'var(--danger)' }}>*</span></label>
-                <input className="form-control" value={lessonForm.id} onChange={e => setLessonForm(p => ({ ...p, id: e.target.value }))} placeholder="contoh: v1-3 atau q2-1" disabled={!!lessonModal.lesson} />
-                <small style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Tidak bisa diubah setelah disimpan.</small>
-              </div>
+
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Judul Lesson <span style={{ color: 'var(--danger)' }}>*</span></label>
                 <input className="form-control" value={lessonForm.title} onChange={e => setLessonForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Materi 3: Komunikasi dalam Keluarga" />
@@ -867,6 +1185,7 @@ export default function CourseManagerTab() {
                 <label className="form-label">Tipe Lesson</label>
                 <select className="form-control" value={lessonForm.type} onChange={e => setLessonForm(p => ({ ...p, type: e.target.value }))}>
                   <option value="video">🎬 Video</option>
+                  <option value="text">📄 Text (Ringkasan)</option>
                   <option value="quiz">📝 Quiz</option>
                 </select>
               </div>
@@ -881,6 +1200,12 @@ export default function CourseManagerTab() {
                     <input className="form-control" value={lessonForm.duration} onChange={e => setLessonForm(p => ({ ...p, duration: e.target.value }))} placeholder="contoh: 21:30" />
                   </div>
                 </>
+              )}
+              {(lessonForm.type === 'video' || lessonForm.type === 'text') && (
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Konten Teks / Ringkasan</label>
+                  <textarea className="form-control" rows={10} value={lessonForm.content} onChange={e => setLessonForm(p => ({ ...p, content: e.target.value }))} placeholder="Tuliskan ringkasan materi atau konten teks di sini..." />
+                </div>
               )}
             </div>
             <div className="modal-footer" style={{ justifyContent: 'flex-end', gap: '0.75rem', padding: '1rem 1.5rem', borderTop: '1px solid var(--border)' }}>

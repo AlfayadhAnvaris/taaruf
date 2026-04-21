@@ -1,7 +1,28 @@
 import React, { useState } from 'react';
-import { User, Users, Phone, Shield, MapPin, Edit3, Save, X as XIcon, BadgeCheck, Clock, AlertTriangle } from 'lucide-react';
+import { User, Users, Phone, Shield, MapPin, Edit3, Save, X as XIcon, BadgeCheck, Clock, AlertTriangle, Briefcase, GraduationCap } from 'lucide-react';
 import { supabase } from '../../supabase';
 import ChangePasswordCard from './ChangePasswordCard';
+
+const Field = ({ label, value, icon }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 0', borderBottom: '1px solid var(--border)' }}>
+    <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(44,95,77,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}>
+      {icon}
+    </div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>{label}</div>
+      <div style={{ fontSize: '0.95rem', color: value ? 'var(--text-main)' : 'var(--text-muted)', fontStyle: value ? 'normal' : 'italic' }}>
+        {value || 'Belum diisi'}
+      </div>
+    </div>
+  </div>
+);
+
+const InputField = ({ label, fieldKey, type = 'text', placeholder, value, onChange }) => (
+  <div className="form-group" style={{ marginBottom: '1rem' }}>
+    <label className="form-label">{label}</label>
+    <input type={type} className="form-control" placeholder={placeholder} value={value} onChange={e => onChange(fieldKey, e.target.value)} />
+  </div>
+);
 
 export default function AccountTab({ user, showAlert }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,9 +36,55 @@ export default function AccountTab({ user, showAlert }) {
     domisili_kota: user.domisili_kota || '',
     domisili_detail: user.domisili_detail || '',
     gender: user.gender || '',
+    pekerjaan: user.pekerjaan || '',
+    pendidikan_terakhir: user.pendidikan_terakhir || '',
   });
 
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [isFetchingCities, setIsFetchingCities] = useState(false);
+
+  React.useEffect(() => {
+    fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+      .then(r => r.json())
+      .then(data => setProvinces(data || []))
+      .catch(e => console.error("Gagal ambil provinsi", e));
+  }, []);
+
+  React.useEffect(() => {
+    if (form.domisili_provinsi) {
+       const provId = provinces.find(p => p.name === form.domisili_provinsi)?.id;
+       if (provId) {
+          const fetchCities = async () => {
+             setIsFetchingCities(true);
+             try {
+                const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`);
+                const data = await res.json();
+                setCities(data || []);
+             } catch (e) {
+                console.error("Gagal mengambil data kota", e);
+                setCities([]);
+             }
+             setIsFetchingCities(false);
+          };
+          fetchCities();
+       } else {
+          setCities([]);
+       }
+    } else {
+       setCities([]);
+    }
+  }, [form.domisili_provinsi, provinces]);
+  
   const isAkhwat = user.gender === 'akhwat';
+  
+  const isProfileComplete = 
+    form.name.trim() !== '' && 
+    form.phone_wa.trim() !== '' && 
+    form.domisili_provinsi.trim() !== '' && 
+    form.domisili_kota.trim() !== '' &&
+    (!isAkhwat || (form.wali_name.trim() !== '' && form.wali_phone.trim() !== ''));
+
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
@@ -32,6 +99,8 @@ export default function AccountTab({ user, showAlert }) {
       domisili_kota: form.domisili_kota.trim() || null,
       domisili_detail: form.domisili_detail.trim() || null,
       gender: form.gender,
+      pekerjaan: form.pekerjaan.trim() || null,
+      pendidikan_terakhir: form.pendidikan_terakhir.trim() || null,
     }).eq('id', user.id);
     setIsSaving(false);
     if (error) { showAlert('Gagal Menyimpan', error.message, 'error'); return; }
@@ -42,7 +111,9 @@ export default function AccountTab({ user, showAlert }) {
     user.domisili_kota = form.domisili_kota.trim();
     user.domisili_provinsi = form.domisili_provinsi.trim();
     user.domisili_detail = form.domisili_detail.trim();
-    showAlert('Berhasil', 'Profil berhasil diperbarui.', 'success');
+    user.pekerjaan = form.pekerjaan.trim();
+    user.pendidikan_terakhir = form.pendidikan_terakhir.trim();
+    showAlert('Berhasil', 'Profil berhasil diperbarui, silahkan tunggu verifikasi dari admin untuk mendapatkan badge', 'success');
     setIsEditing(false);
   };
 
@@ -55,30 +126,13 @@ export default function AccountTab({ user, showAlert }) {
       domisili_provinsi: user.domisili_provinsi || '',
       domisili_kota: user.domisili_kota || '',
       domisili_detail: user.domisili_detail || '',
+      pekerjaan: user.pekerjaan || '',
+      pendidikan_terakhir: user.pendidikan_terakhir || '',
     });
     setIsEditing(false);
   };
 
-  const Field = ({ label, value, icon }) => (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 0', borderBottom: '1px solid var(--border)' }}>
-      <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(44,95,77,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: '0.72rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>{label}</div>
-        <div style={{ fontSize: '0.95rem', color: value ? 'var(--text-main)' : 'var(--text-muted)', fontStyle: value ? 'normal' : 'italic' }}>
-          {value || 'Belum diisi'}
-        </div>
-      </div>
-    </div>
-  );
 
-  const InputField = ({ label, fieldKey, type = 'text', placeholder }) => (
-    <div className="form-group" style={{ marginBottom: '1rem' }}>
-      <label className="form-label">{label}</label>
-      <input type={type} className="form-control" placeholder={placeholder} value={form[fieldKey]} onChange={e => set(fieldKey, e.target.value)} />
-    </div>
-  );
 
   return (
     <div style={{ maxWidth: '660px', margin: '0 auto', animation: 'fadeIn 0.4s ease' }}>
@@ -88,15 +142,44 @@ export default function AccountTab({ user, showAlert }) {
           {(form.name || user.name).charAt(0).toUpperCase()}
         </div>
         <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.3rem' }}>{form.name || user.name}</h3>
-        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <BadgeCheck size={13} /> Akun Aktif
+        <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="badge" style={{ background: isAkhwat ? 'rgba(236,72,153,0.1)' : 'rgba(14,165,233,0.1)', color: isAkhwat ? '#ec4899' : '#0ea5e9', border: `1px solid ${isAkhwat ? 'rgba(236,72,153,0.2)' : 'rgba(14,165,233,0.2)'}`, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            {isAkhwat ? ' Akhwat' : ' Ikhwan'}
           </span>
-          <span className="badge" style={{ background: isAkhwat ? 'rgba(236,72,153,0.1)' : 'rgba(14,165,233,0.1)', color: isAkhwat ? '#ec4899' : '#0ea5e9', border: `1px solid ${isAkhwat ? 'rgba(236,72,153,0.2)' : 'rgba(14,165,233,0.2)'}` }}>
-            {isAkhwat ? '👩 Akhwat' : '👨 Ikhwan'}
-          </span>
+          {user.is_verified && (
+            <span className="badge" style={{ background: '#dbeafe', color: '#1d4ed8', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '800' }}>
+              <Shield size={13} /> TERVERIFIKASI
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Profile Completion Warning */}
+      {!isProfileComplete && (
+        <div className="animate-up" style={{ 
+          background: 'rgba(239, 68, 68, 0.05)', 
+          border: '1px solid rgba(239, 68, 68, 0.2)', 
+          borderRadius: '24px', 
+          padding: '1.5rem', 
+          marginBottom: '1.5rem',
+          display: 'flex',
+          gap: '1rem',
+          alignItems: 'center'
+        }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--danger)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+             <AlertTriangle size={24} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: '800', color: '#b91c1c', fontSize: '0.95rem', marginBottom: '0.2rem' }}>Profil Belum Lengkap!</div>
+            <div style={{ fontSize: '0.85rem', color: '#7f1d1d', opacity: 0.8, lineHeight: 1.5 }}>
+              Harap segera lengkapi biodata Anda (WhatsApp & Domisili) agar admin dapat memverifikasi akun Anda dengan cepat.
+            </div>
+          </div>
+          {!isEditing && (
+            <button className="btn btn-primary" style={{ background: 'var(--danger)', padding: '0.5rem 1rem', fontSize: '0.8rem' }} onClick={() => setIsEditing(true)}>Lengkapi</button>
+          )}
+        </div>
+      )}
 
       {/* Info Card / Edit Form */}
       <div className="card" style={{ padding: '1.75rem', marginBottom: '1.25rem' }}>
@@ -123,6 +206,8 @@ export default function AccountTab({ user, showAlert }) {
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '0.25rem' }}>— Data Akun</div>
             <Field label="Email" value={user.email} icon={<User size={16} />} />
             <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? 'Ikhwan (Pria)' : 'Akhwat (Wanita)'} icon={<Users size={16} />} />
+            <Field label="Pendidikan Terakhir" value={user.pendidikan_terakhir} icon={<GraduationCap size={16} />} />
+            <Field label="Pekerjaan" value={user.pekerjaan} icon={<Briefcase size={16} />} />
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '1.25rem' }}>— Kontak</div>
             <Field label="No. WhatsApp" value={user.phone_wa} icon={<Phone size={16} />} />
             {isAkhwat && (
@@ -137,12 +222,28 @@ export default function AccountTab({ user, showAlert }) {
             <Field label="Keterangan Tambahan" value={user.domisili_detail} icon={<MapPin size={16} />} />
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '1.25rem' }}>— Data Akun</div>
             <Field label="Email" value={user.email} icon={<User size={16} />} />
-            <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? '👨 Ikhwan (Pria)' : '👩 Akhwat (Wanita)'} icon={<Users size={16} />} />
+            <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? ' Ikhwan (Pria)' : ' Akhwat (Wanita)'} icon={<Users size={16} />} />
           </div>
         ) : (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>— Data Diri</div>
-            <InputField label="Nama Lengkap" fieldKey="name" placeholder="Nama Anda..." />
+            <InputField label="Nama Lengkap" fieldKey="name" placeholder="Nama Anda..." value={form.name} onChange={set} />
+            
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label">Pendidikan Terakhir</label>
+              <select 
+                className="form-control" 
+                value={form.pendidikan_terakhir} 
+                onChange={e => set('pendidikan_terakhir', e.target.value)}
+              >
+                <option value="">-- Pilih Pendidikan --</option>
+                {['SD', 'SMP', 'SMA/SMK', 'Diploma (D1-D4)', 'Sarjana (S1)', 'Magister (S2)', 'Doktor (S3)', 'Pondok Pesantren'].map(edu => (
+                  <option key={edu} value={edu}>{edu}</option>
+                ))}
+              </select>
+            </div>
+
+            <InputField label="Pekerjaan Saat Ini" fieldKey="pekerjaan" placeholder="Contoh: Karyawan Swasta, Freelance..." value={form.pekerjaan} onChange={set} />
             
             <div className="form-group" style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <label className="form-label" style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
@@ -154,8 +255,8 @@ export default function AccountTab({ user, showAlert }) {
                 onChange={e => set('gender', e.target.value)}
                 style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: 'white', fontSize: '1rem', fontWeight: '600' }}
               >
-                <option value="ikhwan">👨 Ikhwan (Pria)</option>
-                <option value="akhwat">👩 Akhwat (Wanita)</option>
+                <option value="ikhwan"> Ikhwan (Pria)</option>
+                <option value="akhwat"> Akhwat (Wanita)</option>
               </select>
               <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.4rem', display: 'block' }}>Pilih sesuai kartu identitas Anda</small>
             </div>
@@ -165,26 +266,39 @@ export default function AccountTab({ user, showAlert }) {
               <input type="email" className="form-control" value={user.email} disabled style={{ opacity: 0.6 }} />
             </div>
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '1.25rem 0 0.75rem' }}>— Kontak</div>
-            <InputField label="No. WhatsApp Aktif" fieldKey="phone_wa" type="tel" placeholder="Contoh: 0812-3456-7890" />
+            <InputField label="No. WhatsApp Aktif" fieldKey="phone_wa" type="tel" placeholder="Contoh: 0812-3456-7890" value={form.phone_wa} onChange={set} />
             {isAkhwat && (
               <div style={{ padding: '1.25rem', background: 'rgba(236,72,153,0.04)', border: '1px solid rgba(236,72,153,0.15)', borderRadius: '14px', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#ec4899', fontWeight: '700', fontSize: '0.875rem' }}>
                   <Shield size={15} /> Kontak Wali
                 </div>
-                <InputField label="Nama Wali" fieldKey="wali_name" placeholder="Contoh: Bapak Ahmad" />
-                <InputField label="No. WhatsApp Wali" fieldKey="wali_phone" type="tel" placeholder="Contoh: 0812-3456-7890" />
+                <InputField label="Nama Wali" fieldKey="wali_name" placeholder="Contoh: Bapak Ahmad" value={form.wali_name} onChange={set} />
+                <InputField label="No. WhatsApp Wali" fieldKey="wali_phone" type="tel" placeholder="Contoh: 0812-3456-7890" value={form.wali_phone} onChange={set} />
               </div>
             )}
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '1.25rem 0 0.75rem' }}>— Domisili</div>
             <div className="form-group" style={{ marginBottom: '1rem' }}>
               <label className="form-label">Provinsi</label>
-              <select className="form-control" value={form.domisili_provinsi} onChange={e => set('domisili_provinsi', e.target.value)}>
+              <select className="form-control" value={form.domisili_provinsi} onChange={e => { set('domisili_provinsi', e.target.value); set('domisili_kota', ''); }}>
                 <option value="">-- Pilih Provinsi --</option>
-                {['Aceh','Sumatera Utara','Sumatera Barat','Riau','Kepulauan Riau','Jambi','Bengkulu','Sumatera Selatan','Kepulauan Bangka Belitung','Lampung','Banten','DKI Jakarta','Jawa Barat','Jawa Tengah','DI Yogyakarta','Jawa Timur','Bali','Nusa Tenggara Barat','Nusa Tenggara Timur','Kalimantan Barat','Kalimantan Tengah','Kalimantan Selatan','Kalimantan Timur','Kalimantan Utara','Sulawesi Utara','Gorontalo','Sulawesi Tengah','Sulawesi Barat','Sulawesi Selatan','Sulawesi Tenggara','Maluku','Maluku Utara','Papua Barat','Papua','Papua Tengah','Papua Pegunungan','Papua Selatan','Papua Barat Daya'].map(p => <option key={p} value={p}>{p}</option>)}
+                {provinces.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
               </select>
             </div>
-            <InputField label="Kota / Kabupaten" fieldKey="domisili_kota" placeholder="Contoh: Jakarta Selatan" />
-            <InputField label="Keterangan Tambahan (Opsional)" fieldKey="domisili_detail" placeholder="Contoh: Dekat Masjid Al-Azhar..." />
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label className="form-label">Kota / Kabupaten</label>
+              <select 
+                className="form-control" 
+                value={form.domisili_kota} 
+                onChange={e => set('domisili_kota', e.target.value)}
+                disabled={!form.domisili_provinsi || isFetchingCities}
+              >
+                <option value="">{isFetchingCities ? 'Memuat data...' : '-- Pilih Kota/Kabupaten --'}</option>
+                {cities.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <InputField label="Keterangan Tambahan (Opsional)" fieldKey="domisili_detail" placeholder="Contoh: Dekat Masjid Al-Azhar..." value={form.domisili_detail} onChange={set} />
           </div>
         )}
       </div>

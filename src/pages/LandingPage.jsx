@@ -27,7 +27,7 @@ export default function LandingPage() {
   return (
     <div className="landing-container">
       {/* NAVBAR */}
-      <nav className="landing-nav sticky-nav" style={{ height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
+      <nav className="landing-nav" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
         <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '700', fontSize: '1.4rem', color: 'var(--primary)' }}>
           <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '42px', height: '42px' }} />
           Mawaddah
@@ -37,7 +37,7 @@ export default function LandingPage() {
 
       <main>
         {/* HERO SECTION */}
-        <section className="landing-split-hero reveal" style={{ padding: '4rem 5% 6rem' }}>
+        <section className="landing-section-full landing-split-hero reveal">
           <div className="landing-hero-text">
             <div className="badge" style={{ background: 'rgba(44,95,77,0.08)', color: 'var(--primary)', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }}></div> #1 Platform Taaruf Syar'i
@@ -82,7 +82,7 @@ export default function LandingPage() {
         </section>
 
         {/* DALIL SECTION */}
-        <section className="landing-section reveal" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center' }}>
+        <section className="landing-section-full reveal" style={{ background: 'var(--primary)', color: 'white', textAlign: 'center' }}>
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <Quote size={40} color="var(--secondary)" style={{ margin: '0 auto 2rem', opacity: 0.6 }} />
             <p style={{ fontSize: '2rem', lineHeight: '1.6', fontFamily: 'serif', marginBottom: '2rem', fontWeight: '700', direction: 'rtl' }}>
@@ -95,7 +95,7 @@ export default function LandingPage() {
         </section>
 
         {/* WHY MAWADDAH & ACADEMY SECTION */}
-        <section className="reveal" style={{ padding: '8rem 5%', background: '#fff' }}>
+        <section className="landing-section-full reveal" style={{ background: '#fff' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
               <span style={{ color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.75rem' }}>Keunggulan Platform</span>
@@ -103,7 +103,7 @@ export default function LandingPage() {
               <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>Satu-satunya platform taaruf yang membekali Anda dengan ilmu, keamanan, dan pendampingan syar'i.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem' }}>
+            <div className="landing-academy-grid auto-grid">
               {/* Card 1: Academy */}
               <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: 'linear-gradient(145deg, var(--primary), #1A2E25)', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 30px 60px rgba(44,95,77,0.25)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.15 }}><BookOpen size={160} /></div>
@@ -121,7 +121,7 @@ export default function LandingPage() {
                   <ShieldCheck size={36} color="var(--primary)" />
                 </div>
                 <h3 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', color: '#1A2E25', fontWeight: '800' }}>Proteksi Izzah & Iffah</h3>
-                <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Data diri dan foto wajah dirahasiakan sepenuhnya. Sistem Blur Foto Profil memastikan kehormatan Anda terjaga hingga kedua belah pihak sepakat.</p>
+                <p style={{ color: '#64748b', lineHeight: '1.8', fontSize: '1.05rem' }}>Data diri dan foto wajah dirahasiakan sepenuhnya.  memastikan kehormatan Anda terjaga hingga kedua belah pihak sepakat.</p>
               </div>
 
               {/* Card 3: Guidance */}
@@ -137,7 +137,7 @@ export default function LandingPage() {
         </section>
 
         {/* HOW IT WORKS */}
-        <section className="landing-section reveal" style={{ background: '#f8fafc', padding: '8rem 2rem' }}>
+        <section className="landing-section-full reveal" style={{ background: '#f8fafc', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>Alur Proses Taaruf</h2>
           <p className="section-desc" style={{ marginBottom: '4rem' }}>Langkah demi langkah yang teratur, mencegah harapan palsu (*ghosting*) dan memperjelas arah.</p>
           <div className="process-timeline">
@@ -165,9 +165,9 @@ export default function LandingPage() {
         </section>
 
         {/* TESTIMONIALS */}
-        <section className="landing-section reveal" style={{ background: '#fff', padding: '8rem 2rem' }}>
+        <section className="landing-section-full reveal" style={{ background: '#fff', flexDirection: 'column' }}>
           <h2>Kisah Berkah Mawaddah</h2>
-          <div className="testimonial-grid" style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          <div className="testimonial-grid auto-grid">
             <div className="testi-card">
               <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
               <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut."</p>
@@ -178,7 +178,7 @@ export default function LandingPage() {
             </div>
             <div className="testi-card">
               <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"Sistem blur foto dan academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
+              <p className="testi-text">"Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
               <div className="testi-author">
                 <strong>Ukhti Fulanah</strong>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Akhwat, Menikah 2026</span>
@@ -188,16 +188,18 @@ export default function LandingPage() {
         </section>
 
         {/* CTA BANNER */}
-        <section className="landing-cta-banner reveal" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center', borderRadius: '40px', margin: '4rem 5%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <section className="landing-section-full reveal" style={{ background: '#fdfdfd' }}>
+          <div className="landing-cta-banner" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center', borderRadius: '40px', margin: '0 5%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '90%' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1.2rem', color: 'white' }}>Siap Menjemput Jodoh Anda?</h2>
           <p style={{ opacity: 0.9, marginBottom: '2.5rem', fontSize: '1.1rem' }}>Daftarkan diri secara gratis dan mulai perjalanan ibadah Anda sekarang.</p>
           <button className="btn btn-secondary btn-large" onClick={() => navigate('/daftar')} style={{ color: '#1A2E25', fontWeight: '900', padding: '1.2rem 3rem', borderRadius: '16px', boxShadow: '0 15px 30px rgba(0,0,0,0.2)' }}>
             Mulai Sekarang
           </button>
+          </div>
         </section>
       </main>
 
-      <footer className="landing-footer" style={{ padding: '4rem 2rem 2rem', color: 'var(--text-muted)', background: 'white', borderTop: '1px solid var(--border)' }}>
+      <footer className="landing-footer landing-section-snap" style={{ padding: '4rem 2rem 2rem', color: 'var(--text-muted)', background: 'white', borderTop: '1px solid var(--border)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between' }}>
           <div>
             <div className="navbar-brand" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '1.2rem', color: 'var(--primary)' }}>

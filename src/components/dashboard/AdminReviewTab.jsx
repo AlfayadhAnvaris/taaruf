@@ -9,14 +9,14 @@ export default function AdminReviewTab() {
 
   const pendingCvs = cvs.filter(cv => cv.status === 'pending');
 
-  const handleApprove = async (id, alias) => {
+  const handleApprove = async (id, alias, userId) => {
     try {
       const { error } = await supabase.from('cv_profiles').update({ status: 'approved' }).eq('id', id);
       if (error) throw error;
       
       setCvs(cvs.map(cv => cv.id === id ? { ...cv, status: 'approved' } : cv));
       showAlert('Disetujui', 'CV Berhasil Disetujui & Dipublikasikan', 'success');
-      addNotification(`CV dari ${alias} disetujui oleh Ustadz/Admin.`);
+      addNotification(`Alhamdulillah! CV Taaruf Anda (${alias}) telah disetujui ustadz dan kini aktif di galeri pencarian.`, userId);
       setReviewingCv(null);
     } catch (err) { 
       console.error(err);
@@ -24,14 +24,14 @@ export default function AdminReviewTab() {
     }
   };
 
-  const handleReject = async (id, alias) => {
+  const handleReject = async (id, alias, userId) => {
     try {
       const { error } = await supabase.from('cv_profiles').delete().eq('id', id);
       if (error) throw error;
 
       setCvs(cvs.filter(cv => cv.id !== id));
       showAlert('Ditolak', 'CV Berhasil Ditolak & Dihapus', 'success');
-      addNotification(`CV dari ${alias} ditolak oleh Ustadz/Admin.`);
+      addNotification(`Mohon maaf, CV Taaruf Anda (${alias}) belum dapat kami setujui saat ini. Silakan koreksi data Anda.`, userId);
       setReviewingCv(null);
     } catch (err) { 
       console.error(err);
@@ -92,10 +92,10 @@ export default function AdminReviewTab() {
             </div>
 
             <div className="modal-footer" style={{ justifyContent: 'space-between', padding: '1.5rem' }}>
-              <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => handleReject(reviewingCv.id, reviewingCv.alias)}>
+              <button className="btn btn-outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => handleReject(reviewingCv.id, reviewingCv.alias, reviewingCv.user_id)}>
                 <XCircle size={18} /> Tolak CV
               </button>
-              <button className="btn btn-success" onClick={() => handleApprove(reviewingCv.id, reviewingCv.alias)}>
+              <button className="btn btn-success" onClick={() => handleApprove(reviewingCv.id, reviewingCv.alias, reviewingCv.user_id)}>
                 <CheckCircle size={18} /> Setujui & Publish
               </button>
             </div>

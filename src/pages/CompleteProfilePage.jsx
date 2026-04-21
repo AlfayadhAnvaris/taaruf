@@ -1,16 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { AppContext } from '../App';
 import { supabase } from '../supabase';
-import {
-  Heart, User, Phone, MapPin, ChevronRight, ChevronLeft,
-  CheckCircle, Loader, Users, Home, Shield, Sparkles
-} from 'lucide-react';
+import { Heart, User, Phone, MapPin, ChevronRight, ChevronLeft, CheckCircle, Loader, Users, Home, Shield, Sparkles, Briefcase, GraduationCap } from 'lucide-react';
 
 const STEPS = [
-  { id: 1, label: 'Jenis Kelamin', icon: <Users size={18} /> },
-  { id: 2, label: 'Kontak', icon: <Phone size={18} /> },
-  { id: 3, label: 'Domisili', icon: <MapPin size={18} /> },
-  { id: 4, label: 'Selesai', icon: <CheckCircle size={18} /> },
+  { id: 1, label: 'Genders', icon: <Users size={18} /> },
+  { id: 2, label: 'Data Personal', icon: <Briefcase size={18} /> },
+  { id: 3, label: 'Kontak', icon: <Phone size={18} /> },
+  { id: 4, label: 'Domisili', icon: <MapPin size={18} /> },
+  { id: 5, label: 'Selesai', icon: <CheckCircle size={18} /> },
 ];
 
 export default function CompleteProfilePage({ onComplete }) {
@@ -40,7 +38,44 @@ export default function CompleteProfilePage({ onComplete }) {
     domisili_kota: '',
     domisili_provinsi: '',
     domisili_detail: '',
+    pekerjaan: '',
+    pendidikan_terakhir: '',
   });
+  
+  const [cities, setCities] = useState([]);
+  const [isFetchingCities, setIsFetchingCities] = useState(false);
+
+  const PROVINCE_MAP = {
+    'Aceh': '11', 'Sumatera Utara': '12', 'Sumatera Barat': '13', 'Riau': '14', 'Kepulauan Riau': '21',
+    'Jambi': '15', 'Bengkulu': '17', 'Sumatera Selatan': '16', 'Kepulauan Bangka Belitung': '19',
+    'Lampung': '18', 'Banten': '36', 'DKI Jakarta': '31', 'Jawa Barat': '32', 'Jawa Tengah': '33',
+    'DI Yogyakarta': '34', 'Jawa Timur': '35', 'Bali': '51', 'Nusa Tenggara Barat': '52',
+    'Nusa Tenggara NTT': '53', 'Kalimantan Barat': '61', 'Kalimantan Tengah': '62', 'Kalimantan Selatan': '63',
+    'Kalimantan Timur': '64', 'Kalimantan Utara': '65', 'Sulawesi Utara': '71', 'Gorontalo': '75',
+    'Sulawesi Tengah': '72', 'Sulawesi Barat': '76', 'Sulawesi Selatan': '73', 'Sulawesi Tenggara': '74',
+    'Maluku': '81', 'Maluku Utara': '82', 'Papua Barat': '92', 'Papua': '91', 'Papua Tengah': '93',
+    'Papua Pegunungan': '95', 'Papua Selatan': '94', 'Papua Barat Daya': '96'
+  };
+
+  React.useEffect(() => {
+    if (form.domisili_provinsi && PROVINCE_MAP[form.domisili_provinsi]) {
+       const fetchCities = async () => {
+          setIsFetchingCities(true);
+          try {
+             const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${PROVINCE_MAP[form.domisili_provinsi]}.json`);
+             const data = await res.json();
+             setCities(data || []);
+          } catch (e) {
+             console.error("Gagal mengambil data kota", e);
+             setCities([]);
+          }
+          setIsFetchingCities(false);
+       };
+       fetchCities();
+    } else {
+       setCities([]);
+    }
+  }, [form.domisili_provinsi]);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -55,6 +90,12 @@ export default function CompleteProfilePage({ onComplete }) {
       }
     }
     if (step === 2) {
+      if (!form.pendidikan_terakhir.trim() || !form.pekerjaan.trim()) {
+        showAlert('Wajib Diisi', 'Pendidikan dan Pekerjaan wajib diisi.', 'error');
+        return false;
+      }
+    }
+    if (step === 3) {
       if (!form.phone_wa.trim()) {
         showAlert('Wajib Diisi', 'Nomor WhatsApp aktif wajib diisi.', 'error');
         return false;
@@ -64,7 +105,7 @@ export default function CompleteProfilePage({ onComplete }) {
         return false;
       }
     }
-    if (step === 3) {
+    if (step === 4) {
       if (!form.domisili_kota.trim() || !form.domisili_provinsi.trim()) {
         showAlert('Wajib Diisi', 'Kota dan Provinsi domisili wajib diisi.', 'error');
         return false;
@@ -93,6 +134,8 @@ export default function CompleteProfilePage({ onComplete }) {
         domisili_kota: form.domisili_kota.trim(),
         domisili_provinsi: form.domisili_provinsi.trim(),
         domisili_detail: form.domisili_detail.trim() || null,
+        pekerjaan: form.pekerjaan.trim(),
+        pendidikan_terakhir: form.pendidikan_terakhir.trim(),
         profile_complete: true,
       };
 
@@ -156,13 +199,13 @@ export default function CompleteProfilePage({ onComplete }) {
         </div>
 
         {/* ── Step Indicator ── */}
-        {step < 4 && (
+        {step < 5 && (
           <div style={{
             display: 'flex',
             borderBottom: '1px solid var(--border)',
             background: 'var(--bg-color)',
           }}>
-            {STEPS.slice(0, 3).map((s, i) => {
+            {STEPS.slice(0, 4).map((s, i) => {
               const isActive = step === s.id;
               const isDone = step > s.id;
               return (
@@ -276,8 +319,51 @@ export default function CompleteProfilePage({ onComplete }) {
             </div>
           )}
 
-          {/* ════ STEP 2: Kontak ════ */}
+          {/* ════ STEP 2: Data Personal ════ */}
           {step === 2 && (
+            <div style={{ animation: 'fadeIn 0.35s ease' }}>
+              <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-main)', fontSize: '1.2rem' }}>
+                Latar Belakang
+              </h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                Informasi ini membantu Admin dan calon pasangan mengenal latar belakang pendidikan dan kesibukan Anda saat ini.
+              </p>
+
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label">
+                  <GraduationCap size={14} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />
+                  Pendidikan Terakhir <span style={{ color: 'var(--danger)' }}>*</span>
+                </label>
+                <select 
+                  className="form-control" 
+                  value={form.pendidikan_terakhir}
+                  onChange={e => set('pendidikan_terakhir', e.target.value)}
+                >
+                  <option value="">-- Pilih Pendidikan --</option>
+                  {['SD', 'SMP', 'SMA/SMK', 'Diploma (D1-D4)', 'Sarjana (S1)', 'Magister (S2)', 'Doktor (S3)', 'Pondok Pesantren'].map(edu => (
+                    <option key={edu} value={edu}>{edu}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label">
+                  <Briefcase size={14} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />
+                  Pekerjaan Saat Ini <span style={{ color: 'var(--danger)' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Contoh: Karyawan Swasta, Freelance, Mahasiswa..."
+                  value={form.pekerjaan}
+                  onChange={e => set('pekerjaan', e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ════ STEP 3: Kontak ════ */}
+          {step === 3 && (
             <div style={{ animation: 'fadeIn 0.35s ease' }}>
               <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-main)', fontSize: '1.2rem' }}>
                 Informasi Kontak
@@ -349,8 +435,8 @@ export default function CompleteProfilePage({ onComplete }) {
             </div>
           )}
 
-          {/* ════ STEP 3: Domisili ════ */}
-          {step === 3 && (
+          {/* ════ STEP 4: Domisili ════ */}
+          {step === 4 && (
             <div style={{ animation: 'fadeIn 0.35s ease' }}>
               <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-main)', fontSize: '1.2rem' }}>
                 Domisili
@@ -388,23 +474,28 @@ export default function CompleteProfilePage({ onComplete }) {
                 <label className="form-label">
                   Kota / Kabupaten <span style={{ color: 'var(--danger)' }}>*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   className="form-control"
-                  placeholder="Contoh: Jakarta Selatan, Bandung..."
                   value={form.domisili_kota}
                   onChange={e => set('domisili_kota', e.target.value)}
-                />
+                  disabled={!form.domisili_provinsi || isFetchingCities}
+                >
+                  <option value="">{isFetchingCities ? 'Memuat data...' : '-- Pilih Kota/Kabupaten --'}</option>
+                  {cities.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+                {!form.domisili_provinsi && <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Silakan pilih provinsi terlebih dahulu</small>}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">
                   Keterangan Tambahan <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>(Opsional)</span>
                 </label>
-                <input
-                  type="text"
+                <textarea
                   className="form-control"
                   placeholder="Contoh: Dekat Masjid Al-Azhar, area Cipete..."
+                  style={{ minHeight: '80px', paddingTop: '10px' }}
                   value={form.domisili_detail}
                   onChange={e => set('domisili_detail', e.target.value)}
                 />
@@ -416,7 +507,7 @@ export default function CompleteProfilePage({ onComplete }) {
           )}
 
           {/* ════ STEP 4: Success ════ */}
-          {step === 4 && (
+          {step === 5 && (
             <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease', padding: '1rem 0' }}>
               <div style={{
                 width: '100px', height: '100px', borderRadius: '50%',

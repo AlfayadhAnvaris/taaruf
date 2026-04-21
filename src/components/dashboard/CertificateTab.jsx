@@ -1,15 +1,22 @@
 import React, { useRef } from 'react';
-import { Award, Download, Share2, ShieldCheck, CheckCircle, GraduationCap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Award, Download, Share2, ShieldCheck, CheckCircle, GraduationCap, Star, ChevronLeft } from 'lucide-react';
 
 export default function CertificateTab({ user, activeClass }) {
   const certRef = useRef();
+  const navigate = useNavigate();
 
-  // Jika tidak ada kelas yang dipilih (kasus langka), berikan pesan
   if (!activeClass) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem' }}>
-        <Award size={64} color="var(--border)" style={{ marginBottom: '1rem' }} />
-        <p style={{ color: 'var(--text-muted)' }}>Silakan selesaikan kelas terlebih dahulu untuk melihat sertifikat.</p>
+      <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', margin: '2rem' }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+          <Award size={40} color="#134E39" />
+        </div>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Sertifikat Belum Siap</h3>
+        <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto' }}>Silakan selesaikan seluruh materi di kelas pilihan Anda untuk dapat melihat dan mengunduh sertifikat kelulusan.</p>
+        <button onClick={() => navigate('/app/materi/dashboard')} style={{ marginTop: '2rem', padding: '0.8rem 2rem', background: '#134E39', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '800', cursor: 'pointer' }}>
+          Kembali ke Dashboard
+        </button>
       </div>
     );
   }
@@ -19,115 +26,120 @@ export default function CertificateTab({ user, activeClass }) {
   };
 
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease', padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ animation: 'fadeIn 0.5s ease', padding: '1rem', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header Actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>Sertifikat Kelulusan</h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Alhamdulillah, selamat atas pencapaian Anda dalam menuntut ilmu.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button onClick={handlePrint} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.7rem 1.5rem', background: '#D4AF37', border: 'none' }}>
-            <Download size={18} /> Cetak / Simpan PDF
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'white', padding: '1rem 1.5rem', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <button onClick={() => navigate('/app/materi/dashboard')} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.6rem', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Kembali">
+            <ChevronLeft size={20} />
           </button>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: 0 }}>Sertifikat Kelulusan</h2>
+            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0.2rem 0 0' }}>Alhamdulillah, selamat atas pencapaian Anda.</p>
+          </div>
         </div>
+        <button onClick={handlePrint} style={{ 
+          display: 'flex', alignItems: 'center', gap: '8px', 
+          padding: '0.7rem 1.5rem', background: '#134E39', 
+          color: 'white', border: 'none', borderRadius: '12px', 
+          fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s',
+          fontSize: '0.9rem'
+        }}>
+          <Download size={16} /> Cetak / PDF
+        </button>
       </div>
 
-      {/* CERTIFICATE DESIGN (Premium Aesthetic) */}
-      <div 
-        id="certificate-print-area"
-        ref={certRef}
-        style={{
-          width: '100%',
-          aspectRatio: '1.414/1', // A4 Landscape ratio
-          background: 'white',
-          position: 'relative',
-          padding: '40px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
-          borderRadius: '4px',
-          overflow: 'hidden',
-          border: '1px solid #e2e8f0',
-          animation: 'fadeInUp 0.6s ease'
-        }}
-      >
-        {/* Border Frame */}
-        <div style={{
-          position: 'absolute', inset: '20px',
-          border: '2px solid #D4AF37',
-          zIndex: 1
-        }} />
-        <div style={{
-          position: 'absolute', inset: '30px',
-          border: '10px solid transparent',
-          borderImageSource: 'linear-gradient(135deg, #D4AF37 0%, #F9E29C 50%, #B8860B 100%)',
-          borderImageSlice: 1,
-          zIndex: 1
-        }} />
+      {/* CERTIFICATE DESIGN (Optimized for Screen & Print) */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '2rem' }}>
+        <div 
+          id="certificate-print-area"
+          ref={certRef}
+          style={{
+            width: '100%',
+            maxWidth: '900px',
+            aspectRatio: '1.414/1',
+            background: '#fff',
+            position: 'relative',
+            padding: '40px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
+            borderRadius: '4px',
+            overflow: 'hidden',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}
+        >
+          {/* Border Frame */}
+          <div style={{ position: 'absolute', inset: '15px', border: '1px solid #D4AF37', zIndex: 1 }} />
+          <div style={{ position: 'absolute', inset: '22px', border: '4px double #D4AF37', zIndex: 1 }} />
+          
+          {/* Corner Ornaments */}
+          {[
+            { top: '22px', left: '22px', borderTop: '30px solid #D4AF37', borderLeft: '30px solid #D4AF37' },
+            { top: '22px', right: '22px', borderTop: '30px solid #D4AF37', borderRight: '30px solid #D4AF37' },
+            { bottom: '22px', left: '22px', borderBottom: '30px solid #D4AF37', borderLeft: '30px solid #D4AF37' },
+            { bottom: '22px', right: '22px', borderBottom: '30px solid #D4AF37', borderRight: '30px solid #D4AF37' }
+          ].map((style, i) => (
+            <div key={i} style={{ position: 'absolute', width: '40px', height: '40px', zIndex: 2, ...style }} />
+          ))}
 
-        {/* Decorative Watermark */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          fontSize: '30rem', fontWeight: '900', color: 'rgba(212,175,55,0.03)',
-          zIndex: 0, pointerEvents: 'none', userSelect: 'none'
-        }}>
-          M
-        </div>
-
-        {/* Certificate Content */}
-        <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-             <img src="/logo.png" alt="Mawaddah" style={{ height: '50px' }} onError={(e) => e.target.style.display='none'} />
-             <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1a4d35', letterSpacing: '0.1em' }}>MAWADDAH <span style={{ color: '#D4AF37' }}>MATCH</span></div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', letterSpacing: '0.2em' }}>AKADEMI PERSIAPAN PERNIKAHAN</div>
-             </div>
-          </div>
-
-          <h1 style={{ fontFamily: 'serif', fontSize: '3.5rem', color: '#1a1a1a', margin: '15px 0', letterSpacing: '0.05em', fontWeight: '400' }}>SERTIFIKAT <span style={{ fontWeight: '800' }}>KELULUSAN</span></h1>
-          
-          <div style={{ width: '100px', height: '2px', background: '#D4AF37', margin: '10px auto' }} />
-          
-          <p style={{ fontSize: '1.1rem', color: '#64748b', margin: '20px 0 10px', fontWeight: '500' }}>Diberikan dengan hormat kepada:</p>
-          
-          <h2 style={{ fontSize: '2.8rem', fontWeight: '900', color: '#1a4d35', margin: '10px 0', textTransform: 'uppercase', textDecoration: 'underline', textDecorationColor: '#D4AF37' }}>{user.name}</h2>
-          
-          <p style={{ fontSize: '1rem', color: '#64748b', maxWidth: '700px', lineHeight: '1.6', margin: '20px 0' }}>
-            Telah menyelesaikan seluruh rangkaian materi, kuis, dan evaluasi dengan hasil <strong style={{ color: '#1a4d35' }}>Sangat Memuaskan</strong> pada program:
-          </p>
-          
-          <div style={{ padding: '15px 30px', background: 'rgba(26,77,53,0.05)', borderRadius: '12px', border: '1px solid rgba(26,77,53,0.1)' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1a4d35', margin: 0 }}>{activeClass.title.toUpperCase()}</h3>
-          </div>
-
-          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '800px', alignItems: 'flex-end' }}>
-            <div style={{ textAlign: 'center', width: '200px' }}>
-               <div style={{ fontWeight: '800', fontSize: '0.9rem', marginBottom: '30px' }}>{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-               <div style={{ borderTop: '1px solid #1a4d35', paddingTop: '8px', fontSize: '0.8rem', fontWeight: '700' }}>Tanggal Kelulusan</div>
-            </div>
-
-            {/* Seal */}
-            <div style={{ position: 'relative', width: '120px', height: '120px' }}>
-               <div style={{ 
-                 width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)',
-                 boxShadow: '0 8px 16px rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
-               }}>
-                  <div style={{ border: '2px dashed rgba(255,255,255,0.3)', position: 'absolute', inset: '5px', borderRadius: '50%' }} />
-                  < GraduationCap size={44} color="white" />
+          {/* Content */}
+          <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%' }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
+               <img src="/assets/logo.svg" alt="Mawaddah" style={{ height: '50px' }} />
+               <div style={{ borderTop: '2px solid #134E39', paddingTop: '5px' }}>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39', letterSpacing: '0.1em' }}>MAWADDAH <span style={{ color: '#D4AF37' }}>ACADEMY</span></div>
+                  <div style={{ fontSize: '0.5rem', fontWeight: '800', color: '#64748b', letterSpacing: '0.2em' }}>PLATFORM PERSIAPAN PERNIKAHAN ISLAMI</div>
                </div>
-               <div style={{ position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%)', background: '#1a4d35', color: 'white', padding: '2px 10px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900', whiteSpace: 'nowrap' }}>TERVERIFIKASI</div>
             </div>
 
-            <div style={{ textAlign: 'center', width: '200px' }}>
-               <div style={{ fontSize: '0.9rem', fontWeight: 'bold', fontStyle: 'italic', marginBottom: '30px', color: '#64748b' }}>E-Signature Official</div>
-               <div style={{ borderTop: '1px solid #1a4d35', paddingTop: '8px', fontSize: '0.8rem', fontWeight: '700' }}>Tim Akademik Mawaddah</div>
+            <h1 style={{ fontFamily: 'serif', fontSize: '3rem', color: '#134E39', margin: '10px 0', letterSpacing: '0.05em', fontWeight: '700' }}>SERTIFIKAT KELULUSAN</h1>
+            <div style={{ width: '80px', height: '2px', background: '#D4AF37', margin: '5px auto 15px' }} />
+            
+            <p style={{ fontSize: '0.9rem', color: '#475569', margin: '0 0 5px', fontStyle: 'italic' }}>Diberikan kepada:</p>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#134E39', margin: '5px 0', textTransform: 'uppercase' }}>{user.name}</h2>
+            
+            <div style={{ width: '50%', height: '1px', background: 'rgba(19, 78, 57, 0.1)', margin: '10px 0' }} />
+            
+            <p style={{ fontSize: '0.9rem', color: '#475569', maxWidth: '80%', lineHeight: '1.5', margin: '5px 0' }}>
+              Atas keberhasilannya dalam menyelesaikan seluruh rangkaian materi dan kuis pada program kelas:
+            </p>
+            
+            <div style={{ padding: '12px 30px', background: '#134E39', borderRadius: '12px', margin: '10px 0' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#D4AF37', margin: 0 }}>{activeClass.title.toUpperCase()}</h3>
+            </div>
+
+            {/* Footer */}
+            <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '700px', alignItems: 'flex-end' }}>
+              <div style={{ textAlign: 'center', width: '180px' }}>
+                 <div style={{ fontWeight: '800', fontSize: '0.85rem', color: '#134E39', marginBottom: '25px' }}>{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                 <div style={{ borderTop: '1px solid #134E39', paddingTop: '8px', fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>TANGGAL KELULUSAN</div>
+              </div>
+
+              <div style={{ position: 'relative', width: '100px', height: '100px' }}>
+                 <div style={{ 
+                   width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)',
+                   boxShadow: '0 10px 20px rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                   border: '3px solid white'
+                 }}>
+                    < GraduationCap size={40} color="white" />
+                 </div>
+                 <div style={{ position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%)', background: '#134E39', color: '#D4AF37', padding: '2px 10px', borderRadius: '20px', fontSize: '0.6rem', fontWeight: '900', whiteSpace: 'nowrap', border: '1px solid #D4AF37' }}>VERIFIED</div>
+              </div>
+
+              <div style={{ textAlign: 'center', width: '180px' }}>
+                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', fontStyle: 'italic', marginBottom: '25px', color: '#134E39' }}>Tim Mawaddah Academy</div>
+                 <div style={{ borderTop: '1px solid #134E39', paddingTop: '8px', fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>DIREKTUR AKADEMI</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Decorative Corners */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: 100, height: 100, borderTop: '20px solid #D4AF37', borderLeft: '20px solid #D4AF37', zIndex: 1 }} />
-        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 100, height: 100, borderBottom: '20px solid #D4AF37', borderRight: '20px solid #D4AF37', zIndex: 1 }} />
+          {/* Decorative Elements */}
+          <div style={{ position: 'absolute', top: '20%', right: '15%', opacity: 0.05 }}><Star size={80} color="#D4AF37" /></div>
+          <div style={{ position: 'absolute', bottom: '25%', left: '10%', opacity: 0.05 }}><Star size={100} color="#D4AF37" /></div>
+        </div>
       </div>
 
       <style>{`
@@ -138,10 +150,7 @@ export default function CertificateTab({ user, activeClass }) {
             position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; 
             padding: 0; margin: 0; box-shadow: none; border: none;
           }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          .no-print { display: none !important; }
         }
       `}</style>
     </div>
