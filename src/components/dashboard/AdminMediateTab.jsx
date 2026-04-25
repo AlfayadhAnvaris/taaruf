@@ -7,6 +7,7 @@ export default function AdminMediateTab() {
   const { taarufRequests, setTaarufRequests, showAlert, messages, addNotification } = useContext(AppContext);
   const [monitoringChatId, setMonitoringChatId] = useState(null);
   const [verifyingWaliId, setVerifyingWaliId] = useState(null); // ID request yang akan diverifikasi walinya
+  const [viewingRequestId, setViewingRequestId] = useState(null); // ID request yang akan dilihat detailnya
   
   // Pagination & Filter States
   const [currentPage, setCurrentPage] = useState(1);
@@ -118,95 +119,92 @@ export default function AdminMediateTab() {
           currentItems.map(req => {
             const config = getStatusConfig(req.status);
             return (
-              <div key={req.id} className="card" style={{ 
-                padding: '1.5rem', borderLeft: `6px solid ${config.text}`,
-                display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center',
-                transition: 'all 0.2s', position: 'relative'
+              <div key={req.id} className="card admin-mediate-card" style={{ 
+                borderLeft: `6px solid ${config.text}`,
+                position: 'relative'
               }}>
-                <div style={{ flex: '1', minWidth: '300px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.75rem' }}>
+                <div className="mediate-card-info">
+                  <div className="mediate-card-header">
                     <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#94a3b8', background: '#f8fafc', padding: '2px 8px', borderRadius: '6px' }}>#{req.id.substring(0, 8)}</span>
                     <span style={{ background: config.bg, color: config.text, padding: '4px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800', border: `1px solid ${config.text}20` }}>
                       {config.label}
                     </span>
                   </div>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0369a1' }}><User size={16} /></div>
+                  <div className="mediate-details-grid">
+                    <div className="mediate-user-item">
+                      <div className="mediate-user-avatar" style={{ background: '#e0f2fe', color: '#0369a1' }}><User size={16} /></div>
                       <div>
-                        <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Pengirim</div>
-                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#1e293b' }}>{req.senderAlias}</div>
+                        <div className="mediate-user-label">Pengirim</div>
+                        <div className="mediate-user-name">{req.senderAlias}</div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#fce7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#be185d' }}><User size={16} /></div>
+                    <div className="mediate-user-item">
+                      <div className="mediate-user-avatar" style={{ background: '#fce7f3', color: '#be185d' }}><User size={16} /></div>
                       <div>
-                        <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Target</div>
-                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#1e293b' }}>{req.targetAlias}</div>
+                        <div className="mediate-user-label">Target</div>
+                        <div className="mediate-user-name">{req.targetAlias}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  {req.status === 'pending_admin' && (
-                    <>
-                      <button className="btn btn-success" style={{ padding: '0.6rem 1.2rem', borderRadius: '12px' }} onClick={() => {
-                        updateTaarufStatus(req.id, 'qna');
-                        addNotification(`Mediasi #${req.id.substring(0,8)} disetujui ustadz. Fase Q&A dibuka.`, req.senderId);
-                        addNotification(`Mediasi #${req.id.substring(0,8)} disetujui ustadz. Fase Q&A dibuka.`, req.targetUserId);
-                      }}>
-                        <CheckCircle size={16} /> Setujui
-                      </button>
-                      <button className="btn btn-outline" style={{ color: '#ef4444', borderColor: '#fee2e2', padding: '0.6rem 1.2rem', borderRadius: '12px' }} onClick={() => updateTaarufStatus(req.id, 'rejected')}>
-                        <XCircle size={16} /> Tolak
-                      </button>
-                    </>
-                  )}
-
-                  {req.status === 'qna' && (
-                    <>
-                      <button className="btn btn-warning" onClick={() => setMonitoringChatId(req.id)} style={{ color: '#92400e', background: '#fef3c7', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '12px' }}>
-                        <Eye size={16} /> Pantau Q&A
-                      </button>
-                      <button className="btn btn-primary" onClick={() => setVerifyingWaliId(req.id)} style={{ padding: '0.6rem 1.2rem', borderRadius: '12px' }}>
-                        <Phone size={16} /> Verifikasi Wali
-                      </button>
-                    </>
-                  )}
-
-                  {req.status === 'wali_process' && (
-                    <button className="btn btn-outline" style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', borderColor: '#134E39', color: '#134E39' }} onClick={() => updateTaarufStatus(req.id, 'meet')}>
-                      Sudah Nadzhor
+                <div className="mediate-card-actions">
+                    <button className="btn btn-outline mediate-btn" style={{ borderColor: '#e2e8f0', color: '#64748b' }} onClick={() => setViewingRequestId(req.id)}>
+                      <Eye size={16} /> Lihat Detail
                     </button>
-                  )}
 
-                  {req.status === 'meet' && (
-                    <button className="btn btn-success" style={{ padding: '0.6rem 1.2rem', borderRadius: '12px' }} onClick={() => updateTaarufStatus(req.id, 'completed')}>
-                      Sudah Menikah
-                    </button>
-                  )}
+                    {req.status === 'pending_admin' && (
+                      <>
+                        <button className="btn btn-success mediate-btn" onClick={() => {
+                          updateTaarufStatus(req.id, 'qna');
+                          addNotification(`Mediasi #${req.id.substring(0,8)} disetujui ustadz. Fase Q&A dibuka.`, req.senderId);
+                          addNotification(`Mediasi #${req.id.substring(0,8)} disetujui ustadz. Fase Q&A dibuka.`, req.targetUserId);
+                        }}>
+                          <CheckCircle size={16} /> Setujui
+                        </button>
+                        <button className="btn btn-outline mediate-btn" style={{ color: '#ef4444', borderColor: '#fee2e2' }} onClick={() => updateTaarufStatus(req.id, 'rejected')}>
+                          <XCircle size={16} /> Tolak
+                        </button>
+                      </>
+                    )}
 
-                  {req.status === 'completed' && <div style={{ color: '#15803d', fontWeight: '900', fontSize: '0.85rem' }}>BERHASIL NIKAH</div>}
-                  {req.status === 'rejected' && <div style={{ color: '#991b1b', fontWeight: '900', fontSize: '0.85rem' }}>DIBATALKAN</div>}
+                    {req.status === 'qna' && (
+                      <>
+                        <button className="btn btn-warning mediate-btn" onClick={() => setMonitoringChatId(req.id)} style={{ color: '#92400e', background: '#fef3c7', border: 'none' }}>
+                          <Eye size={16} /> Pantau Q&A
+                        </button>
+                        <button className="btn btn-primary mediate-btn" onClick={() => setVerifyingWaliId(req.id)}>
+                          <Phone size={16} /> Verifikasi Wali
+                        </button>
+                      </>
+                    )}
+
+                    {req.status === 'wali_process' && (
+                      <button className="btn btn-outline mediate-btn" style={{ borderColor: '#134E39', color: '#134E39' }} onClick={() => updateTaarufStatus(req.id, 'meet')}>
+                        Sudah Nadzhor
+                      </button>
+                    )}
+
+                    {req.status === 'meet' && (
+                      <button className="btn btn-success mediate-btn" onClick={() => updateTaarufStatus(req.id, 'completed')}>
+                        Sudah Menikah
+                      </button>
+                    )}
+
+                    {/* Status sudah terwakili oleh Badge di kiri atas */}
+                  </div>
 
                   <button 
                     onClick={() => setRequestToDelete(req.id)}
-                    style={{ 
-                      padding: '0.6rem', borderRadius: '12px', background: '#fef2f2', 
-                      color: '#991b1b', border: '1px solid #fee2e2', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.2s'
-                    }}
+                    className="mediate-delete-btn"
                     title="Hapus Mediasi"
                   >
                     <Trash2 size={18} />
                   </button>
                 </div>
-              </div>
-            );
-          })
+              );
+            })
         ) : (
           <div className="card" style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
             <AlertCircle size={48} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
@@ -214,6 +212,109 @@ export default function AdminMediateTab() {
           </div>
         )}
       </div>
+
+      <style>{`
+        .admin-mediate-card {
+           padding: 1.5rem;
+           display: flex;
+           flex-wrap: wrap;
+           gap: 1.5rem;
+           align-items: center;
+           transition: all 0.2s;
+        }
+        .mediate-card-info {
+          flex: 1;
+          min-width: 280px;
+        }
+        .mediate-card-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 1rem;
+        }
+        .mediate-details-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+        .mediate-user-item {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
+        .mediate-user-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .mediate-user-label {
+          font-size: 0.65rem;
+          color: #64748b;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .mediate-user-name {
+          font-weight: 800;
+          font-size: 0.95rem;
+          color: #1e293b;
+        }
+        .mediate-card-actions {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+          width: 100%;
+          justify-content: space-between;
+        }
+        .mediate-status-buttons {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+        .mediate-btn {
+          padding: 0.6rem 1.2rem;
+          border-radius: 12px;
+          font-size: 0.85rem;
+        }
+        .mediate-delete-btn {
+          padding: 0.6rem;
+          border-radius: 12px;
+          background: #fef2f2;
+          color: #991b1b;
+          border: 1px solid #fee2e2;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        .mediate-delete-btn:hover { background: #fee2e2; }
+        .mediate-final-status {
+          font-weight: 900;
+          font-size: 0.85rem;
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
+        }
+        .mediate-final-status.success { color: #15803d; }
+        .mediate-final-status.error { color: #991b1b; }
+
+        @media (min-width: 1024px) {
+          .mediate-card-actions {
+            width: auto;
+            justify-content: flex-end;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .admin-mediate-card { padding: 1.25rem; gap: 1rem; }
+          .mediate-card-info { min-width: 100%; }
+          .mediate-details-grid { grid-template-columns: 1fr; }
+          .mediate-status-buttons { width: 100%; }
+          .mediate-btn { flex: 1; text-align: center; justify-content: center; }
+        }
+      `}</style>
 
       {/* 🟢 Pagination */}
       {totalPages > 1 && (
@@ -313,7 +414,7 @@ export default function AdminMediateTab() {
               <div style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #f1f5f9' }}>
                    <ShieldAlert size={20} color="#134E39" />
-                   <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', fontWeight: '500' }}>Anda sedang memantau percakapan Q&A antara <strong>{req.senderAlias}</strong> dan <strong>{req.targetAlias}</strong>. Patuhi kode etik kerahasiaan Mawaddah.</p>
+                   <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', fontWeight: '500' }}>Anda sedang memantau percakapan Q&A antara <strong>{req.senderAlias}</strong> dan <strong>{req.targetAlias}</strong>. Patuhi kode etik kerahasiaan Separuh Agama.</p>
                 </div>
 
                 <div className="chat-container" style={{ border: '1px solid #f1f5f9', borderRadius: '20px', overflow: 'hidden' }}>
@@ -351,10 +452,133 @@ export default function AdminMediateTab() {
         );
       })()}
 
+      {/* 🟢 Detail Progress Modal */}
+      {viewingRequestId && (() => {
+        const req = taarufRequests.find(r => r.id === viewingRequestId);
+        const statusSteps = [
+          { status: 'pending_target', label: 'Tunggu Calon' },
+          { status: 'pending_admin', label: 'Verifikasi Admin' },
+          { status: 'qna', label: 'Sesi Q&A' },
+          { status: 'wali_process', label: 'Proses Wali' },
+          { status: 'meet', label: 'Nadzhor' },
+          { status: 'completed', label: 'Menikah' }
+        ];
+
+        const getCurrentStepIndex = () => {
+          if (req.status === 'rejected') return -1;
+          const idx = statusSteps.findIndex(s => s.status === req.status);
+          return idx !== -1 ? idx : 0;
+        };
+
+        const currentStepIdx = getCurrentStepIndex();
+
+        return (
+          <div className="modal-overlay" onClick={() => setViewingRequestId(null)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%', padding: 0 }}>
+              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Progres Mediasi</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.8 }}>ID: #{req.id}</p>
+                </div>
+                <button onClick={() => setViewingRequestId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+              </div>
+
+              <div style={{ padding: '2rem' }}>
+                {/* 🪜 Visual Stepper 🪜 */}
+                <div style={{ marginBottom: '3rem', padding: '0 10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+                    {/* Progress Line Background */}
+                    <div style={{ position: 'absolute', top: '20px', left: 0, right: 0, height: '4px', background: '#f1f5f9', zIndex: 0 }}></div>
+                    {/* Active Progress Line */}
+                    <div style={{ 
+                      position: 'absolute', top: '20px', left: 0, 
+                      width: `${(currentStepIdx / (statusSteps.length - 1)) * 100}%`, 
+                      height: '4px', background: '#134E39', zIndex: 1,
+                      transition: 'width 0.5s ease' 
+                    }}></div>
+
+                    {statusSteps.map((step, idx) => {
+                      const isCompleted = idx < currentStepIdx || (idx === currentStepIdx && req.status === 'completed');
+                      const isActive = idx === currentStepIdx && req.status !== 'completed';
+                      const isRejected = req.status === 'rejected';
+
+                      return (
+                        <div key={idx} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                          <div style={{ 
+                            width: '40px', height: '40px', borderRadius: '50%', 
+                            background: isCompleted ? '#134E39' : (isActive ? 'white' : '#f8fafc'),
+                            border: `2px solid ${isActive || isCompleted ? '#134E39' : '#e2e8f0'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: isCompleted ? 'white' : (isActive ? '#134E39' : '#94a3b8'),
+                            fontWeight: '700', fontSize: '0.8rem',
+                            boxShadow: isActive ? '0 0 0 4px rgba(19, 78, 57, 0.1)' : 'none'
+                          }}>
+                            {isCompleted ? <CheckCircle size={20} /> : idx + 1}
+                          </div>
+                          <span style={{ 
+                            marginTop: '8px', fontSize: '0.6rem', fontWeight: '800', 
+                            textAlign: 'center', color: isActive || isCompleted ? '#134E39' : '#94a3b8',
+                            width: '60px', lineHeight: 1.2
+                          }}>
+                            {step.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', borderRadius: '20px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                      <Activity size={18} color="#134E39" />
+                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '900', color: '#134E39' }}>Log Histori Mediasi</h4>
+                   </div>
+
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#134E39', marginTop: '6px' }}></div>
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#1e293b' }}>Status Saat Ini: {statusSteps[currentStepIdx]?.label || req.status}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Diperbaharui pada {new Date(req.updatedAt).toLocaleString('id-ID')}</div>
+                        </div>
+                      </div>
+                      
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e2e8f0', marginTop: '6px' }}></div>
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>Pengirim: {req.senderAlias} ({req.senderEmail})</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e2e8f0', marginTop: '6px' }}></div>
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>Penerima: {req.targetAlias} ({req.targetEmail})</div>
+                        </div>
+                      </div>
+                   </div>
+                </div>
+
+                {req.status === 'rejected' && (
+                  <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#991b1b' }}>
+                    <XCircle size={20} />
+                    <div style={{ fontSize: '0.85rem', fontWeight: '700' }}>Proses mediasi ini telah dibatalkan/ditolak.</div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
+                <button className="btn btn-primary" onClick={() => setViewingRequestId(null)} style={{ padding: '0.7rem 2.5rem' }}>Tutup</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* 🔴 Custom Delete Confirmation Modal */}
       {requestToDelete && (
-        <div className="modal-overlay" onClick={() => setRequestToDelete(null)} style={{ zIndex: 10000 }}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }}>
+        <div className="modal-overlay" onClick={() => setRequestToDelete(null)} style={{ zIndex: 10000, animation: 'none' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem', animation: 'none' }}>
             <div style={{ 
               width: '80px', height: '80px', borderRadius: '50%', background: '#fee2e2', 
               color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', 

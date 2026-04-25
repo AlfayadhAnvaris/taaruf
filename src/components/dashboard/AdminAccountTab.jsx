@@ -137,7 +137,7 @@ export default function AdminAccountTab({ user, showAlert }) {
               <Lock size={18} /> Keamanan Sistem
             </h4>
             <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
-              Selalu jaga kerahasiaan password Anda. Pastikan untuk mengganti password secara berkala untuk menjaga keamanan data pendaftar Mawaddah.
+              Selalu jaga kerahasiaan password Anda. Pastikan untuk mengganti password secara berkala untuk menjaga keamanan data pendaftar Separuh Agama.
             </p>
           </div>
         </div>

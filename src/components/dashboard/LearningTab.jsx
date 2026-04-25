@@ -168,10 +168,22 @@ export default function LearningTab({
 
     return (
       <div style={{ animation: 'fadeIn 0.4s ease', padding: '1rem 0' }}>
-         <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '0.5rem' }}>Dashboard Akademi</h2>
-            <p style={{ color: '#64748b' }}>Pantau perkembangan ilmu Anda di Mawaddah Academy.</p>
-         </div>
+          <div style={{ marginBottom: '2.5rem', position: 'relative' }}>
+             <button 
+               onClick={() => setActiveTab('home')} 
+               style={{ 
+                 background: 'white', border: '1px solid #e2e8f0', 
+                 borderRadius: '12px', padding: '0.6rem 1rem', 
+                 fontWeight: '700', color: '#64748b', cursor: 'pointer',
+                 display: 'flex', alignItems: 'center', gap: '8px',
+                 marginBottom: '1.5rem'
+               }}
+             >
+               <ChevronLeft size={18} /> Kembali ke Beranda
+             </button>
+             <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '0.5rem' }}>Dashboard Akademi</h2>
+             <p style={{ color: '#64748b' }}>Pantau perkembangan ilmu Anda di Separuh Agama Academy.</p>
+          </div>
 
           <div className="academy-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
             {[
@@ -215,7 +227,10 @@ export default function LearningTab({
                       </div>
                     </div>
                     <button 
-                      onClick={() => selectClass(cls)}
+                      onClick={() => {
+                        if (pct === 100) setActiveTab(`certificate/${cls.id}`);
+                        else selectClass(cls);
+                      }}
                       style={{ background: pct === 100 ? '#f0fdf4' : '#134E39', color: pct === 100 ? '#166534' : 'white', border: pct === 100 ? '1px solid #bbf7d0' : 'none', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer' }}
                     >
                       {pct === 100 ? 'LIHAT SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR')}
@@ -234,7 +249,7 @@ export default function LearningTab({
   // ============================
   if (lmsView === 'welcome') {
     return (
-      <div style={{ 
+      <div className="academy-container" style={{ 
         animation: 'fadeInUp 0.6s ease', 
         padding: '3rem 0', 
         display: 'flex', 
@@ -255,11 +270,11 @@ export default function LearningTab({
           
           <h1 className="academy-welcome-title" style={{ fontWeight: '900', color: '#134E39', marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
             Selamat Datang di <br />
-            <span style={{ color: '#D4AF37' }}>Mawaddah Academy</span>
+            <span style={{ color: '#D4AF37' }}>Akademi Separuh Agama</span>
           </h1>
           
           <p style={{ fontSize: '1.25rem', color: '#64748b', lineHeight: 1.8, marginBottom: '3rem' }}>
-            Bukan sekadar portal pencarian, Mawaddah adalah tempat bagi Anda untuk bertumbuh. 
+            Bukan sekadar portal pencarian, Separuh Agama adalah tempat bagi Anda untuk bertumbuh. 
             Bekali niat suci Anda dengan ilmu syar'i tentang pernikahan dan rumah tangga 
             sebelum melangkah menuju ikatan yang abadi.
           </p>
@@ -303,7 +318,7 @@ export default function LearningTab({
   // ============================
   if (lmsView === 'catalog') {
     return (
-      <div style={{ animation: 'fadeIn 0.4s ease', padding: '3rem 0' }}>
+      <div className="academy-container" style={{ animation: 'fadeIn 0.4s ease', padding: 'clamp(1rem, 5vw, 3rem) 0' }}>
         {/* Breadcrumb */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
@@ -316,26 +331,27 @@ export default function LearningTab({
           <span>DAFTAR KELAS & KURSUS</span>
         </div>
 
-        <div className="card" style={{
+        <div className="academy-banner" style={{
           marginBottom: '2rem',
           background: 'linear-gradient(135deg, #1a4d35 0%, #2C5F4D 50%, #1e6b4f 100%)',
-          border: 'none', color: 'white', padding: '3rem 3.5rem',
-          borderRadius: '1.5rem', overflow: 'hidden', position: 'relative'
+          border: 'none', color: 'white', padding: 'clamp(1.5rem, 8vw, 3rem) clamp(1.25rem, 8vw, 3.5rem)',
+          borderRadius: '1.5rem', overflow: 'hidden', position: 'relative',
+          display: 'flex', flexDirection: 'column', justifyContent: 'center'
         }}>
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{
+            <div className="zap-tag" style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.75rem',
               borderRadius: '99px', fontSize: '0.65rem', fontWeight: '800',
               marginBottom: '1.5rem', letterSpacing: '0.05em', border: '1px solid rgba(255,255,255,0.2)'
             }}>
-              <Zap size={14} fill="white" /> AKADEMI MAWADDAH
+              <Zap size={14} fill="white" /> AKADEMI SEPARUH AGAMA
             </div>
             
-            <h2 style={{ color: 'white', margin: '0 0 1rem', fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
+            <h2 className="banner-title" style={{ color: 'white', margin: '0 0 1rem', fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
               KURIKULUM <span style={{ color: '#D4AF37' }}>BELAJAR</span> TAARUF
             </h2>
-            <p style={{ fontSize: '1.1rem', opacity: 0.9, fontWeight: '500', maxWidth: '600px' }}>
+            <p className="banner-desc" style={{ fontSize: '1.1rem', opacity: 0.9, fontWeight: '500', maxWidth: '600px' }}>
               Persiapkan mental, ilmu, dan iman Anda sebelum melangkah ke jenjang pernikahan yang suci.
             </p>
           </div>
@@ -343,7 +359,7 @@ export default function LearningTab({
         </div>
 
         {/* Classes Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div className="academy-class-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '2.5rem' }}>
           {classes.length === 0 && (
             <div className="card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
               <p style={{ color: 'var(--text-muted)' }}>Belum ada kelas yang tersedia saat ini.</p>
@@ -355,8 +371,8 @@ export default function LearningTab({
             const isFinished = clsLessonsCount > 0 && clsLessonsCount === clsDoneCount;
             
             return (
-              <div key={cls.id} className="card" style={{ padding: 0, borderRadius: '1.5rem', overflow: 'hidden', border: isFinished ? '2px solid #D4AF37' : '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ position: 'relative', height: '200px', background: '#f1f5f9' }}>
+              <div key={cls.id} className="card" style={{ padding: 0, borderRadius: '1.5rem', overflow: 'hidden', border: isFinished ? '2px solid #D4AF37' : '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', maxWidth: '420px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <div style={{ position: 'relative', height: '240px', background: '#f1f5f9', overflow: 'hidden' }}>
                   <img 
                     src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop"} 
                     alt={cls.title} 
@@ -401,7 +417,7 @@ export default function LearningTab({
                     </button>
                     {isFinished && (
                       <button 
-                        onClick={() => { selectClass(cls); handleCertificateDownload(); }}
+                        onClick={() => setActiveTab(`certificate/${cls.id}`)}
                         style={{
                           flex: 1,
                           background: '#D4AF37', 
@@ -494,13 +510,27 @@ export default function LearningTab({
           </div>
         </div>
 
-        <div className="lms-player-content" style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+        <div className="lms-player-content" style={{ flex: 1, overflowY: 'auto', padding: 'var(--lms-player-padding, 2.5rem)' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
             {activeLesson ? (
               <>
-                <div style={{ marginBottom: '2rem' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#2C5F4D', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>MATERI KELAS</div>
-                  <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>{activeLesson.title.toUpperCase()}</h2>
+                <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <button 
+                    onClick={() => setLmsView('dashboard')} 
+                    style={{ 
+                       alignSelf: 'flex-start',
+                       background: 'rgba(0,0,0,0.03)', border: 'none', 
+                       borderRadius: '8px', padding: '0.5rem 0.8rem', 
+                       fontWeight: '700', color: '#64748b', cursor: 'pointer',
+                       display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem'
+                    }}
+                  >
+                    <ChevronLeft size={16} /> Keluar Ke Dashboard
+                  </button>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#2C5F4D', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>MATERI KELAS</div>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>{activeLesson.title.toUpperCase()}</h2>
+                  </div>
                 </div>
 
                 <div style={{ borderRadius: '1.5rem', overflow: 'hidden', background: '#000', aspectRatio: '16/9', marginBottom: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
@@ -640,7 +670,7 @@ export default function LearningTab({
           </div>
         </div>
 
-        <div style={{ height: '80px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', padding: '0 4rem', justifyContent: 'space-between', background: 'white' }}>
+        <div className="lms-player-header" style={{ height: '80px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', padding: '0 4rem', justifyContent: 'space-between', background: 'white' }}>
           <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8' }}>PROGRES: {doneLessons}/{totalLessons} MATERI SELESAI</div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {(activeLesson?.type === 'video' || activeLesson?.type === 'text') && (
@@ -683,7 +713,85 @@ export default function LearningTab({
           </div>
           <style>{`
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             @keyframes scaleUp { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+            @media (max-width: 768px) {
+              :root {
+                --lms-player-padding: 1.25rem 1rem;
+              }
+              .academy-container {
+                padding: 1rem 0 !important;
+              }
+              .academy-banner {
+                padding: 1.5rem !important;
+                border-radius: 1rem !important;
+                text-align: center !important;
+              }
+              .banner-title {
+                font-size: 1.75rem !important;
+                line-height: 1.2 !important;
+              }
+              .banner-desc {
+                font-size: 0.9rem !important;
+                margin: 0 auto !important;
+              }
+              .zap-tag {
+                margin: 0 auto 1rem !important;
+              }
+              .academy-class-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1.25rem !important;
+                padding: 0 1rem;
+              }
+              .academy-stats-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+              }
+              .academy-class-card {
+                flex-direction: column !important;
+                padding: 1.25rem !important;
+                text-align: center;
+              }
+              .academy-class-card img {
+                margin: 0 auto 1rem !important;
+              }
+              .academy-class-card button {
+                width: 100% !important;
+              }
+              .lms-top-bar {
+                padding: 0 1rem !important;
+                height: 54px !important;
+              }
+              .lms-player-header {
+                padding: 1rem !important;
+                flex-direction: column !important;
+                height: auto !important;
+                gap: 12px;
+              }
+              .academy-welcome-title {
+                font-size: 2rem !important;
+              }
+            }
+
+            /* 🚫 HIDE SCROLLBARS 🚫 */
+            .academy-container::-webkit-scrollbar,
+            .lms-player-content::-webkit-scrollbar,
+            .lms-sidebar::-webkit-scrollbar,
+            .academy-class-grid::-webkit-scrollbar,
+            .dashboard-tab-container::-webkit-scrollbar {
+              display: none;
+            }
+
+            .academy-container,
+            .lms-player-content,
+            .lms-sidebar,
+            .academy-class-grid,
+            .dashboard-tab-container {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          }
           `}</style>
         </div>
       )}

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AppContext } from '../../App';
 import { supabase } from '../../supabase';
 import {
-  BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown,
+  BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown, ChevronLeft, ChevronRight,
   PlayCircle, FileQuestion, GraduationCap, CheckCircle,
   AlertCircle, Loader, ToggleLeft, ToggleRight, ArrowUp, ArrowDown,
   Activity, Zap, Upload, GripVertical, Search
@@ -18,6 +19,7 @@ const BTN_SM = (extra = {}) => ({
 });
 
 export default function CourseManagerTab() {
+  const { setConfirmState } = useContext(AppContext);
   const [classes, setClasses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
@@ -49,6 +51,8 @@ export default function CourseManagerTab() {
   const [userProgressList, setUserProgressList] = useState([]);
   const [progressLoading, setProgressLoading] = useState(false);
   const [progPage, setProgPage] = useState(1);
+  const [progSearch, setProgSearch] = useState('');
+  const [progGender, setProgGender] = useState('all');
   const progPerPage = 10;
 
   // Image states
@@ -232,13 +236,20 @@ export default function CourseManagerTab() {
     fetchAll();
   };
 
-  const deleteClass = async (id) => {
-    if (!window.confirm('Hapus kelas ini? Semua modul & materi di dalamnya akan ikut terhapus.')) return;
-    setSaving(true);
-    await supabase.from('lms_classes').delete().eq('id', id);
-    showToast('Kelas dihapus.');
-    setSaving(false);
-    fetchAll();
+  const deleteClass = (id) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Kelas?',
+      message: 'Semua modul & materi di dalamnya akan ikut terhapus secara permanen.',
+      onConfirm: async () => {
+        setSaving(true);
+        await supabase.from('lms_classes').delete().eq('id', id);
+        showToast('Kelas dihapus.');
+        setSaving(false);
+        setConfirmState(p => ({ ...p, isOpen: false }));
+        fetchAll();
+      }
+    });
   };
 
   // ─── Course CRUD (Modul) ──────────────────────────────────────────────────
@@ -305,13 +316,20 @@ export default function CourseManagerTab() {
     setSaving(false);
     fetchAll();
   };
-  const deleteCourse = async (id) => {
-    if (!window.confirm('Hapus modul ini? Semua lesson di dalamnya juga akan terhapus.')) return;
-    setSaving(true);
-    await supabase.from('courses').delete().eq('id', id);
-    showToast('Modul dihapus.');
-    setSaving(false);
-    fetchAll();
+  const deleteCourse = (id) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Modul?',
+      message: 'Semua materi di dalam modul ini akan ikut terhapus.',
+      onConfirm: async () => {
+        setSaving(true);
+        await supabase.from('courses').delete().eq('id', id);
+        showToast('Modul dihapus.');
+        setSaving(false);
+        setConfirmState(p => ({ ...p, isOpen: false }));
+        fetchAll();
+      }
+    });
   };
   const toggleCourseActive = async (course) => {
     await supabase.from('courses').update({ is_active: !course.is_active }).eq('id', course.id);
@@ -516,13 +534,20 @@ export default function CourseManagerTab() {
     }
   };
 
-  const deleteLesson = async (id) => {
-    if (!window.confirm('Hapus lesson ini? Soal quiz di dalamnya juga akan terhapus.')) return;
-    setSaving(true);
-    await supabase.from('lessons').delete().eq('id', id);
-    showToast('Lesson dihapus.');
-    setSaving(false);
-    fetchAll();
+  const deleteLesson = (id) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Materi?',
+      message: 'Soal kuis di dalamnya juga akan terhapus.',
+      onConfirm: async () => {
+        setSaving(true);
+        await supabase.from('lessons').delete().eq('id', id);
+        showToast('Materi dihapus.');
+        setConfirmState(p => ({ ...p, isOpen: false }));
+        setSaving(false);
+        fetchAll();
+      }
+    });
   };
 
   // ─── Quiz CRUD ────────────────────────────────────────────────────────────
@@ -562,11 +587,18 @@ export default function CourseManagerTab() {
     setSaving(false);
     fetchAll();
   };
-  const deleteQuiz = async (id) => {
-    if (!window.confirm('Hapus soal ini?')) return;
-    await supabase.from('quiz_questions').delete().eq('id', id);
-    showToast('Soal dihapus.');
-    fetchAll();
+  const deleteQuiz = (id) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Soal?',
+      message: 'Hapus pertanyaan kuis ini?',
+      onConfirm: async () => {
+        await supabase.from('quiz_questions').delete().eq('id', id);
+        showToast('Soal dihapus.');
+        setConfirmState(p => ({ ...p, isOpen: false }));
+        fetchAll();
+      }
+    });
   };
 
   // ─── Reorder helpers ──────────────────────────────────────────────────────
@@ -597,26 +629,48 @@ export default function CourseManagerTab() {
   };
 
   const seedModul6 = async () => {
-    if (!window.confirm('Ingin menambahkan Modul 6 secara otomatis?')) return;
-    setSaving(true);
-    try {
-      // 1. Course
-      await supabase.from('courses').upsert({ id: 6, title: 'Modul 6: Etika Pernikahan dalam Islam', order_index: 6, is_active: true });
-      // 2. Lessons
-      await supabase.from('lessons').upsert([
-        { id: 'v6-1', course_id: 6, title: 'Etika Pernikahan & Adab Malam Pertama', type: 'video', video_url: 'https://www.youtube.com/embed/bWZyWAnIMpU', duration: '15:00', order_index: 1 },
-        { id: 'q6-1', course_id: 6, title: 'Kuis Modul 6: Etika Pernikahan', type: 'quiz', order_index: 2 }
-      ]);
-      // 3. Quiz Questions
-      await supabase.from('quiz_questions').delete().eq('lesson_id', 'q6-1');
-      await supabase.from('quiz_questions').insert([
-        { lesson_id: 'q6-1', question_text: 'Apa niat utama seorang muslim dalam melangsungkan pernikahan?', options: ['Mencari kekayaan pasangan', 'Mengikuti tren sosial semata', 'Ibadah kepada Allah', 'Sekadar memenuhi keinginan ortu'], correct_index: 2, order_index: 1 },
-        { lesson_id: 'q6-1', question_text: 'Apa yang disunnahkan saat masuk kamar pengantin?', options: ['Diskusi keuangan', 'Bersikap lembut & suguhan ringan', 'Bersikap tegas', 'Tuntut hak'], correct_index: 1, order_index: 2 }
-      ]);
-      showToast('Modul 6 Berhasil Ditambahkan!');
-      fetchAll();
-    } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
-    setSaving(false);
+    setConfirmState({
+      isOpen: true,
+      title: 'Seed Data?',
+      message: 'Ingin menambahkan Modul 6 secara otomatis?',
+      onConfirm: async () => {
+        setConfirmState(p => ({ ...p, isOpen: false }));
+        setSaving(true);
+        try {
+          // 1. Course (Upsert map: class_id is needed if it's a new schema)
+          // Find the first class ID
+          const firstClassId = classes.length > 0 ? classes[0].id : 1;
+          
+          await supabase.from('courses').upsert({ 
+            id: 6, 
+            class_id: firstClassId,
+            title: 'Modul 6: Etika Pernikahan dalam Islam', 
+            order_index: 6, 
+            is_active: true 
+          });
+          
+          // 2. Lessons
+          await supabase.from('lessons').upsert([
+            { id: 'v6-1', course_id: 6, title: 'Etika Pernikahan & Adab Malam Pertama', type: 'video', video_url: 'https://www.youtube.com/embed/bWZyWAnIMpU', duration: '15:00', order_index: 1, is_published: true },
+            { id: 'q6-1', course_id: 6, title: 'Kuis Modul 6: Etika Pernikahan', type: 'quiz', order_index: 2, is_published: true }
+          ]);
+          
+          // 3. Quiz Questions
+          await supabase.from('quiz_questions').delete().eq('lesson_id', 'q6-1');
+          await supabase.from('quiz_questions').insert([
+            { lesson_id: 'q6-1', question_text: 'Apa niat utama seorang muslim dalam melangsungkan pernikahan?', options: ['Mencari kekayaan pasangan', 'Mengikuti tren sosial semata', 'Ibadah kepada Allah', 'Sekadar memenuhi keinginan ortu'], correct_index: 2, order_index: 1 },
+            { lesson_id: 'q6-1', question_text: 'Apa yang disunnahkan saat masuk kamar pengantin?', options: ['Diskusi keuangan', 'Bersikap lembut & suguhan ringan', 'Bersikap tegas', 'Tuntut hak'], correct_index: 1, order_index: 2 }
+          ]);
+          
+          showToast('Modul 6 Berhasil Ditambahkan!');
+          fetchAll();
+        } catch (err) { 
+          showToast('Gagal: ' + err.message, 'error'); 
+        } finally {
+          setSaving(false);
+        }
+      }
+    });
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -630,7 +684,8 @@ export default function CourseManagerTab() {
   const sortedCourses = [...courses].sort((a, b) => a.order_index - b.order_index);
 
   return (
-    <div style={{ animation: 'fadeIn 0.4s ease' }}>
+    <>
+      <div style={{ animation: 'fadeIn 0.4s ease' }}>
       {/* ── Sub Tabs ── */}
       <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem' }}>
         <button 
@@ -919,123 +974,194 @@ export default function CourseManagerTab() {
             </>
           ) : (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-             <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0 }}>Progres Belajar Calon Kandidat</h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Memantau aktivitas {userProgressList.length} orang candidate aktif.</p>
+          <div className="flex-wrap-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem' }}>
+             <div style={{ flex: 1 }}>
+                <h2 style={{ fontSize: 'clamp(1.1rem, 4vw, 1.25rem)', fontWeight: '800', margin: 0 }}>Progres Belajar Calon Kandidat</h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Memantau aktivitas {userProgressList.length} orang candidate aktif.</p>
              </div>
              <button 
                className="btn btn-outline" 
                onClick={fetchUserProgress} 
                disabled={progressLoading}
-               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
              >
                <Activity size={16} className={progressLoading ? 'spin' : ''} />
-               {progressLoading ? 'Menyinkronkan...' : 'Refresh Data Real-Time'}
+               <span className="hide-on-mobile">{progressLoading ? 'Menyinkronkan...' : 'Refresh Data Real-Time'}</span>
+               {!progressLoading && <span className="show-on-mobile">Refresh</span>}
              </button>
           </div>
 
-          <div style={{ ...CARD, padding: 0 }}>
-             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
-                     <th style={{ padding: '1rem 1.5rem', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted)' }}>NAMA USER</th>
-                     <th style={{ padding: '1rem', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted)' }}>GENDER</th>
-                     <th style={{ padding: '1rem', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted)' }}>PROGRESS</th>
-                     <th style={{ padding: '1rem 1.5rem', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted)', textAlign: 'right' }}>STATUS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {progressLoading ? (
-                    <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="spin" size={20} /></td></tr>
-                  ) : userProgressList.length === 0 ? (
-                    <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada data progres kandidat.</td></tr>
-                  ) : (() => {
-                    const totalPages = Math.ceil(userProgressList.length / progPerPage);
-                    const startIndex = (progPage - 1) * progPerPage;
-                    const paginatedList = userProgressList.slice(startIndex, startIndex + progPerPage);
-                    return (
-                      <>
-                        {paginatedList.map(item => (
-                          <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                             <td style={{ padding: '1rem 1.5rem' }}>
-                                <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.email}</div>
-                             </td>
-                             <td style={{ padding: '1rem' }}>
-                                <span style={{ 
-                                  fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
-                                  color: item.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
-                                  background: item.gender === 'ikhwan' ? 'rgba(14,165,233,0.1)' : 'rgba(236,72,153,0.1)',
-                                  padding: '3px 8px', borderRadius: '4px'
-                                }}>
-                                  {item.gender || '-'}
-                                </span>
-                             </td>
-                             <td style={{ padding: '1rem', width: '38%' }}>
-                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                                  {item.certificatesCount} Sertifikat Diperoleh:
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {item.earnedCertificates?.length > 0 ? (
-                                     item.earnedCertificates.map((title, idx) => (
-                                       <span key={idx} style={{ 
-                                         fontSize: '0.65rem', fontWeight: '800', 
-                                         background: 'rgba(212,175,55,0.1)', color: '#B8860B', 
-                                         padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.2)' 
-                                       }}>
-                                         {title}
+          <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
+             <div className="table-responsive">
+               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
+                      <th style={{ padding: '1.25rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Nama User</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Gender</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Sertifikat & Modul</th>
+                      <th style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Progres Belajar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* 🔍 FILTER BAR */}
+                    <tr style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+                      <td colSpan={4} style={{ padding: '1.25rem 1.5rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input 
+                              type="text" 
+                              className="form-control" 
+                              placeholder="Cari nama atau email..." 
+                              style={{ paddingLeft: '2.5rem', fontSize: '0.875rem' }} 
+                              value={progSearch}
+                              onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
+                            />
+                          </div>
+                          <select 
+                            className="form-control" 
+                            style={{ width: '160px', fontSize: '0.875rem' }}
+                            value={progGender}
+                            onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
+                          >
+                            <option value="all">Semua Gender</option>
+                            <option value="ikhwan">Ikhwan</option>
+                            <option value="akhwat">Akhwat</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {progressLoading ? (
+                      <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="spin" size={20} /></td></tr>
+                    ) : (() => {
+                      const filteredList = userProgressList.filter(item => {
+                        const matchesSearch = item.name.toLowerCase().includes(progSearch.toLowerCase()) || 
+                                              item.email.toLowerCase().includes(progSearch.toLowerCase());
+                        const matchesGender = progGender === 'all' || item.gender === progGender;
+                        return matchesSearch && matchesGender;
+                      });
+
+                      if (filteredList.length === 0) {
+                        return <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada kandidat yang sesuai filter.</td></tr>;
+                      }
+
+                      const totalPages = Math.ceil(filteredList.length / progPerPage);
+                      const startIndex = (progPage - 1) * progPerPage;
+                      const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
+                      return (
+                        <>
+                          {paginatedList.map(item => (
+                            <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                               <td style={{ padding: '1rem 1.5rem' }}>
+                                  <div style={{ fontWeight: '700', fontSize: '0.875rem', color: 'var(--text-main)' }}>{item.name}</div>
+                                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>{item.email}</div>
+                               </td>
+                               <td style={{ padding: '1rem' }}>
+                                  <span style={{ 
+                                    fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase',
+                                    color: item.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
+                                    background: item.gender === 'ikhwan' ? 'rgba(14,165,233,0.1)' : 'rgba(236,72,153,0.1)',
+                                    padding: '4px 10px', borderRadius: '12px'
+                                  }}>
+                                    {item.gender || '-'}
+                                  </span>
+                               </td>
+                               <td style={{ padding: '1rem', width: '40%' }}>
+                                  <div style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                    {item.certificatesCount} Sertifikat Diperoleh:
+                                  </div>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                    {item.earnedCertificates?.length > 0 ? (
+                                       item.earnedCertificates.map((title, idx) => (
+                                         <span key={idx} style={{ 
+                                           fontSize: '0.625rem', fontWeight: '800', 
+                                           background: 'rgba(212,175,55,0.08)', color: '#967117', 
+                                           padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.15)' 
+                                         }}>
+                                           {title}
+                                         </span>
+                                       ))
+                                    ) : (
+                                       <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>
+                                    )}
+                                  </div>
+                               </td>
+                               <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                       <span style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? 'var(--success)' : '#1e293b' }}>
+                                         {item.percent}%
                                        </span>
-                                     ))
-                                  ) : (
-                                     <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>
-                                  )}
+                                       {item.percent === 100 && <CheckCircle size={14} color="var(--success)" />}
+                                    </div>
+                                    <div style={{ width: '120px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                       <div style={{ width: `${item.percent}%`, height: '100%', background: item.percent === 100 ? 'var(--success)' : 'var(--primary)', transition: 'width 1s ease-out' }} />
+                                    </div>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>
+                                       {item.certificatesCount} / {item.totalCourses} Modul Selesai
+                                    </div>
+                                  </div>
+                               </td>
+                            </tr>
+                          ))}
+                          {/* 🔢 MODERN PAGINATION CONTROLS */}
+                          {filteredList.length > progPerPage && (
+                            <tr>
+                              <td colSpan={4} style={{ padding: '1.5rem', background: '#fff', borderTop: '1px solid #f1f5f9' }}>
+                                <div className="flex-wrap-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                                  <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700' }}>
+                                    Menampilkan <span style={{ color: 'var(--primary)', fontWeight: '900' }}>{startIndex + 1} - {Math.min(startIndex + progPerPage, filteredList.length)}</span> dari <span style={{ fontWeight: '900' }}>{filteredList.length}</span> User
+                                  </div>
+                                  
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <button 
+                                      disabled={progPage === 1}
+                                      onClick={() => setProgPage(progPage - 1)}
+                                      className="pagination-btn"
+                                      style={{ opacity: progPage === 1 ? 0.4 : 1 }}
+                                    >
+                                      <ChevronLeft size={16} />
+                                    </button>
+
+                                    {Array.from({ length: totalPages }).map((_, i) => {
+                                      const pNum = i + 1;
+                                      // Tampilkan halaman jika dekat dengan halaman aktif atau di ujung
+                                      if (pNum === 1 || pNum === totalPages || (pNum >= progPage - 1 && pNum <= progPage + 1)) {
+                                        return (
+                                          <button 
+                                            key={pNum}
+                                            onClick={() => setProgPage(pNum)}
+                                            className={`pagination-btn ${progPage === pNum ? 'active' : ''}`}
+                                          >
+                                            {pNum}
+                                          </button>
+                                        );
+                                      } else if (pNum === progPage - 2 || pNum === progPage + 2) {
+                                        return <span key={pNum} style={{ color: '#cbd5e1' }}>...</span>;
+                                      }
+                                      return null;
+                                    })}
+
+                                    <button 
+                                      disabled={progPage === totalPages}
+                                      onClick={() => setProgPage(progPage + 1)}
+                                      className="pagination-btn"
+                                      style={{ opacity: progPage === totalPages ? 0.4 : 1 }}
+                                    >
+                                      <ChevronRight size={16} />
+                                    </button>
+                                  </div>
                                 </div>
-                             </td>
-                             <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                                {item.percent === 100 ? (
-                                   <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', background: 'rgba(34,197,94,0.1)', padding: '4px 10px', borderRadius: '10px' }}>
-                                     MASTERY <CheckCircle size={14} />
-                                   </span>
-                                ) : (
-                                   <span style={{ color: '#94a3b8', fontWeight: '800', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Belajar</span>
-                                )}
-                             </td>
-                          </tr>
-                        ))}
-                        {/* 🔢 PAGINATION CONTROLS */}
-                        {userProgressList.length > progPerPage && (
-                          <tr>
-                            <td colSpan={4} style={{ padding: '1.25rem 1.5rem', background: '#f8fafc' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700' }}>
-                                  Halaman {progPage} dari {totalPages} ({userProgressList.length} Total Kandidat)
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  <button 
-                                    disabled={progPage === 1}
-                                    onClick={() => setProgPage(progPage - 1)}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', cursor: progPage === 1 ? 'not-allowed' : 'pointer', fontSize: '0.7rem', fontWeight: '800', color: progPage === 1 ? '#cbd5e1' : 'var(--primary)' }}
-                                  >
-                                    Sebelumnya
-                                  </button>
-                                  <button 
-                                    disabled={progPage === totalPages}
-                                    onClick={() => setProgPage(progPage + 1)}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', cursor: progPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '0.7rem', fontWeight: '800', color: progPage === totalPages ? '#cbd5e1' : 'var(--primary)' }}
-                                  >
-                                    Selanjutnya
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </>
-                    );
-                  })()}
-                </tbody>
-             </table>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </tbody>
+               </table>
+             </div>
             </div>
           </div>
         )}
@@ -1271,5 +1397,65 @@ export default function CourseManagerTab() {
         </div>
       )}
     </div>
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-chart-card {
+            padding: 1.5rem;
+            border-radius: 24px;
+          }
+          .admin-chart-container {
+            height: 280px;
+          }
+          .dynamic-center-value {
+            font-size: 1.5rem;
+          }
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .pagination-btn {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+          background: white;
+          color: #64748b;
+          font-size: 0.85rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pagination-btn:hover:not(:disabled) {
+          border-color: var(--primary);
+          color: var(--primary);
+          background: rgba(44,95,77,0.05);
+          transform: translateY(-2px);
+        }
+        .pagination-btn.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
+          box-shadow: 0 4px 12px rgba(44,95,77,0.25);
+        }
+        .pagination-btn:disabled {
+          cursor: not-allowed;
+          background: #f8fafc;
+        }
+
+        /* 🪄 HIDE SCROLLBAR BUT KEEP SCROLLING */
+        ::-webkit-scrollbar {
+          width: 0px;
+          background: transparent;
+        }
+        * {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+      `}</style>
+    </>
   );
 }

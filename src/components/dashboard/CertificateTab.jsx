@@ -1,29 +1,72 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, Download, Share2, ShieldCheck, CheckCircle, GraduationCap, Star, ChevronLeft } from 'lucide-react';
+import { Award, Download, Share2, ShieldCheck, CheckCircle, GraduationCap, Star, ChevronLeft, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
-export default function CertificateTab({ user, activeClass }) {
+export default function CertificateTab({ user, activeClass, allClasses = [] }) {
   const certRef = useRef();
   const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  if (!activeClass) {
+  // Logic to find completed classes if none selected
+  const completedClasses = (allClasses || []).filter(cls => {
+    const clsLessons = (cls.modules || []).flatMap(m => m.items || []);
+    return clsLessons.length > 0 && clsLessons.every(l => l.done);
+  });
+
+  // Use selected class or first completed one
+  const displayClass = activeClass || completedClasses[0];
+
+  if (!displayClass) {
     return (
-      <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', margin: '2rem' }}>
+      <div style={{ textAlign: 'center', padding: 'clamp(2rem, 10vh, 6rem) 2rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', margin: '2rem' }}>
         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
           <Award size={40} color="#134E39" />
         </div>
         <h3 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Sertifikat Belum Siap</h3>
-        <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto' }}>Silakan selesaikan seluruh materi di kelas pilihan Anda untuk dapat melihat dan mengunduh sertifikat kelulusan.</p>
-        <button onClick={() => navigate('/app/materi/dashboard')} style={{ marginTop: '2rem', padding: '0.8rem 2rem', background: '#134E39', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '800', cursor: 'pointer' }}>
-          Kembali ke Dashboard
+        <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto', lineHeight: '1.6' }}>
+          Silakan selesaikan seluruh materi di kelas pilihan Anda untuk dapat melihat dan mengunduh sertifikat kelulusan.
+        </p>
+        <button onClick={() => navigate('/app/materi/catalog')} style={{ marginTop: '2rem', padding: '1rem 2.5rem', background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '800', cursor: 'pointer' }}>
+          Jelajahi Katalog Kelas
         </button>
       </div>
     );
   }
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = async () => {
+    if (!certRef.current) return;
+    setIsGenerating(true);
+    
+    try {
+      const canvas = await html2canvas(certRef.current, {
+        scale: 3, // High quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgWidth = 297; // A4 landscape width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`Sertifikat_${displayClass.title.replace(/\s+/g, '_')}_${user.name.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+      console.error('PDF Generation Error:', error);
+      alert('Gagal mengunduh sertifikat. Silakan coba lagi.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
+
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease', padding: '1rem', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -38,14 +81,19 @@ export default function CertificateTab({ user, activeClass }) {
             <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0.2rem 0 0' }}>Alhamdulillah, selamat atas pencapaian Anda.</p>
           </div>
         </div>
-        <button onClick={handlePrint} style={{ 
-          display: 'flex', alignItems: 'center', gap: '8px', 
-          padding: '0.7rem 1.5rem', background: '#134E39', 
-          color: 'white', border: 'none', borderRadius: '12px', 
-          fontWeight: '800', cursor: 'pointer', transition: 'all 0.3s',
-          fontSize: '0.9rem'
-        }}>
-          <Download size={16} /> Cetak / PDF
+        <button 
+          onClick={handleDownloadPDF} 
+          disabled={isGenerating}
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: '8px', 
+            padding: '0.7rem 1.5rem', background: isGenerating ? '#94a3b8' : '#134E39', 
+            color: 'white', border: 'none', borderRadius: '12px', 
+            fontWeight: '800', cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.3s',
+            fontSize: '0.9rem'
+          }}
+        >
+          {isGenerating ? <Loader2 size={16} className="spin" /> : <Download size={16} />}
+          {isGenerating ? 'Menyiapkan...' : 'Unduh Sertifikat PDF'}
         </button>
       </div>
 
@@ -88,9 +136,9 @@ export default function CertificateTab({ user, activeClass }) {
           <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%' }}>
             
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
-               <img src="/assets/logo.svg" alt="Mawaddah" style={{ height: '50px' }} />
+               <img src="/assets/logo.svg" alt="Separuh Agama" style={{ height: '50px' }} />
                <div style={{ borderTop: '2px solid #134E39', paddingTop: '5px' }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39', letterSpacing: '0.1em' }}>MAWADDAH <span style={{ color: '#D4AF37' }}>ACADEMY</span></div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39', letterSpacing: '0.1em' }}>Separuh Agama <span style={{ color: '#D4AF37' }}>ACADEMY</span></div>
                   <div style={{ fontSize: '0.5rem', fontWeight: '800', color: '#64748b', letterSpacing: '0.2em' }}>PLATFORM PERSIAPAN PERNIKAHAN ISLAMI</div>
                </div>
             </div>
@@ -108,7 +156,7 @@ export default function CertificateTab({ user, activeClass }) {
             </p>
             
             <div style={{ padding: '12px 30px', background: '#134E39', borderRadius: '12px', margin: '10px 0' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#D4AF37', margin: 0 }}>{activeClass.title.toUpperCase()}</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#D4AF37', margin: 0 }}>{displayClass.title.toUpperCase()}</h3>
             </div>
 
             {/* Footer */}
@@ -130,7 +178,7 @@ export default function CertificateTab({ user, activeClass }) {
               </div>
 
               <div style={{ textAlign: 'center', width: '180px' }}>
-                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', fontStyle: 'italic', marginBottom: '25px', color: '#134E39' }}>Tim Mawaddah Academy</div>
+                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', fontStyle: 'italic', marginBottom: '25px', color: '#134E39' }}>Tim Separuh Agama Academy</div>
                  <div style={{ borderTop: '1px solid #134E39', paddingTop: '8px', fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>DIREKTUR AKADEMI</div>
               </div>
             </div>

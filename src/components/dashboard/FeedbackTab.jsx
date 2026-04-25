@@ -27,7 +27,7 @@ export default function FeedbackTab({ user, showAlert }) {
 
       setIsSuccess(true);
       setContent('');
-      showAlert('Terima Kasih', 'Saran dan masukan Anda sangat berarti bagi perkembangan Mawaddah.', 'success');
+      showAlert('Terima Kasih', 'Saran dan masukan Anda sangat berarti bagi perkembangan Separuh Agama.', 'success');
     } catch (err) {
       console.error('Error submitting feedback:', err);
       showAlert('Gagal Mengirim', 'Terjadi kesalahan saat mengirim masukan. Pastikan tabel site_feedback sudah ada.', 'error');
@@ -44,7 +44,7 @@ export default function FeedbackTab({ user, showAlert }) {
         </div>
         <h2 style={{ color: '#134E39', fontWeight: '900', marginBottom: '1rem' }}>Masukan Terkirim!</h2>
         <p style={{ color: '#64748b', lineHeight: 1.6, marginBottom: '2rem' }}>
-          Jazakumullahu Khairan atas waktu Anda. Saran dan masukan Anda akan kami tinjau untuk meningkatkan pelayanan Mawaddah agar lebih baik lagi.
+          Jazakumullahu Khairan atas waktu Anda. Saran dan masukan Anda akan kami tinjau untuk meningkatkan pelayanan Separuh Agama agar lebih baik lagi.
         </p>
         <button className="btn btn-primary" onClick={() => setIsSuccess(false)}>Kirim Masukan Lainnya</button>
       </div>

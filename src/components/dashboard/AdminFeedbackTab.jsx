@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { MessageSquare, Star, Clock, User, Filter, Trash2 } from 'lucide-react';
 import { supabase } from '../../supabase';
+import { AppContext } from '../../App';
 
 export default function AdminFeedbackTab({ showAlert }) {
+  const { setConfirmState } = useContext(AppContext);
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -29,16 +31,24 @@ export default function AdminFeedbackTab({ showAlert }) {
     }
   };
 
-  const deleteFeedback = async (id) => {
-    if (!window.confirm('Hapus masukan ini?')) return;
-    try {
-      const { error } = await supabase.from('site_feedback').delete().eq('id', id);
-      if (error) throw error;
-      setFeedback(prev => prev.filter(f => f.id !== id));
-      showAlert('Berhasil', 'Masukan telah dihapus.', 'success');
-    } catch (err) {
-      showAlert('Error', 'Gagal menghapus masukan.', 'error');
-    }
+  const deleteFeedback = (id) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Masukan?',
+      message: 'Apakah Anda yakin ingin menghapus masukan ini secara permanen?',
+      onConfirm: async () => {
+        try {
+          const { error } = await supabase.from('site_feedback').delete().eq('id', id);
+          if (error) throw error;
+          setFeedback(prev => prev.filter(f => f.id !== id));
+          showAlert('Berhasil', 'Masukan telah dihapus.', 'success');
+        } catch (err) {
+          showAlert('Error', 'Gagal menghapus masukan.', 'error');
+        } finally {
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const filteredFeedback = feedback.filter(f => filter === 'all' || f.category === filter);

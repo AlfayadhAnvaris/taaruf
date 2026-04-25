@@ -1,27 +1,85 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #2C5F4D;       /* Mawaddah Green */
-  --primary-light: #3D7D66;
-  --secondary: #D4AF37;     /* Mawaddah Gold */
+  --primary: #134E39;      /* Deep Mawaddah Green */
+  --primary-light: #1E6B52;
+  --secondary: #D4AF37;    /* Mawaddah Gold */
   --secondary-light: #E5C35E;
-  --accent: #2C5F4D;
-  --bg-color: #f8fafc;
-  --bg-light: #f1f5f9;
+  --accent: #134E39;
+  --bg-color: #F9FAFB;
+  --bg-light: #F3F4F6;
   --surface: #FFFFFF;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --danger: #ef4444;
-  --success: #10b981;
-  --border: #e2e8f0;
-  --border-color: #e2e8f0;
-  --radius: 12px;
-  --radius-lg: 16px;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --danger: #EF4444;
+  --success: #10B981;
+  --border: #F1F5F9;
+  --border-color: #F1F5F9;
+  --radius: 14px;
+  --radius-lg: 24px;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow: 0 10px 15px -3px rgba(19, 78, 57, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 20px 25px -5px rgba(19, 78, 57, 0.1), 0 10px 10px -5px rgba(19, 78, 57, 0.04);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
+.dropdown-action-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #1e293b !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  transition: all 0.2s !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+}
+
+.dropdown-action-btn:hover {
+  background: rgba(19, 78, 57, 0.05) !important;
+  color: #134E39 !important;
+  transform: translateX(4px);
+}
+
+.dropdown-action-btn.logout {
+  color: #ef4444 !important;
+}
+
+.dropdown-action-btn.logout:hover {
+  background: rgba(239, 68, 68, 0.06) !important;
+  color: #ef4444 !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * {
   box-sizing: border-box;
@@ -265,68 +323,120 @@ button {
   border-color: rgba(230,57,70,0.3);
 }
 
-.hamburger-btn {
-  background: none;
-  border: none;
-  color: var(--text-main);
+.header-left, .header-right {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.4rem;
-  border-radius: 8px;
-  transition: var(--transition);
+  gap: 1.25rem;
 }
 
-.hamburger-btn:hover {
-  background: rgba(44,95,77,0.06);
-  color: var(--primary);
-}
+/* Notification UI consolidated at end of file */
 
-/* Notification UI */
-.notification-wrapper {
+/* ============================================
+   PROFILE MENU DROPDOWN (Header)
+   ============================================ */
+.profile-menu-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.icon-btn {
-  background: rgba(44, 95, 77, 0.05);
+.profile-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+  border-radius: 12px;
+  background: rgba(44, 95, 77, 0.04);
   border: 1px solid var(--border);
-  color: var(--text-main);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  cursor: pointer;
   transition: var(--transition);
+  color: var(--text-main);
+  max-width: 220px;
 }
 
-.icon-btn:hover {
-  background: rgba(44, 95, 77, 0.12);
-  color: var(--primary);
-  border-color: rgba(44, 95, 77, 0.15);
+.profile-card-btn:hover {
+  background: rgba(44, 95, 77, 0.08);
+  border-color: rgba(44, 95, 77, 0.2);
 }
 
-.notification-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  background: var(--danger);
+.profile-card-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary);
   color: white;
-  font-size: 0.65rem;
-  font-weight: bold;
-  height: 18px;
-  min-width: 18px;
-  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  border: 2px solid white;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
+.profile-card-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.profile-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+  display: block;
+}
+
+.profile-card-role {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  display: block;
+}
+
+.profile-chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.profile-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Panel */
+.profile-dropdown {
+  position: fixed;
+  top: 72px;
+  right: 1.75rem;
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px -8px rgba(44, 95, 77, 0.2), 0 4px 16px rgba(0,0,0,0.1);
+  border: 1px solid var(--border);
+  z-index: 9999;
+  overflow: hidden;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Arrow pointer */
+.profile-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+
+/* Consolidated Notification UI */
 .notification-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -1424,8 +1534,8 @@ select.form-control {
   }
   .auth-sidebar {
     flex: none;
-    padding: 2.5rem 2rem 2rem;
-    min-height: auto;
+    padding: 3rem 2rem;
+    min-height: 40vh; /* Give it some height on mobile stack */
   }
   .auth-sidebar-content h1 {
     font-size: 2rem;
@@ -1665,7 +1775,7 @@ select.form-control {
 
 @media (max-width: 1024px) {
   .landing-section-full {
-    min-height: auto !important;
+    min-height: 100vh !important;
     padding: 100px 5% 60px;
     height: auto;
     scroll-snap-align: none;
@@ -1971,10 +2081,13 @@ select.form-control {
 @media (max-width: 1024px) {
   .landing-split-hero {
     flex-direction: column;
-    padding: 8.5rem 5% 4rem;
+    padding: 120px 5% 80px;
     text-align: center;
-    gap: 0;
+    gap: 2rem;
     min-height: auto;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
   }
 
   .landing-hero-text {
@@ -1998,9 +2111,11 @@ select.form-control {
   .landing-hero-visual {
     width: 100%;
     height: auto;
-    padding: 3rem 0;
-    min-height: auto;
-    display: block;
+    padding: 2rem 0;
+    min-height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .mockup-card {
@@ -2884,35 +2999,80 @@ select.form-control {
   }
 
   .academy-header-brand {
-    order: 1;
-    position: relative !important;
-    left: auto !important;
-    transform: none !important;
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 0.25rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: none !important;
   }
   
+  .academy-brand-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important; /* Circle instead of box */
+    padding: 0 !important;
+    box-shadow: 0 4px 12px rgba(44, 95, 77, 0.15);
+  }
+
   .academy-brand-text {
-     font-size: 1rem !important;
+     display: none;
+  }
+    .academy-header-left {
+    order: 1 !important;
+    flex: none !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    background: rgba(19, 78, 57, 0.05);
+    padding: 6px !important;
+    border-radius: 16px;
+    margin-right: auto !important;
   }
 
-  .academy-header-right {
-    order: 3;
-    flex: 1;
-    justify-content: flex-end;
+  .academy-top-header {
+    height: 64px !important;
+    padding: 0 0.75rem !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    align-items: center !important;
+    background: #ffffff !important;
+  }
+
+
+   .academy-header-right {
+    order: 2 !important;
+    flex: none !important;
+    justify-content: flex-end !important;
     gap: 0.5rem !important;
-  }
-
-  .academy-nav-btns .btn-text {
-    display: none;
+    margin-left: auto !important;
   }
 
   .academy-nav-btns button {
-    padding: 0.5rem !important;
+    padding: 0 !important;
+    min-width: 40px; /* Larger touch targets */
+    height: 40px;
+    border-radius: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #64748b !important; /* Default muted color for inactive tabs */
   }
+
+  /* Active Tab: The "Pill" effect */
+  .academy-nav-btns button[style*="background: rgb(19, 78, 57)"],
+  .academy-nav-btns button[style*="background: #134E39"],
+  .academy-nav-btns button[style*="background:#134E39"] {
+    background: #ffffff !important;
+    color: #134E39 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    transform: scale(1.05);
+  }
+
+  .academy-nav-btns .btn-divider {
+    width: 2px !important;
+    height: 16px !important;
+    background: rgba(0,0,0,0.06) !important;
+    margin: 0 4px !important;
+  }
+
 
   .academy-nav-btns .btn-divider {
     display: none;
@@ -2992,4 +3152,342 @@ select.form-control {
   0% { opacity: 1; }
   50% { opacity: 0.6; }
   100% { opacity: 1; }
+}
+
+/* ============================================================ */
+/* UNIVERSAL RESPONSIVE OVERRIDES (Supporting all mobile devices) */
+/* ============================================================ */
+
+/* 1. Fluid Typography Root */
+:root {
+  --font-size-base: clamp(0.875rem, 1vw + 0.5rem, 1rem);
+  --h1-size: clamp(1.75rem, 5vw, 2.8rem);
+  --h2-size: clamp(1.4rem, 4vw, 2.2rem);
+  --h3-size: clamp(1.2rem, 3vw, 1.6rem);
+}
+
+body {
+  font-size: var(--font-size-base);
+}
+
+h1 { font-size: var(--h1-size) !important; }
+h2 { font-size: var(--h2-size) !important; }
+h3 { font-size: var(--h3-size) !important; }
+
+/* 2. Unified Container Padding */
+.main-content, .landing-section, .auth-form-side {
+  padding: clamp(1.25rem, 5vw, 3rem) clamp(1rem, 5vw, 2.5rem) !important;
+}
+
+/* 3. Auth Page Optimization (Galaxy Z Flip to Pro Max) */
+@media (max-width: 900px) {
+  .auth-split-container {
+    flex-direction: column !important;
+    min-height: auto;
+  }
+  .auth-sidebar {
+    padding: 3rem 1.5rem !important;
+    min-height: 250px !important;
+  }
+  .auth-sidebar-content h1 {
+    font-size: 2rem !important;
+  }
+  .auth-sidebar-content p {
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .auth-sidebar {
+    padding: 2rem 1rem !important;
+    min-height: 200px !important;
+  }
+  .auth-form-side {
+    padding: 1.5rem 1rem !important;
+  }
+  .otp-input input {
+    width: 40px !important;
+    height: 50px !important;
+    font-size: 1.25rem !important;
+  }
+}
+
+/* 4. Global Grid Resilience */
+.dashboard-grid, .auto-grid, .academy-class-grid {
+  grid-template-columns: repeat(auto-fit, minmax(clamp(270px, 100%, 350px), 1fr)) !important;
+  gap: clamp(1rem, 3vw, 2rem) !important;
+}
+
+/* 5. Navigation & Header Scaling */
+@media (max-width: 768px) {
+  .top-header {
+    height: 64px !important;
+    padding: 0 1rem !important;
+  }
+  .header-brand {
+    font-size: 1rem !important;
+  }
+  .icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+/* 6. Landing Page Mobile Polish */
+@media (max-width: 1024px) {
+  .landing-split-hero {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding-top: 100px !important;
+  }
+  .landing-hero-text {
+    align-items: center !important;
+  }
+  .landing-hero-visual {
+    min-height: 300px !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .landing-nav {
+    height: 60px !important;
+    padding: 0 1rem !important;
+  }
+  .navbar-brand img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .process-step {
+    padding: 1.5rem 1rem !important;
+  }
+  .landing-cta-banner {
+    padding: 3rem 1.5rem !important;
+    margin: 2rem 1rem !important;
+    width: calc(100% - 2rem) !important;
+  }
+}
+
+/* 7. Modal Scaling for ultra-small screens */
+@media (max-width: 380px) {
+  .modal-content {
+    width: 98% !important;
+    border-radius: 12px !important;
+  }
+  .modal-header h3 {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* 8. Table & Mobile Data Table responsiveness */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+.table-responsive table {
+  min-width: 600px;
+}
+
+@media (max-width: 640px) {
+  .table-responsive table {
+    min-width: 500px;
+  }
+}
+
+/* 9. Image & Flex fix for tiny screens */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.flex-wrap-mobile {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 480px) {
+  .flex-wrap-mobile > * {
+    width: 100% !important;
+  }
+}
+
+/* 10. Fix common overflow issues */
+* {
+  max-width: 100vw;
+}
+
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+
+.notification-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px #f1f5f9;
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notif-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fcfcfc;
+}
+
+.notif-header h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+  color: #134E39;
+}
+
+.notif-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.notif-actions button {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  background: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.notif-actions button:hover {
+  background: #f1f5f9;
+  color: #134E39;
+}
+
+.notif-actions button.danger:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.notif-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 14px;
+  border-bottom: 1px solid #f8fafc;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.notif-item:hover {
+  background: #f8fafc;
+}
+
+.notif-item.unread {
+  background: rgba(19, 78, 57, 0.02);
+}
+
+.notif-item.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #134E39;
+}
+
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+.notif-time {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.notif-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0.7; /* Always visible */
+  transition: all 0.2s;
+}
+
+.notif-item:hover .notif-item-actions {
+  opacity: 1;
+}
+
+.notif-item-actions button.notif-delete-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.notif-item-actions button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.notif-item-actions button:hover {
+  background: #f1f5f9;
+  color: #134E39;
+}
+
+.notif-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.notif-empty p {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

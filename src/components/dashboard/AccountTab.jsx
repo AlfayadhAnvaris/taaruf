@@ -98,13 +98,15 @@ export default function AccountTab({ user, showAlert }) {
       domisili_provinsi: form.domisili_provinsi.trim() || null,
       domisili_kota: form.domisili_kota.trim() || null,
       domisili_detail: form.domisili_detail.trim() || null,
-      gender: form.gender,
+      gender: form.gender || null,
       pekerjaan: form.pekerjaan.trim() || null,
       pendidikan_terakhir: form.pendidikan_terakhir.trim() || null,
+      profile_complete: isProfileComplete
     }).eq('id', user.id);
     setIsSaving(false);
     if (error) { showAlert('Gagal Menyimpan', error.message, 'error'); return; }
     user.name = form.name.trim();
+    user.profile_complete = isProfileComplete;
     user.phone_wa = form.phone_wa.trim();
     user.wali_phone = form.wali_phone.trim();
     user.wali_name = form.wali_name.trim();
@@ -113,6 +115,7 @@ export default function AccountTab({ user, showAlert }) {
     user.domisili_detail = form.domisili_detail.trim();
     user.pekerjaan = form.pekerjaan.trim();
     user.pendidikan_terakhir = form.pendidikan_terakhir.trim();
+    user.gender = form.gender;
     showAlert('Berhasil', 'Profil berhasil diperbarui, silahkan tunggu verifikasi dari admin untuk mendapatkan badge', 'success');
     setIsEditing(false);
   };
@@ -143,9 +146,15 @@ export default function AccountTab({ user, showAlert }) {
         </div>
         <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.3rem' }}>{form.name || user.name}</h3>
         <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="badge" style={{ background: isAkhwat ? 'rgba(236,72,153,0.1)' : 'rgba(14,165,233,0.1)', color: isAkhwat ? '#ec4899' : '#0ea5e9', border: `1px solid ${isAkhwat ? 'rgba(236,72,153,0.2)' : 'rgba(14,165,233,0.2)'}`, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            {isAkhwat ? ' Akhwat' : ' Ikhwan'}
-          </span>
+          {!user.gender ? (
+            <span className="badge" style={{ background: 'rgba(148,163,184,0.1)', color: '#64748b', border: '1px solid rgba(148,163,184,0.2)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              Belum Diisi
+            </span>
+          ) : (
+            <span className="badge" style={{ background: isAkhwat ? 'rgba(236,72,153,0.1)' : 'rgba(14,165,233,0.1)', color: isAkhwat ? '#ec4899' : '#0ea5e9', border: `1px solid ${isAkhwat ? 'rgba(236,72,153,0.2)' : 'rgba(14,165,233,0.2)'}`, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              {isAkhwat ? ' Akhwat' : ' Ikhwan'}
+            </span>
+          )}
           {user.is_verified && (
             <span className="badge" style={{ background: '#dbeafe', color: '#1d4ed8', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '800' }}>
               <Shield size={13} /> TERVERIFIKASI
@@ -154,8 +163,68 @@ export default function AccountTab({ user, showAlert }) {
         </div>
       </div>
 
-      {/* Profile Completion Warning */}
-      {!isProfileComplete && (
+      {/* Verification Status Panel */}
+      <div className="card animate-up" style={{ 
+        marginBottom: '1.5rem', 
+        padding: '1.5rem', 
+        background: user.is_verified ? 'rgba(16, 185, 129, 0.05)' : (user.verification_status === 'pending' ? 'rgba(245, 158, 11, 0.05)' : 'white'),
+        border: user.is_verified ? '1px solid rgba(16, 185, 129, 0.2)' : (user.verification_status === 'pending' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid #f1f5f9'),
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '1rem'
+      }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ 
+            width: '48px', height: '48px', borderRadius: '14px', 
+            background: user.is_verified ? '#10b981' : (user.verification_status === 'pending' ? '#f59e0b' : '#f1f5f9'), 
+            color: user.is_verified || user.verification_status === 'pending' ? 'white' : '#94a3b8', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: user.is_verified ? '0 8px 15px rgba(16, 185, 129, 0.2)' : 'none'
+          }}>
+             {user.is_verified ? <BadgeCheck size={28} /> : (user.verification_status === 'pending' ? <Clock size={28} /> : <Shield size={28} />)}
+          </div>
+          <div>
+            <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>
+              {user.is_verified ? 'Identitas Terverifikasi' : (user.verification_status === 'pending' ? 'Menunggu Verifikasi' : 'Identitas Belum Diverifikasi')}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+              {user.is_verified ? 'Akun Anda telah diakui sebagai kandidat asli.' : (user.verification_status === 'pending' ? 'Admin sedang meninjau dokumen identitas Anda.' : 'Verifikasi KTP untuk meningkatkan kepercayaan calon pasangan.')}
+            </div>
+          </div>
+        </div>
+        
+        {!user.is_verified && user.verification_status !== 'pending' && (
+          <button 
+            className="btn btn-primary" 
+            onClick={async () => {
+              if (!isProfileComplete) {
+                showAlert('Profil Belum Lengkap', 'Silakan lengkapi biodata (WA & Domisili) terlebih dahulu sebelum mengajukan verifikasi.', 'error');
+                return;
+              }
+              const { error } = await supabase.from('profiles').update({ verification_status: 'pending' }).eq('id', user.id);
+              if (error) showAlert('Gagal', error.message, 'error');
+              else {
+                user.verification_status = 'pending';
+                showAlert('Berhasil Diajukan', 'Permintaan verifikasi telah dikirim ke Admin. Harap tunggu 1x24 jam.', 'success');
+                window.location.reload(); 
+              }
+            }}
+            style={{ fontSize: '0.8rem', padding: '0.6rem 1.25rem', whiteSpace: 'nowrap' }}
+          >
+            Ajukan Sekarang
+          </button>
+        )}
+        
+        {user.is_verified && (
+          <div style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: '900', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 12px', borderRadius: '10px' }}>
+            VERIFIED
+          </div>
+        )}
+      </div>
+
+      {/* Profile Completion Warning (Moved inside if not verified) */}
+      {!isProfileComplete && !user.is_verified && (
         <div className="animate-up" style={{ 
           background: 'rgba(239, 68, 68, 0.05)', 
           border: '1px solid rgba(239, 68, 68, 0.2)', 
@@ -205,7 +274,11 @@ export default function AccountTab({ user, showAlert }) {
           <div>
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '0.25rem' }}>— Data Akun</div>
             <Field label="Email" value={user.email} icon={<User size={16} />} />
-            <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? 'Ikhwan (Pria)' : 'Akhwat (Wanita)'} icon={<Users size={16} />} />
+            <Field 
+              label="Jenis Kelamin" 
+              value={!user.gender ? null : (user.gender === 'ikhwan' ? 'Ikhwan (Pria)' : 'Akhwat (Wanita)')} 
+              icon={<Users size={16} />} 
+            />
             <Field label="Pendidikan Terakhir" value={user.pendidikan_terakhir} icon={<GraduationCap size={16} />} />
             <Field label="Pekerjaan" value={user.pekerjaan} icon={<Briefcase size={16} />} />
             <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '1.25rem' }}>— Kontak</div>
@@ -220,9 +293,6 @@ export default function AccountTab({ user, showAlert }) {
             <Field label="Provinsi" value={user.domisili_provinsi} icon={<MapPin size={16} />} />
             <Field label="Kota / Kabupaten" value={user.domisili_kota} icon={<MapPin size={16} />} />
             <Field label="Keterangan Tambahan" value={user.domisili_detail} icon={<MapPin size={16} />} />
-            <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', marginTop: '1.25rem' }}>— Data Akun</div>
-            <Field label="Email" value={user.email} icon={<User size={16} />} />
-            <Field label="Jenis Kelamin" value={user.gender === 'ikhwan' ? ' Ikhwan (Pria)' : ' Akhwat (Wanita)'} icon={<Users size={16} />} />
           </div>
         ) : (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
@@ -251,10 +321,11 @@ export default function AccountTab({ user, showAlert }) {
               </label>
               <select 
                 className="form-control" 
-                value={form.gender} 
+                value={form.gender || ''} 
                 onChange={e => set('gender', e.target.value)}
                 style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: 'white', fontSize: '1rem', fontWeight: '600' }}
               >
+                <option value="">-- Pilih Jenis Kelamin --</option>
                 <option value="ikhwan"> Ikhwan (Pria)</option>
                 <option value="akhwat"> Akhwat (Wanita)</option>
               </select>

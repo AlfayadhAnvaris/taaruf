@@ -1,11 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { Heart, ShieldCheck, UserCheck, MessageCircle, ArrowRight, CheckCircle, Users, Star, Quote, BookOpen, GraduationCap, Shield } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
 
+  const [testimonials, setTestimonials] = useState([]);
+
   useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data } = await supabase
+          .from('testimonials')
+          .select('*')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false });
+        if (data && data.length > 0) setTestimonials(data);
+      } catch (err) {
+        console.error('Testimonial fetch error:', err);
+      }
+    };
+    fetchTestimonials();
+
     const observerOptions = {
       threshold: 0.1
     };
@@ -28,9 +45,9 @@ export default function LandingPage() {
     <div className="landing-container">
       {/* NAVBAR */}
       <nav className="landing-nav" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
-        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '700', fontSize: '1.4rem', color: 'var(--primary)' }}>
-          <img src="/assets/logo.svg" alt="Mawaddah Logo" style={{ width: '42px', height: '42px' }} />
-          Mawaddah
+        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: 'clamp(1rem, 3vw, 1.4rem)', color: 'var(--primary)' }}>
+          <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '42px', height: '42px' }} />
+          Separuh Agama
         </div>
         <Link to="/login" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none' }}>Masuk / Daftar</Link>
       </nav>
@@ -94,12 +111,12 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* WHY MAWADDAH & ACADEMY SECTION */}
+        {/* WHY Separuh Agama & ACADEMY SECTION */}
         <section className="landing-section-full reveal" style={{ background: '#fff' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
               <span style={{ color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.75rem' }}>Keunggulan Platform</span>
-              <h2 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', fontWeight: '900', color: '#1A2E25', margin: '1rem 0' }}>Kenapa Ikhtiar di Mawaddah?</h2>
+              <h2 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', fontWeight: '900', color: '#1A2E25', margin: '1rem 0' }}>Kenapa Ikhtiar di Separuh Agama?</h2>
               <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>Satu-satunya platform taaruf yang membekali Anda dengan ilmu, keamanan, dan pendampingan syar'i.</p>
             </div>
 
@@ -109,14 +126,14 @@ export default function LandingPage() {
                 <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.15 }}><BookOpen size={160} /></div>
                 <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
                   <div style={{ display: 'inline-block', padding: '0.4rem 1.2rem', background: 'var(--secondary)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', color: '#1A2E25', marginBottom: '2rem' }}>PROGRAM AKADEMI</div>
-                  <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Mawaddah Academy</h3>
+                  <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Akademi Separuh Agama</h3>
                   <p style={{ opacity: 0.9, lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1.05rem' }}>Bekali diri Anda lewat kurikulum video eksklusif, kuis pemahaman, dan raih E-Sertifikat Kelulusan Resmi sebelum melangkah ke jenjang pernikahan.</p>
                 </div>
-                <button className="btn btn-secondary" style={{ width: '100%', padding: '1.2rem', borderRadius: '16px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
+                <button className="btn btn-secondary" style={{ width: '100%', padding: '1rem', borderRadius: '16px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
               </div>
 
               {/* Card 2: Security */}
-              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
                   <ShieldCheck size={36} color="var(--primary)" />
                 </div>
@@ -125,7 +142,7 @@ export default function LandingPage() {
               </div>
 
               {/* Card 3: Guidance */}
-              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
                   <UserCheck size={36} color="var(--primary)" />
                 </div>
@@ -166,24 +183,44 @@ export default function LandingPage() {
 
         {/* TESTIMONIALS */}
         <section className="landing-section-full reveal" style={{ background: '#fff', flexDirection: 'column' }}>
-          <h2>Kisah Berkah Mawaddah</h2>
+          <h2>Kisah Berkah Separuh Agama</h2>
           <div className="testimonial-grid auto-grid">
-            <div className="testi-card">
-              <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut."</p>
-              <div className="testi-author">
-                <strong>Hamba Allah</strong>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ikhwan, Menikah 2025</span>
-              </div>
-            </div>
-            <div className="testi-card">
-              <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p className="testi-text">"Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
-              <div className="testi-author">
-                <strong>Ukhti Fulanah</strong>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Akhwat, Menikah 2026</span>
-              </div>
-            </div>
+            {testimonials.length > 0 ? (
+              testimonials.map(t => (
+                <div key={t.id} className="testi-card">
+                  <div style={{ display: 'flex', gap: '2px', marginBottom: '1rem' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} fill={i < t.rating ? '#D4AF37' : 'none'} color={i < t.rating ? '#D4AF37' : '#e2e8f0'} />
+                    ))}
+                  </div>
+                  <p className="testi-text">"{t.content}"</p>
+                  <div className="testi-author">
+                    <strong>{t.name}</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t.role}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Fallback default testimonials
+              <>
+                <div className="testi-card">
+                  <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                  <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut."</p>
+                  <div className="testi-author">
+                    <strong>Hamba Allah</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ikhwan, Menikah 2025</span>
+                  </div>
+                </div>
+                <div className="testi-card">
+                  <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                  <p className="testi-text">"Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
+                  <div className="testi-author">
+                    <strong>Ukhti Fulanah</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Akhwat, Menikah 2026</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -203,7 +240,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between' }}>
           <div>
             <div className="navbar-brand" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '1.2rem', color: 'var(--primary)' }}>
-              <Heart size={24} color="var(--primary)" /> Mawaddah
+              <Heart size={24} color="var(--primary)" /> Separuh Agama
             </div>
             <p style={{ maxWidth: '300px', fontSize: '0.9rem', lineHeight: '1.6' }}>Platform Taaruf Syar'i terpercaya yang diawasi oleh asatidzah berkompeten.</p>
           </div>

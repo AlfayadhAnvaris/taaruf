@@ -215,8 +215,8 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
     <div className="auth-split-container">
       <div className="auth-sidebar">
         <div className="auth-sidebar-content">
-          <Link to="/" className="auth-logo"><img src="/assets/logo.svg" alt="Mawaddah" style={{ width: '80px' }} /></Link>
-          <h1>Mawaddah</h1>
+          <Link to="/" className="auth-logo"><img src="/assets/logo.svg" alt="Separuh Agama" style={{ width: '80px' }} /></Link>
+          <h1>Separuh Agama</h1>
           <p>Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah.</p>
           {!isLogin && (
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -1,14 +1,18 @@
 import React, { useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
-import { BookOpen, LayoutDashboard, FileText, Activity } from 'lucide-react';
+import { 
+  BookOpen, LayoutDashboard, FileText, Activity, 
+  MessageSquare, Settings, Sparkles, ChevronRight
+} from 'lucide-react';
 import CourseManagerTab from '../components/dashboard/CourseManagerTab';
 import AdminHomeTab from '../components/dashboard/AdminHomeTab';
 import AdminReviewTab from '../components/dashboard/AdminReviewTab';
 import AdminMediateTab from '../components/dashboard/AdminMediateTab';
 import AdminFeedbackTab from '../components/dashboard/AdminFeedbackTab';
 import AdminAccountTab from '../components/dashboard/AdminAccountTab';
-import { MessageSquare, Settings } from 'lucide-react';
+import AdminTestimonialsTab from '../components/dashboard/AdminTestimonialsTab';
+import AdminVerificationTab from '../components/dashboard/AdminVerificationTab';
 
 export default function AdminDashboard() {
   const { user, showAlert } = useContext(AppContext);
@@ -17,35 +21,116 @@ export default function AdminDashboard() {
   const isAdminAcademy = activeTab === 'courses';
   const adminName = user?.name || 'Ustadz';
 
+  const getTabTitle = () => {
+    switch(activeTab) {
+      case 'home': return 'Dashboard Utama';
+      case 'mediate': return 'Mediasi & Chat';
+      case 'courses': return 'Manajemen Academy';
+      case 'feedback': return 'Feedback & Laporan';
+      case 'testimonials': return 'Manajemen Testimoni';
+      case 'verification': return 'Verifikasi Identitas';
+      case 'admin': return 'Pengaturan Admin';
+      default: return 'Portal Admin';
+    }
+  };
+
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease' }}>
-      {/* Portal Header */}
+    <div style={{ animation: 'dashboardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)', padding: '0.5rem' }}>
+      {/* 🟢 PREMIUM PORTAL HEADER 🟢 */}
       {!isAdminAcademy && (
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-            Ahlan wa Sahlan, {adminName}!
-          </h2>
-          <p style={{ color: 'var(--text-muted)' }}>
-            {activeTab === 'home' && 'Ringkasan data dan statistik pendaftar Mawaddah Match.'}
-            {activeTab === 'mediate' && 'Pantau dan moderasi ruang obrolan mediasi taaruf.'}
-            {activeTab === 'feedback' && 'Lihat saran, masukan, dan laporan bug dari para pengguna.'}
-            {activeTab === 'admin' && 'Kelola identitas publik dan keamanan akun administrator Anda.'}
-          </p>
+        <div className="admin-portal-header">
+          <div style={{ animation: 'slideRight 0.8s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+               <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#134E39', opacity: 0.6 }}>ADMIN PORTAL</span>
+               <ChevronRight size={14} color="#134E39" style={{ opacity: 0.4 }} />
+               <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39' }}>{getTabTitle().toUpperCase()}</span>
+            </div>
+            
+            <h2 className="admin-welcome-text">
+              Ahlan wa Sahlan, {adminName}
+            </h2>
+            <p className="admin-subtitle">
+              {activeTab === 'home' && 'Pantau ringkasan data, pertumbuhan kandidat, dan statistik pendaftar Separuh Agama secara real-time.'}
+              {activeTab === 'mediate' && 'Fasilitasi proses taaruf dengan memantau dan memoderasi ruang obrolan mediasi yang aktif.'}
+              {activeTab === 'feedback' && 'Evaluasi saran, masukan, dan laporan kendala teknis dari para pengguna untuk pengembangan platform.'}
+              {activeTab === 'testimonials' && 'Kelola cerita sukses dan testimoni dari para kandidat yang telah berhasil melalui platform Separuh Agama.'}
+              {activeTab === 'verification' && 'Tinjau dan setujui permohonan verifikasi identitas (KYC) dari para kandidat Separuh Agama.'}
+              {activeTab === 'admin' && 'Kelola identitas profil, kata sandi, dan parameter keamanan akun administrator Anda.'}
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Tab Content */}
-      {activeTab === 'home' && <AdminHomeTab />}
-      
-      {activeTab === 'mediate' && <AdminMediateTab />}
+      <div style={{ animation: 'contentFloat 0.8s ease' }}>
+        {activeTab === 'home' && <AdminHomeTab />}
+        {activeTab === 'mediate' && <AdminMediateTab />}
+        {activeTab === 'courses' && <CourseManagerTab />}
+        {activeTab === 'feedback' && <AdminFeedbackTab showAlert={showAlert} />}
+        {activeTab === 'testimonials' && <AdminTestimonialsTab showAlert={showAlert} />}
+        {activeTab === 'verification' && <AdminVerificationTab showAlert={showAlert} />}
+        {activeTab === 'admin' && <AdminAccountTab user={user} showAlert={showAlert} />}
+      </div>
 
-      {activeTab === 'courses' && (
-        <CourseManagerTab />
-      )}
+      <style>{`
+        .admin-portal-header {
+          margin-bottom: 2.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 2rem;
+        }
+        .admin-welcome-text {
+          font-size: 2.25rem;
+          font-weight: 900;
+          color: #134E39;
+          margin: 0;
+          letter-spacing: -0.03em;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .admin-subtitle {
+          color: #64748b;
+          font-weight: 500;
+          font-size: 1rem;
+          margin-top: 6px;
+          max-width: 600px;
+          line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+          .admin-portal-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+          }
+          .admin-welcome-text {
+            font-size: 1.5rem;
+            flex-wrap: wrap;
+          }
+          .admin-sparkle { width: 20px; height: 20px; }
+          .admin-subtitle {
+            font-size: 0.85rem;
+          }
+        }
 
-      {activeTab === 'feedback' && <AdminFeedbackTab showAlert={showAlert} />}
-
-      {activeTab === 'admin' && <AdminAccountTab user={user} showAlert={showAlert} />}
+        @keyframes dashboardFadeIn {
+          from { opacity: 0; filter: blur(4px); }
+          to { opacity: 1; filter: blur(0); }
+        }
+        @keyframes slideRight {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes contentFloat {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (min-width: 1280px) {
+          .xl-flex { display: flex !important; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -188,7 +188,7 @@ export default function CompleteProfilePage({ onComplete }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
             <Heart size={28} style={{ color: 'var(--secondary)' }} />
-            <span style={{ fontWeight: '700', fontSize: '1.1rem', opacity: 0.9 }}>Mawaddah</span>
+            <span style={{ fontWeight: '700', fontSize: '1.1rem', opacity: 0.9 }}>Separuh Agama</span>
           </div>
           <h2 style={{ margin: '0 0 0.4rem', fontSize: '1.6rem', fontWeight: '800' }}>
             Lengkapi Profil Anda
