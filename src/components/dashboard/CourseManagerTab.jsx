@@ -1099,7 +1099,7 @@ export default function CourseManagerTab() {
                                        <div style={{ width: `${item.percent}%`, height: '100%', background: item.percent === 100 ? 'var(--success)' : 'var(--primary)', transition: 'width 1s ease-out' }} />
                                     </div>
                                     <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>
-                                       {item.certificatesCount} / {item.totalCourses} Modul Selesai
+                                       {item.certificatesCount} / {item.totalCourses} Kelas Selesai
                                     </div>
                                   </div>
                                </td>

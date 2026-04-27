@@ -57,6 +57,14 @@ export default function FeedbackTab({ user, showAlert }) {
         <h2 style={{ fontSize: '2rem', fontWeight: '900', color: '#134E39', marginBottom: '0.5rem' }}>Saran & Masukan</h2>
         <p style={{ color: '#64748b' }}>Bantu kami menjadi lebih baik dalam melayani proses taaruf Anda.</p>
       </div>
+         <div style={{ marginTop: '2.5rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <MessageSquare size={20} />
+        </div>
+        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
+          Kontribusi Anda membantu kami mewujudkan platform taaruf yang lebih baik, aman, dan syar'i. Syukran wa jazakumullahu khairan.
+        </p>
+      </div>
 
       <div className="card" style={{ padding: '2.5rem' }}>
         <form onSubmit={handleSubmit}>
@@ -140,14 +148,6 @@ export default function FeedbackTab({ user, showAlert }) {
         </form>
       </div>
 
-      <div style={{ marginTop: '2.5rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <MessageSquare size={20} />
-        </div>
-        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
-          Kontribusi Anda membantu kami mewujudkan platform taaruf yang lebih baik, aman, dan syar'i. Syukran wa jazakumullahu khairan.
-        </p>
-      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   Award, BookOpen, BarChart2, GraduationCap, Lock, ArrowRight,
   Search, ShieldCheck, Zap, Menu, X, Clock, AlertCircle, Users, FileText
 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 export default function LearningTab({
   user, classes, activeClass, selectClass,
@@ -185,24 +186,53 @@ export default function LearningTab({
              <p style={{ color: '#64748b' }}>Pantau perkembangan ilmu Anda di Separuh Agama Academy.</p>
           </div>
 
-          <div className="academy-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-            {[
-              { label: 'Kelas Selesai', value: completedClasses, total: totalClasses, color: '#134E39', icon: <CheckCircle /> },
-              { label: 'Materi Dipelajari', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <PlayCircle /> },
-              { label: 'Sertifikat Didapat', value: completedClasses, total: totalClasses, color: '#0ea5e9', icon: <Award /> }
-            ].map((stat, i) => (
-              <div key={i} style={{ background: 'white', padding: '2rem', borderRadius: '32px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: `${stat.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
-                    {stat.icon}
+          <div className="academy-analytics-section" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem', marginBottom: '3rem' }}>
+             <div className="academy-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { label: 'Kelas Selesai', value: completedClasses, total: totalClasses, color: '#134E39', icon: <CheckCircle /> },
+                  { label: 'Materi Dipelajari', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <PlayCircle /> },
+                  { label: 'Sertifikat Didapat', value: completedClasses, total: totalClasses, color: '#0ea5e9', icon: <Award /> }
+                ].map((stat, i) => (
+                  <div key={i} style={{ background: 'white', padding: '1.5rem', borderRadius: '32px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${stat.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+                        {React.cloneElement(stat.icon, { size: 20 })}
+                      </div>
+                      <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Target: {stat.total}</div>
+                    </div>
+                    <div style={{ fontSize: '2rem', fontWeight: '900', color: '#134E39', lineHeight: 1, marginBottom: '0.4rem' }}>{stat.value}</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b' }}>{stat.label}</div>
                   </div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Target: {stat.total}</div>
+                ))}
+             </div>
+
+             <div className="card" style={{ padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9' }}>
+                <div style={{ width: '150px', height: '150px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie 
+                        data={[
+                          { name: 'Selesai', value: completedAcademyLessons, color: '#134E39' },
+                          { name: 'Belum', value: totalAcademyLessons - completedAcademyLessons, color: '#f1f5f9' }
+                        ]} 
+                        innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value" stroke="none"
+                      >
+                        <Cell fill="#134E39" />
+                        <Cell fill="#f1f5f9" />
+                      </Pie>
+                      <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#134E39', lineHeight: 1, marginBottom: '0.5rem' }}>{stat.value}</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#64748b' }}>{stat.label}</div>
-              </div>
-            ))}
-         </div>
+                <div>
+                   <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Total Progres Kurikulum</div>
+                   <div style={{ fontSize: '1.75rem', fontWeight: '950', color: '#134E39', marginBottom: '8px' }}>
+                     {totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%
+                   </div>
+                   <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '600' }}>{completedAcademyLessons} dari {totalAcademyLessons} materi dikuasai</div>
+                </div>
+             </div>
+          </div>
 
          <div style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', marginBottom: '2rem' }}>Status Kelas Anda</h3>
@@ -270,7 +300,7 @@ export default function LearningTab({
           
           <h1 className="academy-welcome-title" style={{ fontWeight: '900', color: '#134E39', marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
             Selamat Datang di <br />
-            <span style={{ color: '#D4AF37' }}>Akademi Separuh Agama</span>
+            <span style={{ color: '#D4AF37' }}>Separuh Agama Academy</span>
           </h1>
           
           <p style={{ fontSize: '1.25rem', color: '#64748b', lineHeight: 1.8, marginBottom: '3rem' }}>
@@ -345,7 +375,7 @@ export default function LearningTab({
               borderRadius: '99px', fontSize: '0.65rem', fontWeight: '800',
               marginBottom: '1.5rem', letterSpacing: '0.05em', border: '1px solid rgba(255,255,255,0.2)'
             }}>
-              <Zap size={14} fill="white" /> AKADEMI SEPARUH AGAMA
+              <Zap size={14} fill="white" /> Separuh Agama Academy
             </div>
             
             <h2 className="banner-title" style={{ color: 'white', margin: '0 0 1rem', fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
@@ -747,6 +777,9 @@ export default function LearningTab({
               .academy-stats-grid {
                 grid-template-columns: 1fr !important;
                 gap: 1rem !important;
+              }
+              .academy-analytics-section {
+                grid-template-columns: 1fr !important;
               }
               .academy-class-card {
                 flex-direction: column !important;

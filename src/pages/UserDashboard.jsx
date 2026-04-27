@@ -7,7 +7,11 @@ import {
   GraduationCap, Heart, BookOpen, AlertCircle, ShieldAlert,
   ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Sparkles, Star, Target, Compass, ArrowRight, Award, Settings, Zap, ShieldCheck, Eye, Activity, BadgeCheck
 } from 'lucide-react';
-import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
+import { 
+  RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis, 
+  PieChart, Pie, Cell, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area
+} from 'recharts';
 import { supabase } from '../supabase';
 import AccountTab from '../components/dashboard/AccountTab';
 import LearningTab from '../components/dashboard/LearningTab';
@@ -29,7 +33,20 @@ export default function UserDashboard() {
   const { tab, id, subId } = useParams();
   const activeTab = tab || 'home';
 
-  const setActiveTab = (newTab) => navigate(`/app/${newTab}`);
+  const setActiveTab = (newTab) => {
+    // 🔐 PROFILE COMPLETION CHECK 🔐
+    const restrictedTabs = ['find', 'my_cv'];
+    if (restrictedTabs.includes(newTab) && !user?.profile_complete) {
+      showAlert(
+        'Profil Belum Lengkap', 
+        'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 
+        'error'
+      );
+      navigate('/app/account');
+      return;
+    }
+    navigate(`/app/${newTab}`);
+  };
 
   // ── Chat State ──
   const [activeChatId, setActiveChatId] = useState(null);
@@ -122,6 +139,9 @@ export default function UserDashboard() {
   const [viewingCv, setViewingCv] = useState(null);
   const [isPreviewingCv, setIsPreviewingCv] = useState(false);
   const [showQaTemplates, setShowQaTemplates] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportForm, setReportForm] = useState({ reason: '', details: '' });
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   // Fetch Regencies for CV Form
   useEffect(() => {
@@ -463,68 +483,111 @@ export default function UserDashboard() {
                    </button>
                 )}
                 <button onClick={() => navigate('/app/materi')} style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'all 0.3s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-3px)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                  <GraduationCap size={18} /> Akademi Mawaddah
+                  <GraduationCap size={18} /> Separuh Agama Academy
                 </button>
               </div>
             </div>
           </div>
 
-          {/* 🧩 STATS GRID SOLID 🧩 */}
-          <div className="dashboard-grid animate-up stagger-1" style={{ marginBottom: '3rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {[
-              { label: 'Kandidat Cocok', value: candidateCount, color: '#134E39', icon: <Users size={24} />, sub: 'Tersedia di lokasi Anda', tab: 'find' },
-              { label: 'Prosedur Aktif', value: myActiveRequests, color: '#134E39', icon: <Heart size={24} />, sub: 'Pengajuan berjalan', tab: 'status' },
-              { 
-                label: 'Badge Akademi', 
-                value: getAcademyBadge(academyLevels[String(user.id)])?.label.split(' ')[0] || 'Aktif', 
-                color: '#134E39', 
-                icon: getAcademyBadge(academyLevels[String(user.id)])?.icon || <Star size={24} />, 
-                sub: getAcademyBadge(academyLevels[String(user.id)]) ? 'Level Keilmuan Anda' : 'Status Akun Pengguna', 
-                tab: 'materi' 
-              },
-            ].map((stat, i) => (
-              <div key={i} onClick={() => setActiveTab(stat.tab)} style={{ 
-                background: 'white', borderRadius: '30px', padding: '2rem', 
-                cursor: 'pointer', border: '1px solid rgba(0,0,0,0.03)',
-                boxShadow: '0 15px 35px rgba(0,0,0,0.02)', display: 'flex', 
-                alignItems: 'center', gap: '1.5rem', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-              }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 25px 45px rgba(0,0,0,0.05)'; e.currentTarget.style.borderColor = 'rgba(19,78,57,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.03)'; }}>
-                <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: `${stat.color}08`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0, transition: 'all 0.3s' }}>{stat.icon}</div>
-                <div>
-                  <div style={{ fontSize: '1.85rem', fontWeight: '800', color: '#0f172a', lineHeight: 1, marginBottom: '0.4rem' }}>{stat.value}</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', marginBottom: '0.2rem' }}>{stat.label}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '600' }}>{stat.sub}</div>
+          {/* 📊 PREMIUM ANALYTICS SECTION 📊 */}
+          <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            
+            {/* Chart 1: Academy Progress & Badge */}
+            <div className="card" style={{ padding: '2.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2.5rem', minHeight: '280px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', background: 'rgba(212, 175, 55, 0.03)', borderRadius: '50%' }}></div>
+              <div style={{ width: '160px', height: '160px', position: 'relative' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart innerRadius="85%" outerRadius="100%" data={[{ value: progressPercent }]} startAngle={90} endAngle={90 + (360 * (progressPercent/100))}>
+                    <RadialBar dataKey="value" fill="#D4AF37" cornerRadius={10} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39' }}>{progressPercent}%</div>
+                  <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Selesai</div>
                 </div>
               </div>
-            ))}
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                   <GraduationCap size={16} color="#134E39" />
+                   <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Akademi Progress</span>
+                </div>
+                <h4 style={{ margin: '0 0 1rem', fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>{getAcademyBadge(academyLevels[String(user.id)])?.label || 'Calon Pelajar'}</h4>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', lineHeight: 1.6 }}>
+                  Selesaikan materi untuk mendapatkan badge dan meningkatkan kredibilitas profil Anda.
+                </p>
+                <button onClick={() => setActiveTab('materi')} style={{ marginTop: '1.5rem', background: '#134E39', border: 'none', padding: '10px 20px', borderRadius: '12px', color: 'white', fontSize: '0.8rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Lanjutkan Materi <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Chart 2: Interaction Activity */}
+            <div className="card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', minHeight: '280px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#134E39' }}>Aktivitas Taaruf</h4>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', fontWeight: '600' }}>Ringkasan interaksi Anda</p>
+                </div>
+                <div style={{ background: 'rgba(19,78,57,0.05)', padding: '10px', borderRadius: '12px' }}>
+                  <Activity size={20} color="#134E39" />
+                </div>
+              </div>
+              
+              <div style={{ flex: 1, minHeight: '150px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={[
+                      { name: 'Dikirim', value: myActiveRequests, color: '#134E39' },
+                      { name: 'Diterima', value: taarufRequests.filter(r => myExistingCv && r.targetCvId === myExistingCv.id).length, color: '#D4AF37' },
+                      { name: 'Sesi Q&A', value: taarufRequests.filter(r => (r.senderEmail === user.email || (myExistingCv && r.targetCvId === myExistingCv.id)) && r.status === 'qna').length, color: '#10b881' }
+                    ]}
+                    margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#134E39" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#134E39" stopOpacity={1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} style={{ fontSize: '10px', fontWeight: '700', fill: '#94a3b8' }} />
+                    <YAxis axisLine={false} tickLine={false} style={{ fontSize: '10px', fontWeight: '700', fill: '#cbd5e1' }} />
+                    <RechartsTooltip cursor={{ fill: 'rgba(19, 78, 57, 0.02)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
+                       { 
+                         [
+                           { name: 'Dikirim', value: myActiveRequests, color: '#134E39' },
+                           { name: 'Diterima', value: taarufRequests.filter(r => myExistingCv && r.targetCvId === myExistingCv.id).length, color: '#D4AF37' },
+                           { name: 'Sesi Q&A', value: taarufRequests.filter(r => (r.senderEmail === user.email || (myExistingCv && r.targetCvId === myExistingCv.id)) && r.status === 'qna').length, color: '#10b881' }
+                         ].map((entry, index) => (
+                           <Cell key={`cell-${index}`} fill={entry.color} />
+                         ))
+                       }
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
           </div>
 
-          <div className="dashboard-main-grid animate-up stagger-2">
-            <div style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <CheckCircle size={20} /> Checklist Persiapan Taaruf
-                </h3>
-                <div style={{ background: 'rgba(19,78,57,0.03)', padding: '1.5rem', borderRadius: '24px', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                   <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-                      <span style={{ fontWeight: '900', color: '#134E39', fontSize: '1.1rem' }}>{onboardingPct}%</span>
-                   </div>
-                   <div>
-                      <div style={{ fontWeight: '800', color: '#134E39', fontSize: '1rem' }}>Progres Onboarding</div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Lengkapi langkah berikut untuk memulai pencarian.</div>
-                   </div>
+
+          <div className="dashboard-main-grid animate-up stagger-1">
+            <div style={{ background: 'white', borderRadius: '32px', padding: '2rem', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                     <CheckCircle size={18} /> Checklist Taaruf
+                  </h3>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#134E39', background: 'rgba(19,78,57,0.05)', padding: '4px 12px', borderRadius: '8px' }}>{onboardingPct}%</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                    {checks.map((check, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderRadius: '20px', background: check.done ? '#f0fdf4' : '#f8fafc', border: check.done ? '1px solid #bbf7d0' : '1px solid #f1f5f9', transition: 'all 0.3s' }}>
-                         <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: check.done ? '#166534' : '#e2e8f0', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {check.done ? <CheckCircle size={18} /> : check.icon}
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1rem', borderRadius: '16px', background: check.done ? 'rgba(16, 184, 129, 0.03)' : '#f8fafc', border: check.done ? '1px solid rgba(16, 184, 129, 0.1)' : '1px solid #f1f5f9' }}>
+                         <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: check.done ? '#10b881' : '#e2e8f0', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {check.done ? <CheckCircle size={16} /> : check.icon}
                          </div>
-                         <div style={{ flex: 1, fontWeight: '700', fontSize: '0.9rem', color: check.done ? '#166534' : '#64748b' }}>{check.label}</div>
-                         {check.done ? (
-                            <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#166534', background: '#dcfce7', padding: '4px 10px', borderRadius: '99px' }}>SELESAI</span>
-                         ) : (
-                            <button onClick={() => idx === 1 ? setActiveTab('my_cv') : navigate('/app/find')} style={{ background: 'none', border: 'none', color: '#134E39', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}>LAKUKAN</button>
-                         )}
+                         <div style={{ flex: 1, fontWeight: '700', fontSize: '0.85rem', color: check.done ? '#10b881' : '#64748b' }}>{check.label}</div>
+                         {!check.done && <ChevronRight size={14} color="#cbd5e1" />}
                       </div>
                    ))}
                 </div>
@@ -574,7 +637,7 @@ export default function UserDashboard() {
                     <div className="chat-avatar"><User size={24} /></div>
                     <div className="chat-info">
                       <h3>Ruang Mediasi: {req?.senderEmail === user.email ? req.targetAlias : req.senderAlias}</h3>
-                      <p>Diawasi oleh Admin & Ustadz Mawaddah</p>
+                      <p>Diawasi oleh Admin & Ustadz Separuh Agama</p>
                     </div>
                     <button className="qa-helper-btn" onClick={() => setShowQaTemplates(true)}>
                       <Compass size={14} /> Panduan Pertanyaan
@@ -777,7 +840,7 @@ export default function UserDashboard() {
                       <div style={{ padding: '1.25rem', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}>
                         {req.status === 'pending_target' && 'Bismillah, permohonan taaruf sudah terkirim. Saat ini sedang menunggu persetujuan dari calon pasangan Anda.'}
                         {req.status === 'pending_admin' && 'Maasyaa Allah, calon pasangan telah setuju! Mohon tunggu Admin/Ustadz untuk memverifikasi dan membuka ruang Q&A.'}
-                        {req.status === 'qna' && 'Silakan masuk ke Ruang Mediasi untuk sesi tanya jawab visi-misi yang didampingi oleh Admin Mawaddah.'}
+                        {req.status === 'qna' && 'Silakan masuk ke Ruang Mediasi untuk sesi tanya jawab visi-misi yang didampingi oleh Admin Separuh Agama.'}
                         {req.status === 'wali_process' && 'Sesi Q&A selesai. Saat ini Admin sedang berkoordinasi dengan Wali atau pihak keluarga akhwat.'}
                         {req.status === 'meet' && 'Tahapan Nadzhor (pertemuan offline) sedang dijadwalkan. Mohon siapkan diri Anda sesuai arahan pendamping.'}
                         {req.status === 'completed' && 'Alhamdulillah, proses taaruf telah selesai. Semoga Allah memberkahi langkah selanjutnya.'}
@@ -886,23 +949,35 @@ export default function UserDashboard() {
               <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9' }}>
                 <ShieldAlert size={64} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
                 <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39' }}>Fitur Pencarian Terkunci</h2>
-                <p style={{ color: '#64748b', maxWidth: '450px', margin: '0 auto 2rem', lineHeight: 1.6 }}>Sesuai aturan keamanan Mawaddah, Anda harus memiliki CV yang valid sebelum dapat melihat calon pasangan.</p>
+                <p style={{ color: '#64748b', maxWidth: '450px', margin: '0 auto 2rem', lineHeight: 1.6 }}>Sesuai aturan keamanan Separuh Agama, Anda harus memiliki CV yang valid sebelum dapat melihat calon pasangan.</p>
                 <button onClick={() => setActiveTab('my_cv')} style={{ background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', padding: '1rem 3rem', fontWeight: '800', cursor: 'pointer' }}>Buat CV Sekarang</button>
               </div>
             ) : viewingCv ? (
-              <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', paddingTop: '2rem' }}>
-                <button 
-                  onClick={() => setViewingCv(null)} 
-                  style={{ 
-                    position: 'absolute', top: '-1rem', left: 0, 
-                    background: 'white', border: '1px solid #e2e8f0', 
-                    borderRadius: '12px', padding: '0.6rem 1rem', 
-                    fontWeight: '700', color: '#64748b', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10
-                  }}
-                >
-                  <ChevronLeft size={18} /> Kembali ke Pencarian
-                </button>
+              <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative' }}>
+                <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'flex-start' }}>
+                  <button 
+                    onClick={() => setViewingCv(null)} 
+                    style={{ 
+                      background: 'white', 
+                      border: '1px solid #f1f5f9', 
+                      borderRadius: '16px', 
+                      padding: '0.8rem 1.25rem', 
+                      fontWeight: '800', 
+                      color: '#64748b', 
+                      cursor: 'pointer',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px',
+                      fontSize: '0.85rem',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#134E39'; e.currentTarget.style.borderColor = '#134E39'; e.currentTarget.style.transform = 'translateX(-5px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'translateX(0)'; }}
+                  >
+                    <ChevronLeft size={20} /> Kembali ke Pencarian
+                  </button>
+                </div>
                 <div className="candidate-detail-card" style={{ background: 'white', borderRadius: '32px', padding: '3rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px rgba(0,0,0,0.03)' }}>
                   <div className="candidate-profile-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '2rem', gap: '2rem' }}>
                     <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
@@ -936,11 +1011,29 @@ export default function UserDashboard() {
                         </div>
                       </div>
                     </div>
-                    {viewingCv.user_id !== user.id && (
-                      <button className="ajukan-taaruf-btn" onClick={() => handleAjukanTaaruf(viewingCv)} style={{ background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', padding: '1rem 2.5rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>
-                        <Heart size={20} /> Bismillah, Ajukan Taaruf
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      {viewingCv.user_id !== user.id && (
+                        <>
+                          <button 
+                            className="report-btn" 
+                            onClick={() => setShowReportModal(true)}
+                            style={{ 
+                              background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', 
+                              borderRadius: '16px', padding: '1rem', fontWeight: '800', 
+                              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#fecaca'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                          >
+                            <ShieldAlert size={20} />
+                          </button>
+                          <button className="ajukan-taaruf-btn" onClick={() => handleAjukanTaaruf(viewingCv)} style={{ background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', padding: '1rem 2.5rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(19,78,57,0.2)', flex: 1 }}>
+                            <Heart size={20} /> Bismillah, Ajukan Taaruf
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                   
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2.5rem' }}>
@@ -1122,28 +1215,24 @@ export default function UserDashboard() {
                     })
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map(cv => (
-                      <div key={cv.id} className="card" style={{ padding: '2rem', borderRadius: '28px', cursor: 'pointer', transition: 'var(--transition)', border: '1px solid var(--border)', background: 'white' }} onClick={() => navigate(`/app/find/${cv.id}`)} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.borderColor = 'var(--primary-light)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow)'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
-                        <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-                          <div style={{ width: 52, height: 52, borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}><User size={28} /></div>
-                          <div>
-                             <div style={{ fontWeight: '900', fontSize: '1.2rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                               {cv.alias}
-                               {cv.is_verified && <ShieldCheck size={16} color="var(--primary-light)" title="Verified Member" />}
-                               {getAcademyBadge(academyLevels[String(cv.user_id)]) && (
-                                 <div title={getAcademyBadge(academyLevels[String(cv.user_id)]).label} style={{ color: getAcademyBadge(academyLevels[String(cv.user_id)]).color }}>
-                                   {getAcademyBadge(academyLevels[String(cv.user_id)]).icon}
-                                 </div>
-                               )}
-                             </div>
-                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '800', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                               <MapPin size={12} /> {cv.location?.split(',')[0]} • {cv.age} THN • {cv.tinggi_berat}
-                             </div>
-                          </div>
+                      <div key={cv.id} className="glass-candidate-card" style={{ 
+                        padding: '2rem', borderRadius: '40px', cursor: 'pointer', 
+                        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 
+                        background: 'white', border: '1px solid #f1f5f9',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                        textAlign: 'center', position: 'relative', overflow: 'hidden'
+                      }} onClick={() => navigate(`/app/find/${cv.id}`)} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(19,78,57,0.1)'; e.currentTarget.style.borderColor = '#134E39'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = '#f1f5f9'; }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, width: '50px', height: '50px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, transparent 100%)', borderRadius: '0 0 0 50px' }}></div>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#134E39' }}>
+                           <User size={28} />
                         </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.6, marginBottom: '2rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '4.8em' }}>{cv.about}</p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'rgba(212,175,55,0.08)', padding: '4px 10px', borderRadius: '8px' }}>{cv.education}</span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>Lihat Detail <ChevronRight size={16} /></span>
+                        <div style={{ fontWeight: '900', fontSize: '1.25rem', color: '#134E39', marginBottom: '4px' }}>{cv.alias}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#D4AF37', letterSpacing: '0.1em', marginBottom: '1.25rem' }}>
+                           {cv.location?.split(',')[0].toUpperCase()} • {cv.age} THN
+                        </div>
+                        <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.6, marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '3.2em', fontWeight: '500' }}>{cv.about}</p>
+                        <div style={{ paddingTop: '1.25rem', borderTop: '1px solid #f8fafc', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', color: '#134E39', fontWeight: '900', fontSize: '0.8rem' }}>
+                           LIHAT PROFIL <ChevronRight size={14} />
                         </div>
                       </div>
                    ))}
@@ -1237,157 +1326,113 @@ export default function UserDashboard() {
            </button>
            <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
              <h2 style={{ fontSize: '2.25rem', fontWeight: '900', color: '#134E39', margin: '0 0 0.5rem' }}>CV Taaruf Anda</h2>
-             <p style={{ color: '#64748b' }}>Lengkapi data dengan jujur karena ini adalah cerminan niat dan pribadi Anda.</p>
-           </div>
-           {hasSubmittedCv && !isEditingCv ? (
-              <div className="cv-container" style={{ background: 'white', borderRadius: '32px', padding: '3.5rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 60px rgba(15,23,42,0.08)', position: 'relative', overflow: 'hidden' }}>
-                  {/* Premium Ambient Backgrounds */}
-                  <div style={{ position: 'absolute', top: '-150px', right: '-150px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-                  <div style={{ position: 'absolute', bottom: '-150px', left: '-150px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(19,78,57,0.05) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-                  
-                  <div className="my-cv-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3.5rem', position: 'relative', flexWrap: 'wrap', gap: '2rem' }}>
-                      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                         <div style={{ width: 80, height: 80, borderRadius: '24px', background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 20px 40px rgba(19,78,57,0.15)', position: 'relative' }}>
-                            <div style={{ position: 'absolute', bottom: -4, right: -4, width: 26, height: 26, borderRadius: '50%', background: 'var(--secondary)', border: '3px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
-                               <CheckCircle size={12} color="white" />
-                            </div>
-                            <FileText size={36} color="white" />
-                         </div>
-                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                               <h3 style={{ margin: 0, color: 'var(--primary)', fontSize: '1.75rem', fontWeight: '900', letterSpacing: '-0.02em' }}>CV Aktif & Publik</h3>
-                               <span style={{ padding: '0.4rem 0.8rem', borderRadius: '99px', background: 'rgba(16,185,129,0.1)', color: 'var(--success)', fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Terverifikasi</span>
-                            </div>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: '500', marginTop: '6px', maxWidth: '420px', lineHeight: '1.5' }}>Biodata Anda aktif dan siap ditemukan oleh calon pasangan yang sesuai.</p>
-                         </div>
-                      </div>
-                                             <div className="action-buttons-container" style={{ display: 'flex', gap: '12px' }}>
-                         <button onClick={() => { setMyCv(myExistingCv); setIsEditingCv(true); setCvStep(1); }} className="dropdown-action-btn" style={{ background: 'white !important', border: '1px solid var(--border) !important', width: 'auto !important', padding: '0.8rem 1.5rem !important', borderRadius: '16px !important', fontWeight: '800 !important' }}>
-                            <Settings size={18} /> Edit Data
-                         </button>
-                         <button onClick={() => setIsPreviewingCv(true)} style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', padding: '0.8rem 1.8rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'var(--shadow)', transition: 'var(--transition)' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow)'; }}>
-                            <Eye size={18} /> Pratinjau
-                         </button>
-                      </div>
-                  </div>
-
-                  <div className="cv-preview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '2.5rem', position: 'relative' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0 }}>
-                      {/* SECTION: DATA PERSONAL */}
-                      <section style={{ background: '#ffffff', borderRadius: '32px', padding: '2.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
-                          <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}><User size={22} /></div>
-                                                     <h4 className="cv-section-title" style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '1.35rem', margin: 0 }}>Data Personal</h4>
-                        </div>
-                        
-                        <div className="data-personal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                          {[
-                            { label: 'Alias', val: myExistingCv.alias, icon: <User size={16}/> },
-                            { label: 'Usia', val: `${myExistingCv.age} Tahun`, icon: <Clock size={16}/> },
-                            { label: 'Domisili', val: myExistingCv.location?.replace(/\b\w/g, l => l.toUpperCase()), icon: <MapPin size={16}/> },
-                            { label: 'Pendidikan', val: myExistingCv.education, icon: <GraduationCap size={16}/> },
-                            { label: 'Pekerjaan', val: myExistingCv.job, icon: <Briefcase size={16}/> },
-                            { label: 'Suku', val: myExistingCv.suku, icon: <Compass size={16}/> },
-                            { label: 'Status', val: myExistingCv.marital_status, icon: <Heart size={16}/> },
-                            { label: 'Tinggi/Berat', val: myExistingCv.tinggi_berat, icon: <Target size={16}/> },
-                            { label: 'Hobi', val: myExistingCv.hobi, icon: <Activity size={16}/> }
-                          ].map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: 'var(--text-muted)', display: 'flex' }}>{item.icon}</span>
-                                <span style={{ color: 'var(--text-muted)', fontWeight: '800', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
-                              </div>
-                              <span style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '1.1rem', lineHeight: '1.4' }}>{item.val || '-'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                      {/* SECTION: IBADAH & KARAKTER */}
-                      <section>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-                          <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(19, 78, 57, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}><Sparkles size={22} /></div>
-                          <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '1.35rem', margin: 0 }}>Ibadah & Karakter</h4>
-                        </div>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
-                          {[
-                            { label: 'Gambaran Ibadah', val: myExistingCv.worship, theme: 'gold' },
-                            { label: 'Karakter Diri', val: myExistingCv.karakter, theme: 'gold' },
-                            { label: 'Kajian Rutin', val: myExistingCv.kajian, theme: 'gold' },
-                            { label: 'Riwayat Kesehatan', val: myExistingCv.kesehatan, theme: 'green' }
-                          ].map((item, idx) => (
-                            <div key={idx} style={{ 
-                              background: '#ffffff', 
-                              padding: '1.75rem', 
-                              borderRadius: '24px', 
-                              border: '1px solid var(--border)',
-                              boxShadow: '0 8px 25px rgba(0,0,0,0.02)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '12px'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.theme === 'gold' ? 'var(--secondary)' : 'var(--success)' }}></div>
-                                <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
-                              </div>
-                              <p style={{ margin: 0, color: 'var(--primary)', fontWeight: '700', fontSize: '1rem', lineHeight: 1.6, overflowWrap: 'break-word', wordBreak: 'break-word' }}>{item.val || '-'}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
+              <p style={{ color: '#64748b' }}>Lengkapi data dengan jujur karena ini adalah cerminan niat dan pribadi Anda.</p>
+            </div>
+            {hasSubmittedCv && !isEditingCv ? (
+              <div className="glass-cv-container" style={{ position: 'relative', perspective: '1000px' }}>
+                {/* 🏷️ DASHBOARD HEADER - SEPARUH AGAMA 🏷️ */}
+                <div style={{ 
+                  background: 'linear-gradient(135deg, #134e39 0%, #1a5e45 100%)', 
+                  borderRadius: '32px', padding: '3rem', color: 'white', marginBottom: '2.5rem',
+                  boxShadow: '0 20px 40px rgba(19,78,57,0.15)', position: 'relative', overflow: 'hidden'
+                }}>
+                  <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)', borderRadius: '50%' }}></div>
+                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                       <div style={{ width: 80, height: 80, borderRadius: '24px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                         <User size={40} color="#D4AF37" />
+                       </div>
+                       <div>
+                          <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#D4AF37', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Separuh Agama • CV Aktif</div>
+                          <h2 style={{ fontSize: '2.25rem', fontWeight: '900', margin: 0, letterSpacing: '-0.02em' }}>{myExistingCv.alias}</h2>
+                       </div>
                     </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', minWidth: 0 }}>
-                      <section style={{ 
-                        background: 'linear-gradient(145deg, var(--primary) 0%, #1a5e45 100%)', 
-                        padding: '2.5rem', 
-                        borderRadius: '32px', 
-                        color: 'white', 
-                        boxShadow: 'var(--shadow-lg)', 
-                        position: 'relative', 
-                        overflow: 'hidden' 
-                      }}>
-                        <div style={{ position: 'absolute', top: -30, right: -30, opacity: 0.1 }}>
-                           <Heart size={140} color="white" />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.75rem', position: 'relative' }}>
-                          <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Heart size={24} color="var(--secondary)" fill="var(--secondary)" />
-                          </div>
-                          <h4 style={{ color: 'white', fontWeight: '900', fontSize: '1.35rem', margin: 0 }}>Visi Menikah</h4>
-                        </div>
-                        <blockquote style={{ margin: 0, color: 'rgba(255,255,255,0.95)', fontWeight: '500', lineHeight: 1.8, fontSize: '1.1rem', position: 'relative', fontStyle: 'italic', borderLeft: '3px solid var(--secondary)', paddingLeft: '1.5rem' }}>
-                          "{myExistingCv.about}"
-                        </blockquote>
-                      </section>
-
-                      <section style={{ background: '#fff', border: '2px dashed var(--border)', padding: '2.5rem', borderRadius: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-                          <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'rgba(19, 78, 57, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                            <Target size={24} />
-                          </div>
-                          <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '1.35rem', margin: 0 }}>Kriteria Idaman</h4>
-                        </div>
-                        <p style={{ margin: 0, color: 'var(--text-main)', fontWeight: '600', lineHeight: 1.8, fontSize: '1rem', paddingLeft: '4px' }}>{myExistingCv.criteria || 'Belum mengisi kriteria pasangan.'}</p>
-                      </section>
-
-                      <div style={{ background: 'rgba(212,175,55,0.05)', padding: '1.75rem', borderRadius: '24px', border: '1px solid rgba(212,175,55,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}>
-                            <Users size={20} />
-                          </div>
-                          <div>
-                            <h5 style={{ margin: 0, color: '#B8860B', fontWeight: '900', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pandangan Poligami</h5>
-                            <span style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '0.95rem' }}>{myExistingCv.poligami || 'Tidak Bersedia'}</span>
-                          </div>
-                        </div>
-                        {myExistingCv.poligami === 'Bersedia' && <div style={{ fontSize: '0.65rem', fontWeight: '900', padding: '4px 10px', background: 'white', borderRadius: '8px', color: 'var(--secondary)', border: '1px solid var(--secondary)' }}>MODERAT</div>}
-                      </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                       <button onClick={() => { setMyCv(myExistingCv); setIsEditingCv(true); setCvStep(1); }} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '0.8rem 1.5rem', borderRadius: '16px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}>
+                         <Settings size={18} /> EDIT
+                       </button>
+                       <button onClick={() => setIsPreviewingCv(true)} style={{ background: '#D4AF37', color: '#134E39', border: 'none', padding: '0.8rem 1.8rem', borderRadius: '16px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(212,175,55,0.3)' }}>
+                         <Eye size={18} /> PRATINJAU
+                       </button>
                     </div>
                   </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
+                  {/* VISION PANEL */}
+                  <div style={{ gridColumn: 'span 8', background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
+                        <div style={{ width: 8, height: 24, background: '#D4AF37', borderRadius: '4px' }}></div>
+                        <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#134E39' }}>Visi Pernikahan</h4>
+                     </div>
+                     <p style={{ fontSize: '1.25rem', color: '#334155', fontWeight: '600', lineHeight: 1.8, fontStyle: 'italic', margin: 0 }}>
+                       "{myExistingCv.about}"
+                     </p>
+                  </div>
+
+                  {/* QUICK STATS PANEL */}
+                  <div style={{ gridColumn: 'span 4', background: '#f8fafc', borderRadius: '32px', padding: '2rem', border: '1px solid #e2e8f0' }}>
+                     <h4 style={{ margin: '0 0 1.5rem', fontSize: '0.9rem', fontWeight: '900', color: '#134E39', opacity: 0.6 }}>PERSONAL STATS</h4>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        {[
+                           { label: 'USIA', val: `${myExistingCv.age} thn`, icon: <Clock size={14} /> },
+                           { label: 'DOMISILI', val: myExistingCv.location, icon: <MapPin size={14} /> },
+                           { label: 'STATUS', val: myExistingCv.marital_status, icon: <Heart size={14} /> },
+                           { label: 'SUKU', val: myExistingCv.suku, icon: <Compass size={14} /> }
+                        ].map((item, idx) => (
+                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>{item.label}</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>{item.val}</span>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  {/* DATA GRID */}
+                  <div style={{ gridColumn: 'span 12', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                     {[
+                        { title: 'Pendidikan & Karir', data: [
+                           { l: 'Tingkat', v: myExistingCv.education },
+                           { l: 'Pekerjaan', v: myExistingCv.job }
+                        ], color: '#134E39' },
+                        { title: 'Fisik & Hobi', data: [
+                           { l: 'Tinggi/Berat', v: myExistingCv.tinggi_berat },
+                           { l: 'Hobi', v: myExistingCv.hobi }
+                        ], color: '#D4AF37' },
+                        { title: 'Agama & Ibadah', data: [
+                           { l: 'Ibadah', v: myExistingCv.worship },
+                           { l: 'Karakter', v: myExistingCv.karakter || '-' }
+                        ], color: '#134E39' }
+                     ].map((box, bi) => (
+                        <div key={bi} style={{ background: 'white', borderRadius: '32px', padding: '2rem', border: '1px solid #f1f5f9', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                           <h5 style={{ margin: '0 0 1.5rem', color: box.color, fontWeight: '900', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{box.title}</h5>
+                           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                              {box.data.map((d, di) => (
+                                 <div key={di}>
+                                    <div style={{ fontSize: '0.6rem', fontWeight: '800', color: '#94a3b8', marginBottom: '4px' }}>{d.l.toUpperCase()}</div>
+                                    <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#334155', lineHeight: 1.5 }}>{d.v}</div>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+
+                  {/* PREFERENCES PANEL */}
+                  <div style={{ gridColumn: 'span 12', background: '#134E39', borderRadius: '32px', padding: '2.5rem', color: 'white', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
+                     <div style={{ flex: 1, minWidth: '300px' }}>
+                        <h4 style={{ color: '#D4AF37', fontWeight: '900', fontSize: '0.9rem', marginBottom: '1rem', letterSpacing: '0.1em' }}>KRITERIA PASANGAN</h4>
+                        <p style={{ margin: 0, opacity: 0.9, lineHeight: 1.8, fontWeight: '500' }}>{myExistingCv.criteria}</p>
+                     </div>
+                     <div style={{ width: '250px' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                           <div style={{ fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', marginBottom: '8px' }}>POLIGAMI</div>
+                           <div style={{ fontSize: '1.15rem', fontWeight: '900' }}>{myExistingCv.poligami || 'Tidak Bersedia'}</div>
+                        </div>
+                     </div>
+                  </div>
+                </div>
               </div>
-
             ) : (
               <div style={{ background: 'white', borderRadius: '32px', padding: '3rem', border: '1px solid #f1f5f9', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.05)' }}>
                  {cvStep < 7 && (
@@ -1560,6 +1605,113 @@ export default function UserDashboard() {
       )}
 
       {/* Styles Injection */}
+      {/* 🚩 PREMIUM REPORT USER MODAL 🚩 */}
+      {showReportModal && viewingCv && (
+        <div className="modal-overlay" style={{ zIndex: 10002, backdropFilter: 'blur(8px)', background: 'rgba(15, 23, 42, 0.6)' }} onClick={() => setShowReportModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ position: 'relative', padding: '3rem 2rem 2rem', textAlign: 'center', background: 'white' }}>
+               <button 
+                 onClick={() => setShowReportModal(false)}
+                 style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#f8fafc', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s' }}
+                 onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
+                 onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; }}
+               >
+                 <X size={20} />
+               </button>
+
+               <div style={{ width: '80px', height: '80px', background: '#fef2f2', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#ef4444', boxShadow: '0 10px 20px rgba(239, 68, 68, 0.1)' }}>
+                  <ShieldAlert size={40} />
+               </div>
+               
+               <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#1e293b', margin: '0 0 0.75rem' }}>Laporkan Kandidat</h3>
+               <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                 Bantu kami menjaga komunitas <strong>{viewingCv.alias}</strong> tetap nyaman. Laporan Anda bersifat rahasia.
+               </p>
+            </div>
+
+            <div style={{ padding: '0 2rem 2.5rem', background: 'white' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Alasan Pelaporan</label>
+                  <select 
+                    className="form-control"
+                    style={{ height: '56px', borderRadius: '16px', border: '2px solid #f1f5f9', fontWeight: '600', color: '#1e293b' }}
+                    value={reportForm.reason}
+                    onChange={e => setReportForm({ ...reportForm, reason: e.target.value })}
+                  >
+                    <option value="">Pilih alasan...</option>
+                    <option value="Ketidakjujuran">Ketidakjujuran Informasi</option>
+                    <option value="Perilaku Tidak Sopan">Perilaku Tidak Sopan / Chat Kasar</option>
+                    <option value="Foto/Profil Tidak Pantas">Profil / Data Tidak Pantas</option>
+                    <option value="Penipuan">Dugaan Penipuan / Spam</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Detail Kejadian (Opsional)</label>
+                  <textarea 
+                    className="form-control" 
+                    rows={4} 
+                    style={{ borderRadius: '16px', border: '2px solid #f1f5f9', padding: '1rem', fontWeight: '500', resize: 'none' }}
+                    placeholder="Ceritakan kendala yang dialami secara singkat..."
+                    value={reportForm.details}
+                    onChange={e => setReportForm({ ...reportForm, details: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
+                <button 
+                  onClick={() => setShowReportModal(false)}
+                  style={{ flex: 1, padding: '1rem', borderRadius: '18px', border: '2px solid #f1f5f9', background: 'white', color: '#64748b', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                >
+                  Batal
+                </button>
+                <button 
+                  disabled={!reportForm.reason || isSubmittingReport}
+                  onClick={async () => {
+                    setIsSubmittingReport(true);
+                    try {
+                      const { error } = await supabase.from('user_reports').insert([{
+                        reporter_id: user.id,
+                        reported_cv_id: viewingCv.id,
+                        reported_user_id: viewingCv.user_id,
+                        reason: reportForm.reason,
+                        details: reportForm.details,
+                        status: 'pending',
+                        created_at: new Date().toISOString()
+                      }]);
+                      if (error) throw error;
+                      showAlert('Laporan Terkirim', 'Terima kasih atas laporan Anda. Admin akan segera meninjau kandidat ini.', 'success');
+                      setShowReportModal(false);
+                      setReportForm({ reason: '', details: '' });
+                    } catch (err) {
+                      console.error('Report error:', err);
+                      showAlert('Gagal Mengirim', 'Terjadi kesalahan saat mengirim laporan.', 'error');
+                    } finally {
+                      setIsSubmittingReport(false);
+                    }
+                  }}
+                  style={{ 
+                    flex: 2, padding: '1rem', borderRadius: '18px', border: 'none', 
+                    background: (!reportForm.reason || isSubmittingReport) ? '#cbd5e1' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
+                    color: 'white', fontWeight: '800', cursor: 'pointer', 
+                    boxShadow: '0 8px 20px rgba(239, 68, 68, 0.2)', transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={e => { if (!reportForm.reason) return; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(239, 68, 68, 0.3)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.2)'; }}
+                >
+                  {isSubmittingReport ? 'Mengirim...' : 'Kirim Laporan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .dashboard-root { 
           padding: 1.5rem; 
@@ -1573,6 +1725,25 @@ export default function UserDashboard() {
           -ms-overflow-style: none; 
           scrollbar-width: none; 
           overflow-y: auto;
+        }
+
+        .cv-container::-webkit-scrollbar,
+        .modal-content::-webkit-scrollbar {
+          width: 8px;
+        }
+        .cv-container::-webkit-scrollbar-track,
+        .modal-content::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .cv-container::-webkit-scrollbar-thumb,
+        .modal-content::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .cv-container::-webkit-scrollbar-thumb:hover,
+        .modal-content::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
         }
         
         .form-control { 
@@ -1733,73 +1904,98 @@ export default function UserDashboard() {
       {/* 🖼️ CV PREVIEW MODAL 🖼️ */}
       {isPreviewingCv && myExistingCv && (
         <div className="modal-overlay" onClick={() => setIsPreviewingCv(false)} style={{ zIndex: 1000 }}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '750px', width: '95%', padding: 0, overflow: 'hidden', borderRadius: '40px', border: 'none' }}>
-             {/* CV Header */}
-             <div className="cv-header" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)', padding: '3.5rem', color: 'white', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '40px', right: '40px', width: '120px', height: '120px', borderRadius: '30px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}><User size={64} /></div>
-                <div style={{ padding: '6px 14px', background: 'var(--secondary)', borderRadius: '8px', color: 'var(--primary)', fontSize: '0.7rem', fontWeight: '900', display: 'inline-block', marginBottom: '1.5rem', letterSpacing: '0.15em', boxShadow: 'var(--shadow-sm)' }}>DATA CV TAARUF</div>
-                <h2 style={{ fontSize: '3rem', fontWeight: '900', margin: '0 0 0.75rem', letterSpacing: '-0.03em' }}>{myExistingCv.alias}</h2>
-                <div style={{ display: 'flex', gap: '2rem', fontSize: '0.95rem', opacity: 0.9, fontWeight: '800', flexWrap: 'wrap' }}>
-                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} color="var(--secondary)" /> {myExistingCv.location}</span>
-                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={18} color="var(--secondary)" /> {myExistingCv.age} Tahun</span>
-                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Heart size={18} color="var(--secondary)" /> {myExistingCv.marital_status}</span>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ 
+            maxWidth: '1000px', width: '95%', padding: 0, overflowY: 'auto', 
+            borderRadius: '40px', border: 'none', maxHeight: '90vh', background: '#f8fafc' 
+          }}>
+             {/* 🏷️ MODAL GLASS HEADER 🏷️ */}
+             <div style={{ 
+               background: 'linear-gradient(135deg, #134E39 0%, #1a5e45 100%)', 
+               padding: '4rem', color: 'white', position: 'relative', overflow: 'hidden' 
+             }}>
+                <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '150px', height: '150px', background: 'rgba(212,175,55,0.1)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                      <div style={{ width: 90, height: 90, borderRadius: '28px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <User size={45} color="#D4AF37" />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#D4AF37', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px' }}>Profil Kandidat • Separuh Agama</div>
+                        <h2 style={{ fontSize: '2.8rem', fontWeight: '900', margin: 0, letterSpacing: '-0.03em' }}>{myExistingCv.alias}</h2>
+                      </div>
+                   </div>
+                   <button onClick={() => setIsPreviewingCv(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '12px', borderRadius: '16px', color: 'white', cursor: 'pointer' }}><X size={28} /></button>
                 </div>
              </div>
-             
-             <div className="cv-preview-grid" style={{ padding: '3.5rem', background: '#fff', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }}>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                    <section>
-                       <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '0.9rem', letterSpacing: '0.15em', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                         <div style={{ width: '4px', height: '22px', background: 'var(--secondary)', borderRadius: '2px' }}></div> DATA PRIBADI
-                       </h4>
-                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem 2rem' }}>
+
+             <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
+                   {/* Vision */}
+                   <div style={{ gridColumn: 'span 12', background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+                        <div style={{ width: 6, height: 20, background: '#D4AF37', borderRadius: '3px' }}></div>
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Visi Pernikahan</h4>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '1.2rem', color: '#334155', fontWeight: '600', fontStyle: 'italic', lineHeight: 1.8 }}>
+                        "{myExistingCv.about}"
+                      </p>
+                   </div>
+
+                   {/* Personal Details */}
+                   <div style={{ gridColumn: 'span 4', background: '#f1f5f9', borderRadius: '32px', padding: '2rem' }}>
+                      <h4 style={{ margin: '0 0 1.5rem', fontSize: '0.8rem', fontWeight: '900', color: '#64748b', letterSpacing: '0.1em' }}>DETAIL PERSONAL</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                          {[
-                           { label: 'Pekerjaan', val: myExistingCv.job, icon: <Briefcase size={20} /> },
-                           { label: 'Pendidikan', val: myExistingCv.education, icon: <GraduationCap size={20} /> },
-                           { label: 'Suku Bangsa', val: myExistingCv.suku, icon: <Compass size={20} /> },
-                           { label: 'Tinggi / Berat', val: myExistingCv.tinggi_berat, icon: <Target size={20} /> },
-                           { label: 'Kesehatan', val: myExistingCv.kesehatan || 'Normal', icon: <Heart size={20} /> },
-                           { label: 'Hobi', val: myExistingCv.hobi || '-', icon: <Activity size={20} /> },
-                         ].map((item, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 5px 15px rgba(212,175,55,0.05)' }}>{item.icon}</div>
-                               <div>
-                                  <div style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{item.label}</div>
-                                  <div style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main)' }}>{item.val}</div>
-                               </div>
-                            </div>
+                           { l: 'Usia', v: `${myExistingCv.age} Thn` },
+                           { l: 'Domisili', v: myExistingCv.location },
+                           { l: 'Suku', v: myExistingCv.suku },
+                           { l: 'Pekerjaan', v: myExistingCv.job },
+                           { l: 'Pendidikan', v: myExistingCv.education }
+                         ].map((item, idx) => (
+                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>{item.l.toUpperCase()}</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>{item.v}</span>
+                           </div>
                          ))}
-                       </div>
-                    </section>
-                 </div>
+                      </div>
+                   </div>
 
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                    <section style={{ background: 'var(--bg-light)', padding: '2.5rem', borderRadius: '32px', border: '1px solid var(--border)', position: 'relative' }}>
-                       <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '0.85rem', letterSpacing: '0.15em', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <Heart size={18} fill="var(--secondary)" color="var(--secondary)" /> VISI PERNIKAHAN
-                       </h4>
-                       <p style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: 1.8, fontWeight: '600', fontStyle: 'italic' }}>"{myExistingCv.about}"</p>
-                    </section>
-                    
-                    <section style={{ background: 'white', padding: '2.5rem', borderRadius: '32px', border: '2px dashed var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                       <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '0.85rem', letterSpacing: '0.15em', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <Target size={18} color="var(--primary)" /> KRITERIA PASANGAN
-                       </h4>
-                       <p style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: 1.8, fontWeight: '600' }}>{myExistingCv.criteria}</p>
-                    </section>
+                   {/* Character Panels */}
+                   <div style={{ gridColumn: 'span 8', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                      <div style={{ background: 'white', borderRadius: '32px', padding: '2rem', border: '1px solid #e2e8f0' }}>
+                         <h5 style={{ margin: '0 0 1.25rem', color: '#134E39', fontWeight: '900', fontSize: '0.8rem' }}>AGAMA & IBADAH</h5>
+                         <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569', fontWeight: '600', lineHeight: 1.6 }}>{myExistingCv.worship}</p>
+                      </div>
+                      <div style={{ background: 'white', borderRadius: '32px', padding: '2rem', border: '1px solid #e2e8f0' }}>
+                         <h5 style={{ margin: '0 0 1.25rem', color: '#D4AF37', fontWeight: '900', fontSize: '0.8rem' }}>KARAKTER DIRI</h5>
+                         <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569', fontWeight: '600', lineHeight: 1.6 }}>{myExistingCv.karakter}</p>
+                      </div>
+                      <div style={{ gridColumn: 'span 2', background: '#134E39', borderRadius: '32px', padding: '2rem', color: 'white' }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem' }}>
+                            <div style={{ flex: 1 }}>
+                               <h5 style={{ margin: '0 0 1rem', color: '#D4AF37', fontWeight: '900', fontSize: '0.8rem' }}>KRITERIA PASANGAN</h5>
+                               <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9, lineHeight: 1.7 }}>{myExistingCv.criteria}</p>
+                            </div>
+                            <div style={{ width: '200px', background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '24px' }}>
+                               <div style={{ fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', marginBottom: '8px' }}>POLIGAMI</div>
+                               <div style={{ fontSize: '1.1rem', fontWeight: '900' }}>{myExistingCv.poligami || 'Tidak Bersedia'}</div>
+                            </div>
+                            {myExistingCv.kesehatan && (
+                               <div>
+                                  <div style={{ fontSize: '0.65rem', fontWeight: '900', color: '#b91c1c', marginBottom: '4px' }}>KESEHATAN</div>
+                                  <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#b91c1c' }}>{myExistingCv.kesehatan}</div>
+                               </div>
+                            )}
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
 
-                    <section style={{ padding: '0 1.5rem' }}>
-                       <h4 style={{ color: 'var(--primary)', fontWeight: '900', fontSize: '0.85rem', letterSpacing: '0.15em', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <ShieldCheck size={18} color="var(--secondary)" /> PANDANGAN POLIGAMI
-                       </h4>
-                       <span style={{ display: 'inline-block', padding: '10px 20px', background: 'rgba(19, 78, 57, 0.05)', color: 'var(--primary)', borderRadius: '16px', fontSize: '1rem', fontWeight: '800' }}>{myExistingCv.poligami || 'Tidak Bersedia'}</span>
-                    </section>
-                 </div>
-              </div>
-              <div style={{ padding: '2.5rem', background: '#fff', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'center' }}>
-                 <button className="btn btn-primary" onClick={() => setIsPreviewingCv(false)} style={{ borderRadius: '20px', padding: '1.1rem 4rem', fontSize: '1.05rem', background: 'var(--primary)', fontWeight: '900', boxShadow: 'var(--shadow)', border: 'none', cursor: 'pointer', transition: 'var(--transition)' }}>Tutup Pratinjau</button>
-              </div>
-           </div>
+             <div style={{ padding: '3rem', background: 'white', borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>
+                <button className="btn btn-primary" onClick={() => setIsPreviewingCv(false)} style={{ background: '#134E39', padding: '1rem 5rem', borderRadius: '16px', fontWeight: '900' }}>Tutup Pratinjau</button>
+             </div>
+          </div>
         </div>
       )}
 
@@ -1817,7 +2013,7 @@ export default function UserDashboard() {
                     qs: [
                       'Bagaimana visi Anda dalam membina rumah tangga islami?',
                       'Apa ekspektasi Anda terhadap pasangan dalam hal ketaatan beragama?',
-                      'Bagaimana Anda mendefinisikan keluarga yang sakinah, mawaddah, warahmah?'
+                      'Bagaimana Anda mendefinisikan keluarga yang sakinah, Separuh Agama, warahmah?'
                     ]
                   },
                   { 

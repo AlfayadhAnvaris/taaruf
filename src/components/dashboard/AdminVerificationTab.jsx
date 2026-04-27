@@ -2,9 +2,12 @@ import React, { useContext, useState } from 'react';
 import { AppContext } from '../../App';
 import { 
   BadgeCheck, XCircle, ShieldCheck, Clock, 
-  Search, Filter, User, Phone, Check, X 
+  Search, Filter, User, Phone, Check, X, PieChart as PieChartIcon, Activity
 } from 'lucide-react';
 import { supabase } from '../../supabase';
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend 
+} from 'recharts';
 
 export default function AdminVerificationTab({ showAlert }) {
   const { usersDb, setUsersDb } = useContext(AppContext);
@@ -55,8 +58,76 @@ export default function AdminVerificationTab({ showAlert }) {
     }
   };
 
+  // Calculate Verification Stats for Chart
+  const stats = {
+    pending: usersDb.filter(u => u.verification_status === 'pending').length,
+    verified: usersDb.filter(u => u.verification_status === 'verified').length,
+    unverified: usersDb.filter(u => !u.verification_status || u.verification_status === 'unverified').length
+  };
+
+  const chartData = [
+    { name: 'Menunggu', value: stats.pending, color: '#D4AF37' },
+    { name: 'Terverifikasi', value: stats.verified, color: '#134E39' },
+    { name: 'Belum Upload', value: stats.unverified, color: '#94a3b8' }
+  ].filter(d => d.value > 0);
+
   return (
     <div style={{ animation: 'fadeIn 0.5s ease' }}>
+      
+      {/* 📊 Verification Summary Chart Section */}
+      <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center' }}>
+        <div style={{ flex: '1', minWidth: '300px' }}>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+              <div style={{ background: 'rgba(19,78,57,0.05)', color: '#134E39', padding: '10px', borderRadius: '12px' }}>
+                <PieChartIcon size={20} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#1e293b' }}>Ringkasan Verifikasi</h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8', fontWeight: '600' }}>Status validasi identitas kandidat</p>
+              </div>
+           </div>
+           
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="stat-mini-card">
+                <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Perlu Verifikasi</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#D4AF37' }}>{stats.pending}</div>
+              </div>
+              <div className="stat-mini-card">
+                <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Sudah Aktif</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39' }}>{stats.verified}</div>
+              </div>
+           </div>
+        </div>
+
+        <div style={{ width: '250px', height: '180px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value" stroke="none">
+                {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={4} />)}
+              </Pie>
+              <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+           {chartData.map((d, i) => (
+             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <div style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }}></div>
+               <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b' }}>{d.name}: {d.value}</span>
+             </div>
+           ))}
+        </div>
+      </div>
+
+      <style>{`
+        .stat-mini-card {
+          background: #f8fafc;
+          padding: 1rem;
+          border-radius: 16px;
+          border: 1px solid #f1f5f9;
+        }
+      `}</style>
       {/* Search & Filter */}
       <div className="card" style={{ marginBottom: '2rem', padding: '1.25rem' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>

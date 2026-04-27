@@ -20,6 +20,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, published, draft
   const [form, setForm] = useState({
     id: null,
     name: '',
@@ -135,24 +136,40 @@ export default function AdminTestimonialsTab({ showAlert }) {
     setShowModal(true);
   };
 
-  const filtered = testimonials.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = testimonials.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          t.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                          (statusFilter === 'published' && t.is_published) || 
+                          (statusFilter === 'draft' && !t.is_published);
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div style={{ animation: 'fadeIn 0.4s ease' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ position: 'relative', width: '300px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input 
-            type="text" 
-            placeholder="Cari nama atau isi..." 
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', flex: 1 }}>
+          <div style={{ position: 'relative', width: '300px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <input 
+              type="text" 
+              placeholder="Cari nama atau isi..." 
+              className="form-control" 
+              style={{ paddingLeft: '2.5rem', borderRadius: '12px', background: 'white' }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select 
             className="form-control" 
-            style={{ paddingLeft: '2.5rem', borderRadius: '12px', background: 'white' }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            style={{ width: '160px', borderRadius: '12px', background: 'white' }}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">Semua Status</option>
+            <option value="published">Hanya Publik</option>
+            <option value="draft">Hanya Draft</option>
+          </select>
         </div>
         <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => openForm()}>
           <Plus size={18} /> Tambah Testimoni

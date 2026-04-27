@@ -15,6 +15,7 @@ export default function AdminHomeTab() {
   const { cvs, taarufRequests, usersDb } = useContext(AppContext);
   const [growthData, setGrowthData] = useState([]);
   const [dynamicChartData, setDynamicChartData] = useState([]);
+  const [taarufChartData, setTaarufChartData] = useState([]);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
 
   // Filter States
@@ -126,11 +127,53 @@ export default function AdminHomeTab() {
         }
       }
 
+      // --- 🏹 PROSES DATA TAARUF (CHART 3) ---
+      if (taarufRequests && taarufRequests.length > 0) {
+        // Filter by Gender & Time Range
+        const filteredRequests = taarufRequests.filter(r => {
+          // Time Filter
+          const rDate = new Date(r.created_at);
+          const limit = new Date();
+          limit.setMonth(limit.getMonth() - monthsToShow);
+          if (rDate < limit) return false;
+
+          // Gender Filter
+          if (chartsGender !== 'all') {
+            const sender = usersDb.find(u => u.email === r.senderEmail);
+            if (sender?.gender !== chartsGender) return false;
+          }
+          return true;
+        });
+
+        const tStats = {};
+        filteredRequests.forEach(r => {
+          const status = r.status || 'pending';
+          tStats[status] = (tStats[status] || 0) + 1;
+        });
+
+        const statusLabels = {
+          'pending_target': 'Menunggu Calon',
+          'pending_admin': 'Verifikasi Ustadz',
+          'qna': 'Sesi Q&A',
+          'wali_process': 'Proses Wali',
+          'meet': 'Nadzhor',
+          'completed': 'Berhasil',
+          'rejected': 'Dibatalkan'
+        };
+
+        const tResult = Object.keys(tStats).map(key => ({
+          name: statusLabels[key] || key,
+          value: tStats[key],
+          color: key === 'completed' ? '#134E39' : (key === 'rejected' ? '#ef4444' : '#D4AF37')
+        }));
+        setTaarufChartData(tResult);
+      }
+
       setIsLoadingAnalytics(false);
     };
 
     processAnalytics();
-  }, [usersDb, chartsGender, timeRange, distributionType]);
+  }, [usersDb, taarufRequests, chartsGender, timeRange, distributionType]);
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease', paddingBottom: '3rem' }}>
@@ -305,6 +348,49 @@ export default function AdminHomeTab() {
         </div>
       </div>
 
+      {/* 🟢 FULL WIDTH TAARUF ANALYTICS 🟢 */}
+      <div className="card admin-chart-card" style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <ChartHeader Icon={Activity} title="Statistik Aktivitas Taaruf" subtitle="Distribusi tahapan mediasi yang sedang berjalan" />
+          <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '0.8rem', fontWeight: '800', color: '#134E39' }}>
+            Total {taarufChartData.reduce((acc, curr) => acc + curr.value, 0)} Permintaan
+          </div>
+        </div>
+        
+        <div className="taaruf-stats-layout">
+          <div style={{ height: '300px', flex: 1.5 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={taarufChartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} style={{ fontSize: '10px', fill: '#64748b', fontWeight: '700' }} />
+                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px', fill: '#94a3b8' }} />
+                <RechartsTooltip 
+                  cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}
+                />
+                <Bar dataKey="value" name="Jumlah" radius={[8, 8, 0, 0]} barSize={40}>
+                  {taarufChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="taaruf-summary-list">
+            {[...taarufChartData].sort((a,b) => b.value - a.value).map((item, idx) => (
+              <div key={idx} className="taaruf-summary-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '3px', background: item.color }}></div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>{item.name}</span>
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <style>{`
         .premium-select-sm {
           padding: 0.6rem 1rem;
@@ -351,6 +437,34 @@ export default function AdminHomeTab() {
           fontSize: 2rem;
           fontWeight: 900;
           color: #134E39;
+        }
+
+        .taaruf-stats-layout {
+          display: flex;
+          gap: 3rem;
+          align-items: center;
+        }
+        .taaruf-summary-list {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .taaruf-summary-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-radius: 12px;
+          border: 1px solid #f1f5f9;
+        }
+
+        @media (max-width: 992px) {
+          .taaruf-stats-layout {
+            flex-direction: column;
+            gap: 2rem;
+          }
         }
 
         @media (max-width: 1200px) {

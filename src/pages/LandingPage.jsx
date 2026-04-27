@@ -7,6 +7,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const [testimonials, setTestimonials] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('Semua');
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -126,7 +127,7 @@ export default function LandingPage() {
                 <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.15 }}><BookOpen size={160} /></div>
                 <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
                   <div style={{ display: 'inline-block', padding: '0.4rem 1.2rem', background: 'var(--secondary)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', color: '#1A2E25', marginBottom: '2rem' }}>PROGRAM AKADEMI</div>
-                  <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Akademi Separuh Agama</h3>
+                  <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Separuh Agama Academy</h3>
                   <p style={{ opacity: 0.9, lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1.05rem' }}>Bekali diri Anda lewat kurikulum video eksklusif, kuis pemahaman, dan raih E-Sertifikat Kelulusan Resmi sebelum melangkah ke jenjang pernikahan.</p>
                 </div>
                 <button className="btn btn-secondary" style={{ width: '100%', padding: '1rem', borderRadius: '16px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
@@ -181,44 +182,190 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
-        <section className="landing-section-full reveal" style={{ background: '#fff', flexDirection: 'column' }}>
-          <h2>Kisah Berkah Separuh Agama</h2>
-          <div className="testimonial-grid auto-grid">
-            {testimonials.length > 0 ? (
-              testimonials.map(t => (
-                <div key={t.id} className="testi-card">
-                  <div style={{ display: 'flex', gap: '2px', marginBottom: '1rem' }}>
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill={i < t.rating ? '#D4AF37' : 'none'} color={i < t.rating ? '#D4AF37' : '#e2e8f0'} />
-                    ))}
+        {/* TESTIMONIALS SECTION */}
+        <section className="landing-section-full reveal" style={{ 
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', 
+          flexDirection: 'column',
+          padding: '8rem 5% 10rem',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Decorative background elements */}
+          <div style={{ position: 'absolute', top: '10%', right: '-5%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(44,95,77,0.03)', filter: 'blur(60px)' }}></div>
+          <div style={{ position: 'absolute', bottom: '5%', left: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'rgba(212,175,55,0.03)', filter: 'blur(80px)' }}></div>
+
+          <div style={{ textAlign: 'center', marginBottom: '4rem', position: 'relative', zIndex: 2 }}>
+            <span style={{ color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.25em', fontSize: '0.7rem' }}>Cerita Bahagia</span>
+            <h2 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', fontWeight: '900', color: '#1A2E25', margin: '1rem 0', letterSpacing: '-0.02em' }}>
+              Kisah Berkah <span style={{ color: 'var(--primary)', position: 'relative' }}>
+                Separuh Agama
+                <svg style={{ position: 'absolute', bottom: '-8px', left: 0, width: '100%', height: '8px' }} viewBox="0 0 100 10" preserveAspectRatio="none">
+                  <path d="M0 5 Q 25 0, 50 5 T 100 5" fill="none" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round" opacity="0.3" />
+                </svg>
+              </span>
+            </h2>
+            <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6', fontWeight: '500' }}>
+              Mereka yang telah menemukan ketenangan hati dan melengkapi separuh agama melalui ikhtiar yang terjaga.
+            </p>
+          </div>
+          
+          {/* TESTIMONIAL FILTERS - MODERN PILL STYLE */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '12px', 
+            marginBottom: '4.5rem', 
+            flexWrap: 'wrap',
+            position: 'relative',
+            zIndex: 2 
+          }}>
+            {['Semua', 'Ikhwan', 'Akhwat'].map(filter => (
+              <button 
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                style={{ 
+                  padding: '0.75rem 2rem', 
+                  borderRadius: '100px', 
+                  border: 'none',
+                  background: activeFilter === filter ? 'var(--primary)' : 'rgba(255,255,255,0.8)',
+                  color: activeFilter === filter ? 'white' : '#64748b',
+                  fontSize: '0.9rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: activeFilter === filter ? '0 10px 25px rgba(44,95,77,0.25)' : '0 4px 15px rgba(0,0,0,0.03)',
+                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  transform: activeFilter === filter ? 'scale(1.05)' : 'scale(1)',
+                  backdropFilter: 'blur(10px)',
+                  border: activeFilter === filter ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.5)'
+                }}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          <div className="testimonial-grid auto-grid" style={{ position: 'relative', zIndex: 2 }}>
+            {(() => {
+              const filtered = testimonials.filter(t => 
+                activeFilter === 'Semua' || 
+                (t.role && t.role.toLowerCase().includes(activeFilter.toLowerCase()))
+              );
+              
+              if (filtered.length > 0) {
+                return filtered.map((t, idx) => (
+                  <div 
+                    key={t.id} 
+                    className="testi-card animate-up" 
+                    style={{ 
+                      animationDelay: `${idx * 0.1}s`,
+                      background: 'rgba(255, 255, 255, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.8)',
+                      borderRadius: '32px',
+                      padding: '2.5rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.04)',
+                      transition: 'all 0.4s ease',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', opacity: 0.05, transform: 'rotate(15deg)' }}>
+                      <Quote size={80} color="var(--primary)" fill="currentColor" />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '3px', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} fill={i < (t.rating || 5) ? '#D4AF37' : 'none'} color={i < (t.rating || 5) ? '#D4AF37' : '#e2e8f0'} />
+                      ))}
+                    </div>
+
+                    <p className="testi-text" style={{ 
+                      fontSize: '1.1rem', 
+                      color: '#334155', 
+                      fontWeight: '500', 
+                      lineHeight: '1.8',
+                      marginBottom: '2rem',
+                      position: 'relative',
+                      zIndex: 1,
+                      minHeight: '100px'
+                    }}>
+                      "{t.content}"
+                    </p>
+
+                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+                      <div style={{ 
+                        width: '52px', 
+                        height: '52px', 
+                        borderRadius: '16px', 
+                        background: 'linear-gradient(135deg, var(--primary), #2C5F4D)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '900',
+                        fontSize: '1.2rem',
+                        boxShadow: '0 8px 16px rgba(44,95,77,0.2)'
+                      }}>
+                        {t.name.charAt(0)}
+                      </div>
+                      <div>
+                        <strong style={{ display: 'block', color: '#1A2E25', fontSize: '1rem', fontWeight: '800' }}>{t.name}</strong>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {t.role || 'Alumni'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="testi-text">"{t.content}"</p>
-                  <div className="testi-author">
-                    <strong>{t.name}</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t.role}</span>
+                ));
+              }
+
+              return (
+                <div style={{ 
+                  gridColumn: '1/-1', 
+                  textAlign: 'center', 
+                  padding: '5rem 2rem', 
+                  background: 'rgba(255,255,255,0.5)', 
+                  backdropFilter: 'blur(10px)',
+                  border: '2px dashed #e2e8f0', 
+                  borderRadius: '40px' 
+                }}>
+                  <div style={{ width: 80, height: 80, background: '#f8fafc', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                    <Quote size={40} color="#cbd5e1" />
                   </div>
+                  <h4 style={{ margin: '0 0 0.5rem', color: '#1e293b', fontWeight: '800' }}>Belum Ada Testimoni</h4>
+                  <p style={{ color: '#94a3b8', fontWeight: '600', maxWidth: '300px', margin: '0 auto' }}>Kategori ini akan segera terisi oleh kisah sukses lainnya.</p>
                 </div>
-              ))
-            ) : (
-              // Fallback default testimonials
+              );
+            })()}
+
+            {/* Fallback Static Testimonials (If DB empty) */}
+            {testimonials.length === 0 && (
               <>
-                <div className="testi-card">
-                  <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                  <p className="testi-text">"Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut."</p>
-                  <div className="testi-author">
-                    <strong>Hamba Allah</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ikhwan, Menikah 2025</span>
+                {[
+                  { name: 'Hamba Allah', role: 'Ikhwan, Menikah 2025', content: 'Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut.' },
+                  { name: 'Ukhti Fulanah', role: 'Akhwat, Menikah 2026', content: 'Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga.' }
+                ].map((st, i) => (
+                  <div key={i} style={{ 
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    borderRadius: '32px',
+                    padding: '2.5rem',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.04)'
+                  }}>
+                    <Quote size={32} color="var(--primary)" style={{ marginBottom: '1.5rem', opacity: 0.1 }} fill="currentColor" />
+                    <p style={{ fontSize: '1.1rem', color: '#334155', fontWeight: '500', lineHeight: '1.8', marginBottom: '2rem' }}>"{st.content}"</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>{st.name.charAt(0)}</div>
+                      <div>
+                        <strong style={{ display: 'block', color: '#1A2E25', fontWeight: '800' }}>{st.name}</strong>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>{st.role}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="testi-card">
-                  <Quote size={32} color="var(--primary-light)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                  <p className="testi-text">"Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga."</p>
-                  <div className="testi-author">
-                    <strong>Ukhti Fulanah</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Akhwat, Menikah 2026</span>
-                  </div>
-                </div>
+                ))}
               </>
             )}
           </div>

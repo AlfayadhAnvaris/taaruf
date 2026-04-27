@@ -48,7 +48,7 @@ const AccessDenied = () => {
 };
 
 // --- Dashboard Layout Component ---
-const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, unreadCount, notifications, deleteNotification, markAllAsRead, deleteAllNotifications, showNotifications, setShowNotifications, showProfileMenu, setShowProfileMenu, user, isAdmin, hideBanner, setHideBanner, cvs }) => {
+const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, unreadCount, notifications, deleteNotification, markAllAsRead, deleteAllNotifications, showNotifications, setShowNotifications, showProfileMenu, setShowProfileMenu, user, isAdmin, hideBanner, setHideBanner, cvs, showAlert }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { tab, id } = useParams();
@@ -60,9 +60,29 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
   }
 
   const navigateTo = (newTab) => {
+    const restrictedTabs = ['find', 'my_cv'];
+    if (restrictedTabs.includes(newTab) && !user?.profile_complete && !isAdmin) {
+      showAlert('Profil Belum Lengkap', 'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 'error');
+      navigate('/app/account');
+      if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
+      return;
+    }
     navigate(`/app/${newTab}`);
     if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
   };
+
+  // 🛡️ STRICT RENDER GUARD 🛡️
+  // Prevent manual URL navigation to restricted pages
+  useEffect(() => {
+    const restrictedTabs = ['find', 'my_cv'];
+    if (restrictedTabs.includes(activeTab) && !user?.profile_complete && !isAdmin && user) {
+       showAlert('Profil Belum Lengkap', 'Halaman ini dikunci sementara. Silakan lengkapi profil Anda di menu Akun.', 'error');
+       navigate('/app/account', { replace: true });
+    }
+  }, [activeTab, user?.profile_complete, isAdmin, user]);
+
+  // Prevent rendering restricted content if profile is incomplete
+  const isRestricted = ['find', 'my_cv'].includes(activeTab) && !user?.profile_complete && !isAdmin;
 
   const isAcademyMode = (activeTab === 'materi' || activeTab === 'certificate') && !isAdmin;
   const isAdminAcademy = activeTab === 'courses' && isAdmin;
@@ -78,7 +98,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
           <AlertCircle size={16} color="#dc2626" />
           <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#991b1b' }}>Biodata Anda belum lengkap! Harap lengkapi di menu Pengaturan Akun.</span>
           <button onClick={() => navigateTo('account')} style={{ background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}>Lengkapi Sekarang</button>
-          <button onClick={() => { setHideBanner(true); localStorage.setItem('separuh_hide_profile_banner', 'true'); }} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: '0.2rem' }}><X size={16} /></button>
+          <button onClick={() => { setHideBanner(true); localStorage.setItem('Separuh Agama_hide_profile_banner', 'true'); }} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: '0.2rem' }}><X size={16} /></button>
         </div>
       );
     }
@@ -87,8 +107,8 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
 
   if (isAcademyMode || isAdminAcademy) {
     const getHeaderTitle = () => {
-      if (isAdminAcademy) return { main: 'SEPARUH AGAMA', sub: 'STUDIO', icon: <BookOpen size={20} color="white" /> };
-      return { main: 'SEPARUH AGAMA', sub: 'ALAMAD ACADEMY', icon: <GraduationCap size={20} color="white" /> };
+      if (isAdminAcademy) return { main: 'Separuh Agama', sub: 'STUDIO', icon: <BookOpen size={20} color="white" /> };
+      return { main: 'Separuh Agama', sub: 'ACADEMY', icon: <GraduationCap size={20} color="white" /> };
     };
     const headerBrand = getHeaderTitle();
 
@@ -106,8 +126,8 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                     <button key="btn-catalog" title="Katalog" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <BookOpen size={18} /> <span className="btn-text">KATALOG</span>
                     </button>
-                    <button key="btn-progress" title="Progress Saya" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <Activity size={18} /> <span className="btn-text">PROGRESS SAYA</span>
+                    <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                      <Activity size={18} /> <span className="btn-text">DASHBOARD</span>
                     </button>
                   </>
                 ) : (
@@ -120,7 +140,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                 <div className="academy-brand-icon" style={{ background: '#134E39', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {headerBrand.icon}
                 </div>
-                <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>{headerBrand.main} <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span></span>
+                <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>Separuh Agama <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span></span>
              </div>
              <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div className="profile-menu-wrapper">
@@ -228,7 +248,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                <GraduationCap size={22} />
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: '900' }}>{isAdmin ? 'STUDIO' : 'SEPARUH AGAMA ACADEMY'}</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '900' }}>{isAdmin ? 'STUDIO' : 'Separuh Agama ACADEMY'}</div>
               <div style={{ fontSize: '0.65rem', opacity: 0.7, fontWeight: '600' }}>Ilmu Pernikahan</div>
             </div>
           </button>
@@ -323,7 +343,13 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         </header>
 
         <main className="main-content" style={{ padding: '2rem' }}>
-          <Outlet />
+          {isRestricted ? (
+            <div style={{ height: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+               <Shield size={64} color="#ef4444" style={{ marginBottom: '1.5rem', opacity: 0.2 }} />
+               <h3 style={{ color: '#134E39', fontWeight: '900' }}>Mengalihkan ke Pengaturan Akun...</h3>
+               <p style={{ color: '#64748b' }}>Anda perlu melengkapi profil terlebih dahulu.</p>
+            </div>
+          ) : <Outlet />}
         </main>
       </div>
     </div>
@@ -364,7 +390,7 @@ function App() {
   const [confirmState, setConfirmState] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   const [profileNeedsCompletion, setProfileNeedsCompletion] = useState(false);
   const [hideBanner, setHideBanner] = useState(() => {
-    return localStorage.getItem('separuh_hide_profile_banner') === 'true';
+    return localStorage.getItem('Separuh Agama_hide_profile_banner') === 'true';
   });
   const [academyLevels, setAcademyLevels] = useState({});
   const [claimedBadges, setClaimedBadges] = useState(() => {
@@ -522,18 +548,22 @@ function App() {
       });
     }).subscribe();
 
-    const requestSub = supabase.channel('request-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'taaruf_requests' }, () => {
+    // Monitor core taaruf workflow tables
+    const workflowSub = supabase.channel('workflow-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'taaruf_requests' }, () => {
       fetchData();
-    }).subscribe();
-
-    const messageSub = supabase.channel('message-changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'cv_profiles' }, () => {
+      fetchData();
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+      fetchData();
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+      fetchData();
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_lesson_progress' }, () => {
       fetchData();
     }).subscribe();
 
     return () => {
       supabase.removeChannel(notifSub);
-      supabase.removeChannel(requestSub);
-      supabase.removeChannel(messageSub);
+      supabase.removeChannel(workflowSub);
     };
   }, [user, isAdmin]);
 
@@ -646,6 +676,7 @@ function App() {
                 showNotifications={showNotifications} setShowNotifications={setShowNotifications}
                 showProfileMenu={showProfileMenu} setShowProfileMenu={setShowProfileMenu}
                 user={user} isAdmin={isAdmin} hideBanner={hideBanner} setHideBanner={setHideBanner} cvs={cvs}
+                showAlert={showAlert}
               />
             </PrivateRoute>
           }>
