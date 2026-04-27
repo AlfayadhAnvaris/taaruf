@@ -44,6 +44,14 @@ export default function AccountTab({ user, showAlert }) {
   const [cities, setCities] = useState([]);
   const [isFetchingCities, setIsFetchingCities] = useState(false);
 
+  // 📝 AUTO-OPEN EDIT MODE IF URL HAS ?edit=true 📝
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('edit') === 'true') {
+      setIsEditing(true);
+    }
+  }, []);
+
   React.useEffect(() => {
     fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
       .then(r => r.json())
@@ -253,20 +261,11 @@ export default function AccountTab({ user, showAlert }) {
       {/* Info Card / Edit Form */}
       <div className="card" style={{ padding: '1.75rem', marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Informasi Profil</h4>
-          {!isEditing ? (
+          <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--primary)', fontWeight: '900' }}>Informasi Profil</h4>
+          {!isEditing && (
             <button className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => setIsEditing(true)}>
               <Edit3 size={15} /> Edit Profil
             </button>
-          ) : (
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={handleCancel}>
-                <XIcon size={15} /> Batal
-              </button>
-              <button className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={handleSave} disabled={isSaving}>
-                <Save size={15} /> {isSaving ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
           )}
         </div>
 
@@ -370,6 +369,23 @@ export default function AccountTab({ user, showAlert }) {
               </select>
             </div>
             <InputField label="Keterangan Tambahan (Opsional)" fieldKey="domisili_detail" placeholder="Contoh: Dekat Masjid Al-Azhar..." value={form.domisili_detail} onChange={set} />
+
+            {/* 💾 SAVE BUTTONS AT BOTTOM 💾 */}
+            <div style={{ 
+              marginTop: '2.5rem', 
+              paddingTop: '1.5rem', 
+              borderTop: '1px solid #f1f5f9',
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'flex-end'
+            }}>
+              <button className="btn btn-outline" style={{ padding: '0.8rem 1.5rem', color: 'var(--danger)', borderColor: 'var(--danger)', fontWeight: '700' }} onClick={handleCancel}>
+                 Batal
+              </button>
+              <button className="btn btn-primary" style={{ padding: '0.8rem 2rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 20px rgba(19, 78, 57, 0.2)' }} onClick={handleSave} disabled={isSaving}>
+                <Save size={18} /> {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+            </div>
           </div>
         )}
       </div>

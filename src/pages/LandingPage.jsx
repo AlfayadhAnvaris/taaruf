@@ -7,7 +7,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const [testimonials, setTestimonials] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('Semua');
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -209,50 +208,10 @@ export default function LandingPage() {
             </p>
           </div>
           
-          {/* TESTIMONIAL FILTERS - MODERN PILL STYLE */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '12px', 
-            marginBottom: '4.5rem', 
-            flexWrap: 'wrap',
-            position: 'relative',
-            zIndex: 2 
-          }}>
-            {['Semua', 'Ikhwan', 'Akhwat'].map(filter => (
-              <button 
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                style={{ 
-                  padding: '0.75rem 2rem', 
-                  borderRadius: '100px', 
-                  border: 'none',
-                  background: activeFilter === filter ? 'var(--primary)' : 'rgba(255,255,255,0.8)',
-                  color: activeFilter === filter ? 'white' : '#64748b',
-                  fontSize: '0.9rem',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  boxShadow: activeFilter === filter ? '0 10px 25px rgba(44,95,77,0.25)' : '0 4px 15px rgba(0,0,0,0.03)',
-                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                  transform: activeFilter === filter ? 'scale(1.05)' : 'scale(1)',
-                  backdropFilter: 'blur(10px)',
-                  border: activeFilter === filter ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.5)'
-                }}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
 
-          <div className="testimonial-grid auto-grid" style={{ position: 'relative', zIndex: 2 }}>
-            {(() => {
-              const filtered = testimonials.filter(t => 
-                activeFilter === 'Semua' || 
-                (t.role && t.role.toLowerCase().includes(activeFilter.toLowerCase()))
-              );
-              
-              if (filtered.length > 0) {
-                return filtered.map((t, idx) => (
+          <div className="testimonial-grid auto-grid" style={{ position: 'relative', zIndex: 2, marginTop: '3rem' }}>
+            {testimonials.length > 0 ? (
+              testimonials.map((t, idx) => (
                   <div 
                     key={t.id} 
                     className="testi-card animate-up" 
@@ -318,10 +277,8 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </div>
-                ));
-              }
-
-              return (
+                ))
+              ) : (
                 <div style={{ 
                   gridColumn: '1/-1', 
                   textAlign: 'center', 
@@ -335,10 +292,9 @@ export default function LandingPage() {
                     <Quote size={40} color="#cbd5e1" />
                   </div>
                   <h4 style={{ margin: '0 0 0.5rem', color: '#1e293b', fontWeight: '800' }}>Belum Ada Testimoni</h4>
-                  <p style={{ color: '#94a3b8', fontWeight: '600', maxWidth: '300px', margin: '0 auto' }}>Kategori ini akan segera terisi oleh kisah sukses lainnya.</p>
+                  <p style={{ color: '#94a3b8', fontWeight: '600', maxWidth: '300px', margin: '0 auto' }}>Kisah sukses baru akan segera hadir di sini.</p>
                 </div>
-              );
-            })()}
+            )}
 
             {/* Fallback Static Testimonials (If DB empty) */}
             {testimonials.length === 0 && (
@@ -383,7 +339,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="landing-footer landing-section-snap" style={{ padding: '4rem 2rem 2rem', color: 'var(--text-muted)', background: 'white', borderTop: '1px solid var(--border)' }}>
+      <footer className="landing-footer" style={{ padding: '4rem 2rem 2rem', color: 'var(--text-muted)', background: 'white', borderTop: '1px solid var(--border)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between' }}>
           <div>
             <div className="navbar-brand" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '1.2rem', color: 'var(--primary)' }}>

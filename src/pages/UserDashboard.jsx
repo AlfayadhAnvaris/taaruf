@@ -26,7 +26,7 @@ const MAJOR_SUKU = [
 ].sort();
 
 export default function UserDashboard() {
-  const { user, cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, setUsersDb, messages, setMessages, showAlert, addNotification, academyLevels, getAcademyBadge, claimedBadges, setClaimedBadges } = useContext(AppContext);
+  const { user, isAdmin, cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, setUsersDb, messages, setMessages, showAlert, addNotification, academyLevels, getAcademyBadge, claimedBadges, setClaimedBadges } = useContext(AppContext);
   console.log('DEBUG Academy Levels:', academyLevels);
   console.log('DEBUG Claimed:', claimedBadges);
   const navigate = useNavigate();
@@ -168,7 +168,7 @@ export default function UserDashboard() {
 
     // Academy Detail Sync
     if (activeTab === 'materi' || activeTab === 'certificate') {
-      if (id === 'catalog') {
+      if (id === 'catalog' || id === 'daftar-kelas') {
         setLmsView('catalog');
         setActiveClass(null);
         setActiveLesson(null);
@@ -221,12 +221,16 @@ export default function UserDashboard() {
       const { data: quizData } = await supabase.from('quiz_questions').select('*').order('order_index');
 
       const { data: progressData } = await supabase.from('user_lesson_progress').select('lesson_id, completed, score').eq('user_id', user.id);
+      const { data: enrollData } = await supabase.from('course_enrollments').select('class_id').eq('user_id', user.id);
+      
       const doneSet = new Set((progressData || []).filter(p => p.completed).map(p => p.lesson_id));
+      const enrolledSet = new Set((enrollData || []).map(e => e.class_id));
 
       const builtClasses = (clsData || [])
         .filter(cls => cls.is_published !== false) // Default to visible if null/undefined, hide if explicitly false
         .map(cls => ({
           ...cls,
+          isEnrolled: enrolledSet.has(cls.id),
           modules: (coursesData || [])
             .filter(c => c.class_id === cls.id && c.is_active !== false)
             .map((course, mi) => ({
@@ -238,6 +242,7 @@ export default function UserDashboard() {
               id: l.id,
               type: l.type,
               title: l.title,
+              content: l.content,
               videoUrl: l.video_url,
               duration: l.duration,
               done: doneSet.has(l.id),
@@ -268,11 +273,43 @@ export default function UserDashboard() {
   useEffect(() => { if (user) fetchCurriculum(); }, [user?.id]);
 
   const selectClassForPlayer = (cls) => {
+    if (!cls.isEnrolled && !isAdmin) {
+      showAlert('Akses Dibatasi', 'Anda harus mendaftar ke kelas ini terlebih dahulu untuk mengakses materinya.', 'info');
+      navigate('/app/materi/daftar-kelas');
+      return;
+    }
     setActiveClass(cls);
     setCurriculum(cls.modules);
     setLmsView('player');
     const firstLesson = cls.modules?.[0]?.items?.[0] || null;
     setActiveLesson(firstLesson);
+  };
+
+  const enrollClass = async (classId) => {
+    try {
+      const { error } = await supabase.from('course_enrollments').insert({ user_id: user.id, class_id: classId });
+      if (error) throw error;
+      
+      // Update local state
+      setClasses(prev => {
+        const newClasses = prev.map(cls => cls.id === classId ? { ...cls, isEnrolled: true } : cls);
+        const enrolledClass = newClasses.find(c => c.id === classId);
+        if (enrolledClass) {
+          // AUTO START CLASS after a small delay to show success message
+          setTimeout(() => {
+            selectClassForPlayer(enrolledClass);
+          }, 800);
+        }
+        return newClasses;
+      });
+      
+      showAlert('Bismillah', 'Pendaftaran berhasil! Membuka materi kelas untuk Anda...', 'success');
+      return true;
+    } catch (err) {
+      console.error('Error enrolling:', err);
+      showAlert('Gagal', 'Terjadi kesalahan saat mendaftar kelas.', 'error');
+      return false;
+    }
   };
 
   const markLessonDone = async (lessonId, score = null) => {
@@ -411,8 +448,17 @@ export default function UserDashboard() {
   const checksDone = checks.filter(c => c.done).length;
   const onboardingPct = Math.round((checksDone / checks.length) * 100);
 
+  const isPlayerMode = activeTab === 'materi' && subId;
+
   return (
-    <div className="dashboard-root" style={{ animation: 'fadeIn 0.6s ease-out', padding: '1rem' }}>
+    <div className="dashboard-root" style={{ 
+      animation: 'fadeIn 0.6s ease-out', 
+      padding: isPlayerMode ? '0' : '1.5rem',
+      maxWidth: isPlayerMode ? 'none' : '1400px',
+      height: isPlayerMode ? '100%' : 'auto',
+      display: isPlayerMode ? 'flex' : 'block',
+      flexDirection: 'column'
+    }}>
       
       {/* ══ HOME TAB ══ */}
       {activeTab === 'home' && (
@@ -879,40 +925,43 @@ export default function UserDashboard() {
 
       {/* ══ ACCOUNT TAB ══ */}
       {activeTab === 'account' && (
-        <div key="tab-account" className="dashboard-tab-container">
+        <div key="tab-account" className="dashboard-tab-container" style={{ height: '100%', flex: 1, overflowY: 'auto' }}>
           <AccountTab user={user} showAlert={showAlert} />
         </div>
       )}
 
       {/* ══ MATERI TAB ══ */}
       {activeTab === 'materi' && (
-        <div key="tab-materi" className="dashboard-tab-container">
+        <div key="tab-materi" className="dashboard-tab-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
           {lmsLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '1.5rem' }}>
             <div style={{ width: 50, height: 50, border: '5px solid rgba(19,78,57,0.1)', borderTop: '5px solid #134E39', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
             <p style={{ color: '#64748b', fontWeight: '700' }}>Menyiapkan kurikulum belajar...</p>
           </div>
         ) : (
-          <LearningTab
-            user={user} classes={classes} 
-            activeClass={activeClass} 
-            selectClass={(cls) => navigate(`/app/materi/${cls.id}`)}
-            curriculum={curriculum} 
-            activeLesson={activeLesson} 
-            setActiveLesson={(lesson) => navigate(`/app/materi/${activeClass?.id}/${lesson.id}`)}
-            lmsView={lmsView} 
-            setLmsView={(view) => { 
-                if(view === 'catalog') navigate('/app/materi/catalog'); 
-                else if(view === 'dashboard') navigate('/app/materi/dashboard');
-                else if(view === 'welcome') navigate('/app/materi');
-            }}
-            quizAnswers={quizAnswers} setQuizAnswers={setQuizAnswers}
-            quizSubmitted={quizSubmitted} setQuizSubmitted={setQuizSubmitted} progressPercent={progressPercent}
-            doneLessons={doneLessons} totalLessons={totalLessons} allDone={allDone} markLessonDone={markLessonDone}
-            toggleModule={toggleModule} setActiveTab={setActiveTab}
-            academyLevels={academyLevels} getAcademyBadge={getAcademyBadge}
-            claimedBadges={claimedBadges} setClaimedBadges={setClaimedBadges}
-          />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <LearningTab
+              user={user} classes={classes} 
+              activeClass={activeClass} 
+              selectClass={(cls) => navigate(`/app/materi/${cls.id}`)}
+              curriculum={curriculum} 
+              activeLesson={activeLesson} 
+              setActiveLesson={(lesson) => navigate(`/app/materi/${activeClass?.id}/${lesson.id}`)}
+              lmsView={lmsView} 
+              setLmsView={(view) => { 
+                  if(view === 'catalog' || view === 'daftar-kelas') navigate('/app/materi/daftar-kelas'); 
+                  else if(view === 'dashboard') navigate('/app/materi/dashboard');
+                  else if(view === 'welcome') navigate('/app/materi');
+              }}
+              quizAnswers={quizAnswers} setQuizAnswers={setQuizAnswers}
+              quizSubmitted={quizSubmitted} setQuizSubmitted={setQuizSubmitted} progressPercent={progressPercent}
+              doneLessons={doneLessons} totalLessons={totalLessons} allDone={allDone} markLessonDone={markLessonDone}
+              toggleModule={toggleModule} setActiveTab={setActiveTab}
+              enrollClass={enrollClass} selectClassForPlayer={selectClassForPlayer}
+              academyLevels={academyLevels} getAcademyBadge={getAcademyBadge}
+              claimedBadges={claimedBadges} setClaimedBadges={setClaimedBadges}
+            />
+          </div>
         )}
       </div>
     )}

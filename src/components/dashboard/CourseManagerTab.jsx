@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppContext } from '../../App';
 import { supabase } from '../../supabase';
 import {
   BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown, ChevronLeft, ChevronRight,
-  PlayCircle, FileQuestion, GraduationCap, CheckCircle,
+  PlayCircle, FileQuestion, GraduationCap, CheckCircle, FileText,
   AlertCircle, Loader, ToggleLeft, ToggleRight, ArrowUp, ArrowDown,
-  Activity, Zap, Upload, GripVertical, Search
+  Activity, Zap, Upload, GripVertical, Search, RefreshCw
 } from 'lucide-react';
+import AdminEnrollmentTab from './AdminEnrollmentTab';
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -47,13 +49,25 @@ export default function CourseManagerTab() {
   const [expandedClass, setExpandedClass] = useState(null);
   const [expandedCourse, setExpandedCourse] = useState(null);
   const [expandedLesson, setExpandedLesson] = useState(null);
-  const [subTab, setSubTab] = useState('curriculum'); // 'curriculum' | 'progress'
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const subTab = searchParams.get('sub') || 'curriculum';
+  
   const [userProgressList, setUserProgressList] = useState([]);
   const [progressLoading, setProgressLoading] = useState(false);
   const [progPage, setProgPage] = useState(1);
   const [progSearch, setProgSearch] = useState('');
   const [progGender, setProgGender] = useState('all');
+  const [detailUser, setDetailUser] = useState(null);
+  const [academyMeta, setAcademyMeta] = useState({ classes: [], courses: [], lessons: [] });
   const progPerPage = 10;
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Image states
   const [bannerFile, setBannerFile] = useState(null);
@@ -84,64 +98,43 @@ export default function CourseManagerTab() {
   const fetchUserProgress = async () => {
     setProgressLoading(true);
     try {
-      // 1. Ambil infrastruktur akademi (Kelas -> Modul -> Materi)
       const { data: allClasses } = await supabase.from('lms_classes').select('id, title');
       const { data: allCourses } = await supabase.from('courses').select('id, class_id, title');
       const { data: allLessons } = await supabase.from('lessons').select('id, course_id');
       
-      // Map lesson_id ke class_id
-      const lessonToClass = {};
-      const classRequiredLessons = {}; // class_id -> Set of lesson_ids
-      
+      const classRequiredLessons = {}; 
       allCourses?.forEach(c => {
         const courseLessons = allLessons?.filter(l => l.course_id === c.id) || [];
         if (!classRequiredLessons[c.class_id]) classRequiredLessons[c.class_id] = new Set();
-        courseLessons.forEach(l => {
-          classRequiredLessons[c.class_id].add(l.id);
-          lessonToClass[l.id] = c.class_id;
-        });
+        courseLessons.forEach(l => classRequiredLessons[c.class_id].add(l.id));
       });
 
-      // 2. Ambil semua profiles candidate
-      const { data: profiles, error: pErr } = await supabase
-        .from('profiles')
-        .select('id, name, gender, email')
-        .eq('role', 'user');
-        
+      const { data: profiles, error: pErr } = await supabase.from('profiles').select('id, name, gender, email').eq('role', 'user');
       if (pErr) throw pErr;
 
-      // 3. Ambil semua progress (hanya yang sudah selesai)
-      const { data: progressData, error: prErr } = await supabase
-        .from('user_lesson_progress')
-        .select('user_id, lesson_id')
-        .eq('completed', true);
-        
+      const { data: progressData, error: prErr } = await supabase.from('user_lesson_progress').select('user_id, lesson_id').eq('completed', true);
       if (prErr) throw prErr;
 
       const combined = (profiles || []).map(p => {
         const userDoneLessons = new Set((progressData || []).filter(up => up.user_id === p.id).map(up => up.lesson_id));
-        
-        // Hitung sertifikat berdasarkan KELAS yang selesai (bukan MODUL)
         const earnedCertificates = [];
-        
         allClasses?.forEach(cls => {
            const requiredIds = Array.from(classRequiredLessons[cls.id] || []);
-           // Syarat: Ada materinya DAN semua materi selesai
            if (requiredIds.length > 0 && requiredIds.every(lid => userDoneLessons.has(lid))) {
              earnedCertificates.push(cls.title);
            }
         });
-
         const totalClasses = allClasses?.length || 0;
-
         return {
           ...p,
           certificatesCount: earnedCertificates.length,
           earnedCertificates,
-          totalCourses: totalClasses, // Sekarang menggunakan Kelas sebagai unit utama
-          percent: totalClasses > 0 ? Math.round((earnedCertificates.length / totalClasses) * 100) : 0
+          totalCourses: totalClasses,
+          percent: totalClasses > 0 ? Math.round((earnedCertificates.length / totalClasses) * 100) : 0,
+          doneLessonIds: Array.from(userDoneLessons)
         };
       });
+      setAcademyMeta({ classes: allClasses || [], courses: allCourses || [], lessons: allLessons || [] });
       setUserProgressList(combined);
     } catch (err) {
       console.error('Error fetch progress:', err);
@@ -151,8 +144,12 @@ export default function CourseManagerTab() {
   };
 
   useEffect(() => { 
-    if (subTab === 'curriculum') fetchAll(); 
-    if (subTab === 'progress') fetchUserProgress();
+    if (subTab === 'curriculum') {
+      fetchAll(); 
+    } else {
+      setLoading(false);
+      if (subTab === 'progress') fetchUserProgress();
+    }
   }, [subTab]);
 
   const showToast = (msg, type = 'success') => {
@@ -686,31 +683,9 @@ export default function CourseManagerTab() {
   return (
     <>
       <div style={{ animation: 'fadeIn 0.4s ease' }}>
-      {/* ── Sub Tabs ── */}
-      <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem' }}>
-        <button 
-          onClick={() => setSubTab('curriculum')}
-          style={{
-            padding: '1rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: '1rem', fontWeight: '700', color: subTab === 'curriculum' ? 'var(--primary)' : 'var(--text-muted)',
-            borderBottom: subTab === 'curriculum' ? '3px solid var(--primary)' : '3px solid transparent',
-            transition: 'all 0.2s'
-          }}
-        >
-          Kelola Kurikulum
-        </button>
-        <button 
-          onClick={() => setSubTab('progress')}
-          style={{
-            padding: '1rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: '1rem', fontWeight: '700', color: subTab === 'progress' ? 'var(--primary)' : 'var(--text-muted)',
-            borderBottom: subTab === 'progress' ? '3px solid var(--primary)' : '3px solid transparent',
-            transition: 'all 0.2s'
-          }}
-        >
-          Progres Belajar User
-        </button>
-      </div>
+      {/* Academy sub-tabs and title have been moved to the global top header for a cleaner UI */}
+
+      {/* Sub-tabs have been moved to the global top header for better accessibility */}
 
       {toast && (
         <div style={{
@@ -726,36 +701,98 @@ export default function CourseManagerTab() {
         </div>
       )}
 
+
       {/* ── LIST VIEW ── */}
       {view === 'list' && (
         <div style={{ animation: 'fadeIn 0.3s ease' }}>
-          {subTab === 'curriculum' ? (
+          {subTab === 'enrollment' ? (
+             <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                <div style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>Manajemen Pendaftaran Kelas</h3>
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Kelola akses pengguna ke berbagai kelas akademi.</p>
+                </div>
+                <AdminEnrollmentTab showAlert={(t, m, s) => showToast(m, s)} />
+             </div>
+           ) : subTab === 'curriculum' ? (
             <>
-              {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          {/* Header */}
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between', 
+            alignItems: isMobile ? 'flex-start' : 'flex-end', 
+            marginBottom: '2.5rem', 
+            background: 'white', 
+            padding: isMobile ? '1.5rem' : '2rem', 
+            borderRadius: isMobile ? '16px' : '24px', 
+            border: '1px solid #f1f5f9', 
+            boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+            gap: isMobile ? '1.5rem' : '0'
+          }}>
             <div>
-              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.1rem' }}>
-                <GraduationCap size={20} color="var(--primary)" /> Manajemen Kelas & Kursus
-              </h3>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {classes.length} Kelas · {courses.length} Modul · {lessons.length} Lesson
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <BookOpen size={20} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>Manajemen Kurikulum</h3>
+              </div>
+              <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px', alignItems: 'center', paddingLeft: isMobile ? '0' : '52px', marginTop: isMobile ? '1rem' : '0', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b', fontWeight: '700' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#134E39' }} /> {classes.length} Kelas
+                </div>
+                {!isMobile && <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#e2e8f0' }} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b', fontWeight: '700' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4AF37' }} /> {courses.length} Modul
+                </div>
+                {!isMobile && <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#e2e8f0' }} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b', fontWeight: '700' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} /> {lessons.length} Materi
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <div style={{ width: isMobile ? '100%' : 'auto' }}>
               <button
                 onClick={openNewClass}
-                style={BTN_SM({ background: 'linear-gradient(135deg, var(--primary), var(--primary-light))', color: 'white', padding: '0.6rem 1.25rem', borderRadius: '10px', fontSize: '0.875rem' })}
+                style={{ 
+                  background: '#134E39', color: 'white', border: 'none', 
+                  padding: '0.85rem 1.75rem', borderRadius: '16px', 
+                  fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  boxShadow: '0 10px 20px rgba(19,78,57,0.2)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(19,78,57,0.25)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(19,78,57,0.2)'; }}
               >
-                <Plus size={16} /> Tambah Kelas Baru
+                <Plus size={20} strokeWidth={3} /> TAMBAH KELAS BARU
               </button>
             </div>
           </div>
 
           {/* Classes list */}
           {classes.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-muted)' }}>
-              <Zap size={48} strokeWidth={1.2} style={{ opacity: 0.4, marginBottom: '1rem' }} />
-              <p>Belum ada kelas. Klik "Tambah Kelas Baru" untuk mulai.</p>
+            <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
+              <div style={{ width: 80, height: 80, borderRadius: '24px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <BookOpen size={40} color="#cbd5e1" strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', marginBottom: '0.5rem' }}>Belum Ada Kurikulum</h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto 2rem', fontWeight: '600', lineHeight: '1.6' }}>
+                Mulai bangun akademi Anda dengan menambahkan kelas pertama. Anda bisa menambahkan modul dan materi setelah kelas dibuat.
+              </p>
+              <button
+                onClick={openNewClass}
+                style={{ 
+                  background: '#134E39', color: 'white', border: 'none', 
+                  padding: '0.85rem 2rem', borderRadius: '14px', 
+                  fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '10px', margin: '0 auto',
+                  boxShadow: '0 10px 20px rgba(19,78,57,0.15)'
+                }}
+              >
+                <Plus size={20} strokeWidth={3} /> MULAI BUAT KELAS
+              </button>
             </div>
           )}
 
@@ -764,49 +801,81 @@ export default function CourseManagerTab() {
             const classModules = courses.filter(c => c.class_id === cls.id).sort((a,b) => a.order_index - b.order_index);
             
             return (
-              <div key={cls.id} style={{ ...CARD, padding: 0, overflow: 'hidden', border: isClassExpanded ? '2px solid var(--primary-light)' : '1px solid var(--border)' }}>
+              <div key={cls.id} style={{ 
+                ...CARD, padding: 0, overflow: 'hidden', 
+                border: 'none',
+                boxShadow: isClassExpanded ? '0 20px 40px rgba(0,0,0,0.06)' : '0 4px 12px rgba(0,0,0,0.02)',
+                marginBottom: '1.5rem',
+                borderRadius: '24px',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: 'white'
+              }}>
                 {/* Class Header */}
                 <div 
                   onClick={() => setExpandedClass(isClassExpanded ? null : cls.id)}
                   style={{ 
-                    display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem 1.5rem', 
-                    cursor: 'pointer', background: isClassExpanded ? 'rgba(44,95,77,0.03)' : 'white' 
+                    display: 'flex', 
+                    flexDirection: isMobile ? 'column' : 'row',
+                    alignItems: isMobile ? 'flex-start' : 'center', 
+                    gap: isMobile ? '1rem' : '1.25rem', 
+                    padding: isMobile ? '1.5rem' : '1.25rem 1.5rem', 
+                    cursor: 'pointer', 
+                    background: isClassExpanded ? 'rgba(44,95,77,0.03)' : 'white' 
                   }}
                 >
-                  <div style={{ width: 120, height: 70, borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', border: '1px solid var(--border)', flexShrink: 0 }}>
+                  <div style={{ width: isMobile ? '100%' : 140, height: isMobile ? 180 : 85, borderRadius: '16px', overflow: 'hidden', background: '#f8fafc', border: '1.5px solid #f1f5f9', flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
                     {cls.banner_url ? (
                       <img src={cls.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}><BookOpen size={24}/></div>
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', background: '#f1f5f9' }}><BookOpen size={isMobile ? 40 : 28} opacity={0.5}/></div>
                     )}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{cls.title}</h4>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{classModules.length} Modul Terdaftar</p>
+                  <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
+                    <h4 style={{ margin: 0, fontSize: isMobile ? '1.15rem' : '1.25rem', fontWeight: '950', color: '#1e293b', letterSpacing: '-0.01em' }}>{cls.title}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                       <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748b', background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px' }}>{classModules.length} MODUL</span>
+                       <div style={{ width: '1px', height: '10px', background: '#e2e8f0' }} />
+                       <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#94a3b8' }}>ID: {String(cls.id).slice(0,8)}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
-                    <button 
-                      onClick={() => toggleClassPublished(cls)}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-                      style={BTN_SM({ 
-                        background: cls.is_published ? 'rgba(44,95,77,0.12)' : 'rgba(148,163,184,0.12)', 
-                        color: cls.is_published ? 'var(--primary)' : '#64748b',
-                        padding: '0.4rem 0.75rem',
-                        border: cls.is_published ? '1.5px solid rgba(44,95,77,0.2)' : '1.5px solid rgba(148,163,184,0.2)'
-                      })}
-                      title={cls.is_published ? 'Archive Kelas' : 'Publish Kelas'}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', animation: cls.is_published ? 'pulse-green 2s infinite' : 'none' }}>
-                        {cls.is_published ? <ToggleRight size={20} style={{ color: 'var(--primary)', transition: 'all 0.3s' }} /> : <ToggleLeft size={20} style={{ color: '#94a3b8', transition: 'all 0.3s' }} />}
-                        <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>{cls.is_published ? 'PUBLISHED' : 'DRAFT'}</span>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '0.75rem', 
+                    alignItems: 'center',
+                    width: isMobile ? '100%' : 'auto',
+                    justifyContent: isMobile ? 'space-between' : 'flex-end',
+                    marginTop: isMobile ? '0.5rem' : '0',
+                    paddingTop: isMobile ? '1rem' : '0',
+                    borderTop: isMobile ? '1px solid #f1f5f9' : 'none'
+                  }} onClick={e => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => toggleClassPublished(cls)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '0.5rem 0.9rem', borderRadius: '12px',
+                          border: 'none', cursor: 'pointer',
+                          background: cls.is_published ? 'rgba(16,185,129,0.1)' : 'rgba(100,116,139,0.1)',
+                          color: cls.is_published ? '#059669' : '#475569',
+                          transition: 'all 0.3s'
+                        }}
+                      >
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: cls.is_published ? '#10b981' : '#94a3b8' }} />
+                        <span style={{ fontSize: '0.7rem', fontWeight: '900' }}>{cls.is_published ? 'PUBLISHED' : 'DRAFT'}</span>
+                      </button>
+
+                      {!isMobile && <div style={{ width: '1px', height: '24px', background: '#f1f5f9' }} />}
+                      
+                      <button onClick={() => openEditClass(cls)} style={{ width: 38, height: 38, borderRadius: '10px', border: 'none', background: 'rgba(19,78,57,0.06)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit3 size={16} /></button>
+                      <button onClick={() => deleteClass(cls.id)} style={{ width: 38, height: 38, borderRadius: '10px', border: 'none', background: 'rgba(230,57,70,0.06)', color: '#E63946', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {!isMobile && <div style={{ width: '1px', height: '24px', background: '#f1f5f9' }} />}
+                      <div style={{ width: 38, height: 38, borderRadius: '10px', background: isClassExpanded ? 'rgba(19,78,57,0.1)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
+                        <ChevronDown size={20} color={isClassExpanded ? '#134E39' : '#94a3b8'} style={{ transform: isClassExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.4s' }} />
                       </div>
-                    </button>
-                    <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.5rem' }} />
-                    <button onClick={() => openEditClass(cls)} style={BTN_SM({ background: 'rgba(44,95,77,0.07)', color: 'var(--primary)' })}><Edit3 size={15} /></button>
-                    <button onClick={() => deleteClass(cls.id)} style={BTN_SM({ background: 'rgba(230,57,70,0.07)', color: '#E63946' })}><Trash2 size={15} /></button>
-                    <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.5rem' }} />
-                    <ChevronDown size={20} color="var(--text-muted)" style={{ transform: isClassExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                    </div>
                   </div>
                 </div>
 
@@ -815,9 +884,11 @@ export default function CourseManagerTab() {
                   <div style={{ padding: '0 1.5rem 1.5rem', background: 'rgba(0,0,0,0.01)' }}>
                     <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h5 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Daftar Modul</h5>
-                        <button onClick={() => openNewCourse(cls.id)} style={BTN_SM({ background: 'var(--primary)', color: 'white' })}>
-                          <Plus size={14} /> Tambah Modul
+                        <h5 style={{ margin: 0, fontSize: '0.85rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Zap size={14} color="#D4AF37" /> STRUKTUR KURIKULUM
+                        </h5>
+                        <button onClick={() => openNewCourse(cls.id)} style={{ ...BTN_SM({ background: '#134E39', color: 'white' }), padding: '0.6rem 1.25rem', borderRadius: '12px', boxShadow: '0 4px 12px rgba(19,78,57,0.1)' }}>
+                          <Plus size={16} /> TAMBAH MODUL
                         </button>
                       </div>
 
@@ -845,30 +916,24 @@ export default function CourseManagerTab() {
                               style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', cursor: 'grab' }}
                             >
                               <GripVertical size={14} color="#94a3b8" />
-                              <div style={{ width: 40, height: 40, borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
-                                {course.thumbnail_url ? <img src={course.thumbnail_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <BookOpen size={16} color="#cbd5e1" style={{ margin: '12px' }} />}
+                              <div style={{ width: 44, height: 44, borderRadius: '12px', overflow: 'hidden', background: '#f8fafc', flexShrink: 0, border: '1px solid #f1f5f9' }}>
+                                {course.thumbnail_url ? <img src={course.thumbnail_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <BookOpen size={18} color="#cbd5e1" style={{ margin: '13px' }} />}
                               </div>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)' }}>{course.title}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{courseLessons.length} Lesson</div>
+                                <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1e293b' }}>{course.title}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                                  <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8' }}>{courseLessons.length} MATERI</span>
+                                  {course.is_active ? <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#059669', background: '#ecfdf5', padding: '1px 6px', borderRadius: '4px' }}>AKTIF</span> : <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px' }}>DRAF</span>}
+                                </div>
                               </div>
-                              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
-                                <button 
-                                  onClick={() => toggleCourseActive(course)}
-                                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                                  style={BTN_SM({ 
-                                    background: course.is_active ? 'rgba(44,95,77,0.12)' : 'rgba(0,0,0,0.05)', 
-                                    color: course.is_active ? 'var(--primary)' : '#94a3b8',
-                                    padding: '0.35rem 0.5rem',
-                                    borderRadius: '10px'
-                                  })}
-                                >
-                                  {course.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                                </button>
-                                <button onClick={() => openEditCourse(course)} style={BTN_SM({ background: 'rgba(0,0,0,0.03)' })}><Edit3 size={12} /></button>
-                                <button onClick={() => deleteCourse(course.id)} style={BTN_SM({ background: 'rgba(230,57,70,0.05)', color: '#E63946' })}><Trash2 size={12} /></button>
-                                <button onClick={() => openNewLesson(course.id)} style={BTN_SM({ background: 'var(--bg-light)', color: 'var(--primary)' })}><Plus size={12} /> Add Lesson</button>
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                                <button onClick={() => openEditCourse(course)} style={{ width: 34, height: 34, borderRadius: '8px', border: 'none', background: '#f8fafc', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit3 size={14} /></button>
+                                <button onClick={() => deleteCourse(course.id)} style={{ width: 34, height: 34, borderRadius: '8px', border: 'none', background: 'rgba(230,57,70,0.05)', color: '#E63946', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                <div style={{ width: '1px', height: '20px', background: '#f1f5f9', margin: '0 4px' }} />
+                                <button onClick={() => openNewLesson(course.id)} style={{ ...BTN_SM({ background: 'rgba(19,78,57,0.05)', color: '#134E39' }), padding: '0.5rem 0.85rem' }}><Plus size={14} /> MATERI</button>
+                                <div style={{ marginLeft: '4px' }}>
+                                  <ChevronRight size={18} color="#94a3b8" style={{ transform: isCourseExpanded ? 'rotate(90deg)' : 'none', transition: '0.3s' }} />
+                                </div>
                               </div>
                             </div>
 
@@ -895,10 +960,17 @@ export default function CourseManagerTab() {
                                           handleDrop(e, lesson);
                                         }}
                                       >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', background: isLessonExt ? 'rgba(184,134,30,0.05)' : 'var(--bg-light)', border: isLessonExt ? '1px solid rgba(184,134,30,0.2)' : '1px solid transparent', cursor: 'grab' }}>
-                                          <GripVertical size={14} color="#94a3b8" />
-                                          {isQuiz ? <FileQuestion size={16} color="#b8861e" /> : <PlayCircle size={16} color="var(--primary)" />}
-                                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>{lesson.title}</span>
+                                        <div style={{ 
+                                          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
+                                          borderRadius: '14px', background: isLessonExt ? 'rgba(212,175,55,0.05)' : '#f8fafc', 
+                                          border: isLessonExt ? '1px solid rgba(212,175,55,0.3)' : '1px solid #f1f5f9', 
+                                          cursor: 'grab', transition: 'all 0.3s' 
+                                        }}>
+                                          <GripVertical size={14} color="#cbd5e1" />
+                                          <div style={{ width: 32, height: 32, borderRadius: '8px', background: isQuiz ? 'rgba(212,175,55,0.1)' : 'rgba(19,78,57,0.06)', color: isQuiz ? '#b8861e' : '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            {isQuiz ? <Zap size={16} /> : (lesson.type === 'video' ? <PlayCircle size={16} /> : <FileText size={16} />)}
+                                          </div>
+                                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: '800', color: '#334155' }}>{lesson.title}</span>
                                           <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                             <button 
                                               onClick={() => toggleLessonPublished(lesson)}
@@ -972,210 +1044,206 @@ export default function CourseManagerTab() {
             );
           })}
             </>
-          ) : (
-            <div style={{ animation: 'fadeIn 0.3s ease' }}>
-          <div className="flex-wrap-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem' }}>
-             <div style={{ flex: 1 }}>
-                <h2 style={{ fontSize: 'clamp(1.1rem, 4vw, 1.25rem)', fontWeight: '800', margin: 0 }}>Progres Belajar Calon Kandidat</h2>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Memantau aktivitas {userProgressList.length} orang candidate aktif.</p>
+           ) : null}
+        </div>
+      )}
+
+      {/* ── PROGRESS VIEW ── */}
+      {subTab === 'progress' && view === 'list' && (
+        <div style={{ animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+             <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>Progres Belajar Calon Kandidat</h3>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Memantau aktivitas {userProgressList.length} orang candidate aktif.</p>
              </div>
-             <button 
-               className="btn btn-outline" 
-               onClick={fetchUserProgress} 
-               disabled={progressLoading}
-               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
-             >
-               <Activity size={16} className={progressLoading ? 'spin' : ''} />
-               <span className="hide-on-mobile">{progressLoading ? 'Menyinkronkan...' : 'Refresh Data Real-Time'}</span>
-               {!progressLoading && <span className="show-on-mobile">Refresh</span>}
-             </button>
           </div>
 
           <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-             <div className="table-responsive">
-               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                {!isMobile && (
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
-                      <th style={{ padding: '1.25rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Nama User</th>
+                      <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Nama User</th>
                       <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Gender</th>
                       <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Sertifikat & Modul</th>
-                      <th style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Progres Belajar</th>
+                      <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Progres</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {/* 🔍 FILTER BAR */}
-                    <tr style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
-                      <td colSpan={4} style={{ padding: '1.25rem 1.5rem' }}>
-                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                            <input 
-                              type="text" 
-                              className="form-control" 
-                              placeholder="Cari nama atau email..." 
-                              style={{ paddingLeft: '2.5rem', fontSize: '0.875rem' }} 
-                              value={progSearch}
-                              onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
-                            />
-                          </div>
-                          <select 
-                            className="form-control" 
-                            style={{ width: '160px', fontSize: '0.875rem' }}
-                            value={progGender}
-                            onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
-                          >
-                            <option value="all">Semua Gender</option>
-                            <option value="ikhwan">Ikhwan</option>
-                            <option value="akhwat">Akhwat</option>
-                          </select>
+                )}
+                <tbody>
+                  <tr style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+                    <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.75rem' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                          <input 
+                            type="text" 
+                            placeholder="Cari nama atau email..." 
+                            style={{ width: '100%', padding: '0.6rem 1rem 0.6rem 2.5rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }} 
+                            value={progSearch}
+                            onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
+                          />
                         </div>
-                      </td>
-                    </tr>
+                        <select 
+                          style={{ padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem', width: isMobile ? '100%' : 'auto' }}
+                          value={progGender}
+                          onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
+                        >
+                          <option value="all">Semua Gender</option>
+                          <option value="ikhwan">Ikhwan</option>
+                          <option value="akhwat">Akhwat</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
 
-                    {progressLoading ? (
-                      <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="spin" size={20} /></td></tr>
-                    ) : (() => {
-                      const filteredList = userProgressList.filter(item => {
-                        const matchesSearch = item.name.toLowerCase().includes(progSearch.toLowerCase()) || 
-                                              item.email.toLowerCase().includes(progSearch.toLowerCase());
-                        const matchesGender = progGender === 'all' || item.gender === progGender;
-                        return matchesSearch && matchesGender;
-                      });
+                  {progressLoading ? (
+                    <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="animate-spin" size={24} /></td></tr>
+                  ) : (() => {
+                    const filteredList = userProgressList.filter(item => (item.name + item.email).toLowerCase().includes(progSearch.toLowerCase()) && (progGender === 'all' || item.gender === progGender));
+                    const startIndex = (progPage - 1) * progPerPage;
+                    const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
+                    const totalPages = Math.ceil(filteredList.length / progPerPage);
 
-                      if (filteredList.length === 0) {
-                        return <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada kandidat yang sesuai filter.</td></tr>;
-                      }
+                    if (filteredList.length === 0) return <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada data ditemukan.</td></tr>;
 
-                      const totalPages = Math.ceil(filteredList.length / progPerPage);
-                      const startIndex = (progPage - 1) * progPerPage;
-                      const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
+                    if (isMobile) {
                       return (
-                        <>
-                          {paginatedList.map(item => (
-                            <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                               <td style={{ padding: '1rem 1.5rem' }}>
-                                  <div style={{ fontWeight: '700', fontSize: '0.875rem', color: 'var(--text-main)' }}>{item.name}</div>
-                                  <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>{item.email}</div>
-                               </td>
-                               <td style={{ padding: '1rem' }}>
-                                  <span style={{ 
-                                    fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase',
-                                    color: item.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
-                                    background: item.gender === 'ikhwan' ? 'rgba(14,165,233,0.1)' : 'rgba(236,72,153,0.1)',
-                                    padding: '4px 10px', borderRadius: '12px'
-                                  }}>
-                                    {item.gender || '-'}
-                                  </span>
-                               </td>
-                               <td style={{ padding: '1rem', width: '40%' }}>
-                                  <div style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                                    {item.certificatesCount} Sertifikat Diperoleh:
-                                  </div>
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                    {item.earnedCertificates?.length > 0 ? (
-                                       item.earnedCertificates.map((title, idx) => (
-                                         <span key={idx} style={{ 
-                                           fontSize: '0.625rem', fontWeight: '800', 
-                                           background: 'rgba(212,175,55,0.08)', color: '#967117', 
-                                           padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.15)' 
-                                         }}>
-                                           {title}
-                                         </span>
-                                       ))
-                                    ) : (
-                                       <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>
-                                    )}
-                                  </div>
-                               </td>
-                               <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                       <span style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? 'var(--success)' : '#1e293b' }}>
-                                         {item.percent}%
-                                       </span>
-                                       {item.percent === 100 && <CheckCircle size={14} color="var(--success)" />}
+                        <tr>
+                          <td colSpan={4} style={{ padding: '1rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              {paginatedList.map((item, idx) => (
+                                <div key={idx} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                    <div>
+                                      <div style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b', wordBreak: 'break-word' }}>{item.name}</div>
+                                      <div style={{ fontSize: '0.75rem', color: '#64748b', wordBreak: 'break-all' }}>{item.email}</div>
                                     </div>
-                                    <div style={{ width: '120px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                                       <div style={{ width: `${item.percent}%`, height: '100%', background: item.percent === 100 ? 'var(--success)' : 'var(--primary)', transition: 'width 1s ease-out' }} />
-                                    </div>
-                                    <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>
-                                       {item.certificatesCount} / {item.totalCourses} Kelas Selesai
-                                    </div>
-                                  </div>
-                               </td>
-                            </tr>
-                          ))}
-                          {/* 🔢 MODERN PAGINATION CONTROLS */}
-                          {filteredList.length > progPerPage && (
-                            <tr>
-                              <td colSpan={4} style={{ padding: '1.5rem', background: '#fff', borderTop: '1px solid #f1f5f9' }}>
-                                <div className="flex-wrap-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-                                  <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700' }}>
-                                    Menampilkan <span style={{ color: 'var(--primary)', fontWeight: '900' }}>{startIndex + 1} - {Math.min(startIndex + progPerPage, filteredList.length)}</span> dari <span style={{ fontWeight: '900' }}>{filteredList.length}</span> User
+                                    <span style={{ fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
+                                      {item.gender || '-'}
+                                    </span>
                                   </div>
                                   
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <button 
-                                      disabled={progPage === 1}
-                                      onClick={() => setProgPage(progPage - 1)}
-                                      className="pagination-btn"
-                                      style={{ opacity: progPage === 1 ? 0.4 : 1 }}
-                                    >
-                                      <ChevronLeft size={16} />
-                                    </button>
-
-                                    {Array.from({ length: totalPages }).map((_, i) => {
-                                      const pNum = i + 1;
-                                      // Tampilkan halaman jika dekat dengan halaman aktif atau di ujung
-                                      if (pNum === 1 || pNum === totalPages || (pNum >= progPage - 1 && pNum <= progPage + 1)) {
-                                        return (
-                                          <button 
-                                            key={pNum}
-                                            onClick={() => setProgPage(pNum)}
-                                            className={`pagination-btn ${progPage === pNum ? 'active' : ''}`}
-                                          >
-                                            {pNum}
-                                          </button>
-                                        );
-                                      } else if (pNum === progPage - 2 || pNum === progPage + 2) {
-                                        return <span key={pNum} style={{ color: '#cbd5e1' }}>...</span>;
-                                      }
-                                      return null;
-                                    })}
-
-                                    <button 
-                                      disabled={progPage === totalPages}
-                                      onClick={() => setProgPage(progPage + 1)}
-                                      className="pagination-btn"
-                                      style={{ opacity: progPage === totalPages ? 0.4 : 1 }}
-                                    >
-                                      <ChevronRight size={16} />
-                                    </button>
+                                  <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', marginBottom: '6px', textTransform: 'uppercase' }}>Sertifikat Dimenangkan</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                      {item.earnedCertificates.length > 0 ? item.earnedCertificates.map((c, ci) => (
+                                        <span key={ci} style={{ background: '#f0fdf4', color: '#166534', padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #bbf7d0' }}>{c}</span>
+                                      )) : <span style={{ fontSize: '0.75rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>}
+                                    </div>
                                   </div>
+
+                                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                      <div style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? '#059669' : '#1e293b' }}>{item.percent}% Selesai</div>
+                                      <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#94a3b8' }}>{item.certificatesCount} / {item.totalCourses} Kelas</div>
+                                    </div>
+                                    <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+                                      <div style={{ width: `${item.percent}%`, height: '100%', background: '#134E39' }} />
+                                    </div>
+                                  </div>
+
+                                  <button 
+                                    onClick={() => setDetailUser(item)}
+                                    style={{ width: '100%', marginTop: '1rem', padding: '0.85rem', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
+                                  >
+                                     Lihat Rincian Belajar
+                                  </button>
                                 </div>
-                              </td>
-                            </tr>
-                          )}
-                        </>
+                              ))}
+                              {filteredList.length > progPerPage && (
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+                                  {[...Array(totalPages)].map((_, i) => (
+                                    <button key={i} onClick={() => setProgPage(i+1)} style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: progPage === i+1 ? '#134E39' : 'white', color: progPage === i+1 ? 'white' : '#64748b', fontWeight: '800', cursor: 'pointer' }}>{i+1}</button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
                       );
-                    })()}
-                  </tbody>
-               </table>
-             </div>
+                    }
+
+                    return (
+                      <>
+                        {paginatedList.map((item, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '1rem 1.5rem' }}>
+                              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.email}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '8px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
+                                {item.gender || '-'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {item.earnedCertificates.length > 0 ? item.earnedCertificates.map((c, ci) => (
+                                  <span key={ci} style={{ background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #bbf7d0' }}>{c}</span>
+                                )) : <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>}
+                              </div>
+                            </td>
+                            <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1.5rem' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? 'var(--success)' : '#1e293b' }}>{item.percent}%</div>
+                                    <div style={{ width: '100px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                      <div style={{ width: `${item.percent}%`, height: '100%', background: 'var(--primary)' }} />
+                                    </div>
+                                    <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.certificatesCount} / {item.totalCourses} Selesai</div>
+                                  </div>
+                                  <button 
+                                    onClick={() => setDetailUser(item)}
+                                    style={{ padding: '0.6rem 1rem', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#134E39', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = '#134E39'; e.currentTarget.style.color = 'white'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#134E39'; }}
+                                  >
+                                    DETAIL
+                                  </button>
+                               </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredList.length > progPerPage && (
+                          <tr>
+                            <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                                {[...Array(totalPages)].map((_, i) => (
+                                  <button key={i} onClick={() => setProgPage(i+1)} style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: progPage === i+1 ? 'var(--primary)' : 'white', color: progPage === i+1 ? 'white' : '#64748b', fontWeight: '700', cursor: 'pointer' }}>{i+1}</button>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })()}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-      </div>
-    )}
+        </div>
+      )}
 
       {/* ── EDITOR VIEW: Class ── */}
       {view === 'class-editor' && (
         <div style={{ animation: 'fadeInUp 0.4s ease', maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-            <button onClick={() => setView('list')} style={BTN_SM({ background: 'white', border: '1px solid var(--border)' })}>
-              <ArrowUp size={18} style={{ transform: 'rotate(-90deg)' }} /> Kembali
+          <div style={{ marginBottom: '2rem' }}>
+            <button 
+              onClick={() => setView('list')} 
+              style={{ 
+                background: 'white', border: '1px solid #e2e8f0', 
+                borderRadius: '12px', padding: '0.6rem 1rem', 
+                fontWeight: '700', color: '#64748b', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '1.5rem'
+              }}
+            >
+              <ChevronLeft size={18} /> Kembali ke Daftar
             </button>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0 }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', margin: 0 }}>
               {activeClassEdit === 'new' ? 'Tambah Kelas Baru' : 'Edit Detail Kelas'}
             </h2>
           </div>
@@ -1396,8 +1464,86 @@ export default function CourseManagerTab() {
           </div>
         </div>
       )}
+
+      {/* ── MODAL: User Progress Detail ────────────────────────────────────── */}
+      {detailUser && (
+        <div className="modal-overlay" onClick={() => setDetailUser(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px', width: '95%', maxHeight: '90vh' }}>
+            <div className="modal-header" style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>Detail Progres Belajar</h3>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>{detailUser.name} ({detailUser.email})</p>
+              </div>
+              <button onClick={() => setDetailUser(null)} style={{ background: '#f8fafc', border: 'none', width: 36, height: 36, borderRadius: '10px', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
+            </div>
+            
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+               {academyMeta.classes.map(cls => {
+                  const clsCourses = academyMeta.courses.filter(c => c.class_id === cls.id);
+                  const clsLessons = academyMeta.lessons.filter(l => clsCourses.some(c => c.id === l.course_id));
+                  const doneInCls = clsLessons.filter(l => detailUser.doneLessonIds.includes(String(l.id)) || detailUser.doneLessonIds.includes(Number(l.id)));
+                  const isClsDone = clsLessons.length > 0 && doneInCls.length === clsLessons.length;
+                  const clsPercent = clsLessons.length > 0 ? Math.round((doneInCls.length / clsLessons.length) * 100) : 0;
+
+                  return (
+                    <div key={cls.id} style={{ marginBottom: '2rem', background: '#f8fafc', borderRadius: '20px', border: '1px solid #f1f5f9', padding: '1.25rem' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                             <div style={{ width: 36, height: 36, borderRadius: '10px', background: isClsDone ? '#10b981' : '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <BookOpen size={18} />
+                             </div>
+                             <div>
+                                <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#1e293b' }}>{cls.title}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>{doneInCls.length} dari {clsLessons.length} Materi Selesai</div>
+                             </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                             <div style={{ fontSize: '1rem', fontWeight: '950', color: isClsDone ? '#10b981' : '#134E39' }}>{clsPercent}%</div>
+                          </div>
+                       </div>
+
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          {clsCourses.map(course => {
+                             const courseLessons = academyMeta.lessons.filter(l => l.course_id === course.id);
+                             const doneInCourse = courseLessons.filter(l => detailUser.doneLessonIds.includes(String(l.id)) || detailUser.doneLessonIds.includes(Number(l.id)));
+                             const isCourseDone = courseLessons.length > 0 && doneInCourse.length === courseLessons.length;
+
+                             return (
+                               <div key={course.id} style={{ background: 'white', padding: '1rem', borderRadius: '14px', border: '1px solid #f1f5f9' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                     <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#475569' }}>{course.title}</div>
+                                     <div style={{ fontSize: '0.7rem', fontWeight: '800', color: isCourseDone ? '#10b981' : '#94a3b8' }}>
+                                        {isCourseDone ? 'SELESAI' : `${doneInCourse.length}/${courseLessons.length}`}
+                                     </div>
+                                  </div>
+                                  <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                     <div style={{ height: '100%', background: isCourseDone ? '#10b981' : '#134E39', width: `${courseLessons.length > 0 ? (doneInCourse.length / courseLessons.length) * 100 : 0}%`, transition: 'width 0.4s' }} />
+                                  </div>
+                               </div>
+                             )
+                          })}
+                       </div>
+                    </div>
+                  )
+               })}
+            </div>
+
+            <div className="modal-footer" style={{ borderTop: '1px solid #f1f5f9', padding: '1.25rem' }}>
+               <button className="btn btn-primary" onClick={() => setDetailUser(null)} style={{ width: '100%', borderRadius: '12px' }}>Tutup</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
       <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+
         @media (max-width: 768px) {
           .admin-chart-card {
             padding: 1.5rem;

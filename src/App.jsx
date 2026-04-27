@@ -10,7 +10,7 @@ import {
   Heart, XCircle, CheckCircle, AlertCircle, Search, UserCheck, 
   FileText, User as UserIcon, Activity, Bell, BookOpen, Menu, X, 
   LogOut, LayoutDashboard, ChevronDown, ChevronLeft, Settings, 
-  Shield, ShieldCheck, GraduationCap, Award, Star, MessageSquare, Trash2, Quote 
+  Shield, ShieldCheck, GraduationCap, Award, Star, MessageSquare, Trash2, Quote, Users
 } from 'lucide-react';
 import { supabase } from './supabase';
 
@@ -51,7 +51,7 @@ const AccessDenied = () => {
 const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, unreadCount, notifications, deleteNotification, markAllAsRead, deleteAllNotifications, showNotifications, setShowNotifications, showProfileMenu, setShowProfileMenu, user, isAdmin, hideBanner, setHideBanner, cvs, showAlert }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tab, id } = useParams();
+  const { tab, id, subId } = useParams();
   const activeTab = location.pathname.split('/')[2] || 'home';
 
   const adminOnlyTabs = ['mediate', 'courses', 'feedback_admin', 'admin', 'users'];
@@ -63,7 +63,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
     const restrictedTabs = ['find', 'my_cv'];
     if (restrictedTabs.includes(newTab) && !user?.profile_complete && !isAdmin) {
       showAlert('Profil Belum Lengkap', 'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 'error');
-      navigate('/app/account');
+      navigate('/app/account?edit=true');
       if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
       return;
     }
@@ -77,7 +77,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
     const restrictedTabs = ['find', 'my_cv'];
     if (restrictedTabs.includes(activeTab) && !user?.profile_complete && !isAdmin && user) {
        showAlert('Profil Belum Lengkap', 'Halaman ini dikunci sementara. Silakan lengkapi profil Anda di menu Akun.', 'error');
-       navigate('/app/account', { replace: true });
+       navigate('/app/account?edit=true', { replace: true });
     }
   }, [activeTab, user?.profile_complete, isAdmin, user]);
 
@@ -97,7 +97,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         <div style={{ background: '#fee2e2', borderBottom: '1px solid #fecaca', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', position: 'sticky', top: 0, zIndex: 1100, animation: 'fadeInDown 0.4s ease' }}>
           <AlertCircle size={16} color="#dc2626" />
           <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#991b1b' }}>Biodata Anda belum lengkap! Harap lengkapi di menu Pengaturan Akun.</span>
-          <button onClick={() => navigateTo('account')} style={{ background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}>Lengkapi Sekarang</button>
+          <button onClick={() => navigate('/app/account?edit=true')} style={{ background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}>Lengkapi Sekarang</button>
           <button onClick={() => { setHideBanner(true); localStorage.setItem('Separuh Agama_hide_profile_banner', 'true'); }} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: '0.2rem' }}><X size={16} /></button>
         </div>
       );
@@ -112,41 +112,87 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
     };
     const headerBrand = getHeaderTitle();
 
+    const pathParts = location.pathname.split('/');
+    const currentId = id || pathParts[3];
+    const isPlayer = pathParts[2] === 'materi' && currentId && !['dashboard', 'catalog', 'daftar-kelas', 'welcome'].includes(currentId);
+
     return (
-      <div className="app-container academy-fullscreen">
+      <div className={`app-container academy-fullscreen ${isPlayer ? 'player-fullscreen' : ''}`}>
         <div className="main-wrapper" style={{ marginLeft: 0, width: '100%' }}>
           {renderAlertBanner()}
-          <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'white', zIndex: 1000 }}>
-             <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px' }}>
-                <button title="Portal Utama" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  <LayoutDashboard size={18} /> <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL UTAMA'}</span>
-                </button>
+          {!isPlayer && (
+            <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'white', zIndex: 1000, padding: '0 1.5rem' }}>
+              <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {!isAdmin ? (
                   <>
-                    <button key="btn-catalog" title="Katalog" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <BookOpen size={18} /> <span className="btn-text">KATALOG</span>
-                    </button>
                     <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <Activity size={18} /> <span className="btn-text">DASHBOARD</span>
                     </button>
+                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/daftar-kelas')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: (id === 'daftar-kelas' || id === 'catalog') ? '#134E39' : 'transparent', color: (id === 'daftar-kelas' || id === 'catalog') ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                      <BookOpen size={18} /> <span className="btn-text">DAFTAR KELAS</span>
+                    </button>
                   </>
                 ) : (
-                  <button title="Academy Studio" onClick={() => navigate('/app/courses')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#134E39', color: 'white', border: 'none', padding: '0.6rem 1rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                    <BookOpen size={18} /> <span className="btn-text">ACADEMY STUDIO</span>
-                  </button>
+                  isAdminAcademy && (
+                    <div style={{ display: 'flex', gap: '6px', background: '#f8fafc', padding: '5px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                      {[
+                        { id: 'curriculum', label: 'Kurikulum', icon: <BookOpen size={17} /> },
+                        { id: 'enrollment', label: 'Pendaftaran', icon: <Users size={17} /> },
+                        { id: 'progress', label: 'Progres', icon: <Activity size={17} /> }
+                      ].map(st => {
+                        const searchParams = new URLSearchParams(window.location.search);
+                        const currentSub = searchParams.get('sub') || 'curriculum';
+                        const isActive = currentSub === st.id;
+                        return (
+                          <button 
+                            key={st.id}
+                            onClick={() => navigate(`/app/courses?sub=${st.id}`)}
+                            title={st.label}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                              padding: window.innerWidth < 768 ? '0.75rem' : '0.6rem 1.25rem', 
+                              borderRadius: '12px',
+                              background: isActive ? '#134E39' : 'transparent',
+                              color: isActive ? 'white' : '#64748b',
+                              border: 'none', fontSize: '0.8rem', fontWeight: '800',
+                              cursor: 'pointer', 
+                              boxShadow: isActive ? '0 4px 12px rgba(19,78,57,0.2)' : 'none',
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              letterSpacing: '0.02em'
+                            }}
+                          >
+                            {st.icon} 
+                            {window.innerWidth >= 768 && <span>{st.label.toUpperCase()}</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )
                 )}
-             </div>
+
+                <div style={{ width: '1px', height: '24px', background: '#e2e8f0', margin: '0 4px' }}></div>
+
+                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                  <LayoutDashboard size={18} /> <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>
+                </button>
+              </div>
              <div className="header-brand academy-header-brand" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div className="academy-brand-icon" style={{ background: '#134E39', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {headerBrand.icon}
                 </div>
                 <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>Separuh Agama <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span></span>
              </div>
-             <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+             <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingRight: '2.5rem' }}>
                   <div className="profile-menu-wrapper">
                     <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                      <div className="profile-card-avatar"><span>{user?.name.charAt(0).toUpperCase()}</span></div>
-                      <ChevronDown size={14} className={`profile-chevron hide-on-mobile ${showProfileMenu ? 'open' : ''}`} />
+                      <div className="profile-card-avatar">
+                        <span>{user?.name?.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div className="hide-on-mobile" style={{ textAlign: 'left' }}>
+                         <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#1e293b', lineHeight: '1' }}>{user?.name?.split(' ')[0].toLowerCase()}</div>
+                         <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#94a3b8', marginTop: '2px' }}>{isAdmin ? 'Administrator' : 'Calon Kandidat'}</div>
+                      </div>
+                      <ChevronDown size={14} className={`profile-chevron hide-on-mobile ${showProfileMenu ? 'open' : ''}`} style={{ color: '#94a3b8', marginLeft: '4px' }} />
                     </button>
                     {showProfileMenu && (
                       <div className="profile-dropdown" style={{ right: 0 }}>
@@ -169,8 +215,26 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                   </div>
              </div>
           </header>
-          <main className="main-content" style={{ height: 'calc(100vh - 80px)', overflowY: 'auto', padding: 0 }}>
+          )}
+          <main className="main-content" style={{ 
+            height: isPlayer ? '100vh' : 'calc(100vh - 80px)', 
+            overflowY: isPlayer ? 'hidden' : 'auto', 
+            padding: 0 
+          }}>
              <style>{`
+                body, #root, .app-container.academy-fullscreen {
+                  max-width: none !important;
+                  width: 100% !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                }
+                .academy-fullscreen .main-content,
+                .academy-fullscreen .main-wrapper {
+                  max-width: none !important;
+                  margin: 0 !important;
+                  width: 100% !important;
+                  padding: 0 !important;
+                }
                .academy-fullscreen .main-content::-webkit-scrollbar,
                .academy-fullscreen .main-content *::-webkit-scrollbar {
                  display: none !important;
@@ -180,7 +244,35 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                  -ms-overflow-style: none !important;
                  scrollbar-width: none !important;
                }
-             `}</style>
+               .profile-card-avatar {
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 50%;
+                  background: #134E39;
+                  color: white;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 0.9rem;
+                  flex-shrink: 0;
+                }
+                .profile-card-btn {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  background: white;
+                  border: 1px solid #e2e8f0;
+                  padding: 4px 12px 4px 4px;
+                  cursor: pointer;
+                  border-radius: 30px;
+                  transition: all 0.2s;
+                }
+                .profile-card-btn:hover {
+                  background: #f8fafc;
+                  border-color: #cbd5e1;
+                }
+              `}</style>
              <Outlet />
           </main>
         </div>

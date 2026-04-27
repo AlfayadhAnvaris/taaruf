@@ -81,10 +81,13 @@
 
 
 
-* {
+html, body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 body {
@@ -1744,20 +1747,10 @@ select.form-control {
 
 /* Landing Page Styles */
 .landing-container {
-  height: 100vh;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
   background: #f8fafc;
   scroll-behavior: smooth;
 }
 
-@media (max-width: 1024px) {
-  .landing-container {
-    height: auto;
-    overflow-y: visible;
-    scroll-snap-type: none;
-  }
-}
 
 .landing-section-full {
   min-height: 100vh !important;
@@ -1765,20 +1758,16 @@ select.form-control {
   display: flex;
   align-items: center;
   justify-content: center;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  padding-top: 80px;
   position: relative;
-  overflow: visible; /* Changed from hidden to avoid clipping shadows/mockups */
+  overflow: visible;
   box-sizing: border-box;
+  padding: 80px 0;
 }
 
 @media (max-width: 1024px) {
   .landing-section-full {
     min-height: 100vh !important;
     padding: 100px 5% 60px;
-    height: auto;
-    scroll-snap-align: none;
   }
 }
 
@@ -1810,10 +1799,6 @@ select.form-control {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-}
-
-.landing-section-snap {
-  scroll-snap-align: start;
 }
 
 .landing-nav {
@@ -2343,13 +2328,13 @@ select.form-control {
 /* LMS Responsive Layout */
 .lms-player {
   display: flex;
-  height: 100vh;
+  height: 100%;
   background: white;
   overflow: hidden;
 }
 
 .lms-sidebar {
-  width: 380px;
+  width: 340px;
   background: #f8fafc;
   border-right: 1px solid #e2e8f0;
   overflow-y: auto;

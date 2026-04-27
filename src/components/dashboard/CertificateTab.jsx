@@ -28,8 +28,8 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
         <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto', lineHeight: '1.6' }}>
           Silakan selesaikan seluruh materi di kelas pilihan Anda untuk dapat melihat dan mengunduh sertifikat kelulusan.
         </p>
-        <button onClick={() => navigate('/app/materi/catalog')} style={{ marginTop: '2rem', padding: '1rem 2.5rem', background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '800', cursor: 'pointer' }}>
-          Jelajahi Katalog Kelas
+        <button onClick={() => navigate('/app/materi/daftar-kelas')} style={{ marginTop: '2rem', padding: '1rem 2.5rem', background: '#134E39', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '800', cursor: 'pointer' }}>
+          Jelajahi DAFTAR Kelas
         </button>
       </div>
     );
