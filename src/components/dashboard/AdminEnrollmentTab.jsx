@@ -11,6 +11,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [genderFilter, setGenderFilter] = useState('all');
   const [deletingId, setDeletingId] = useState(null);
   const [detailEnroll, setDetailEnroll] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
         .from('course_enrollments')
         .select(`
           *,
-          user:user_id(name, email),
+          user:user_id(name, email, gender),
           class:class_id(title)
         `)
         .order('enrolled_at', { ascending: false });
@@ -97,11 +98,15 @@ export default function AdminEnrollmentTab({ showAlert }) {
     }
   };
 
-  const filteredEnrollments = enrollments.filter(e => 
-    e.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.class?.title?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEnrollments = enrollments.filter(e => {
+    const matchesSearch = (
+      e.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.class?.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const matchesGender = genderFilter === 'all' || e.user?.gender === genderFilter;
+    return matchesSearch && matchesGender;
+  });
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease' }}>
@@ -114,10 +119,19 @@ export default function AdminEnrollmentTab({ showAlert }) {
               placeholder="Cari nama, email, atau kelas..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '0.85rem 1rem 0.85rem 3rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
+              style={{ width: '100%', height: '50px', padding: '0 1rem 0 3rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem 1.25rem', background: '#f8fafc', borderRadius: '14px', color: '#64748b', fontSize: '0.85rem', fontWeight: '700' }}>
+          <select 
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value)}
+            style={{ width: isMobile ? '100%' : 'auto', height: '50px', padding: '0 1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', fontWeight: '700', color: '#134E39', background: '#fff', cursor: 'pointer', outline: 'none', boxSizing: 'border-box' }}
+          >
+            <option value="all">Semua Gender</option>
+            <option value="ikhwan">Ikhwan</option>
+            <option value="akhwat">Akhwat</option>
+          </select>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0 1.25rem', height: '50px', background: '#f8fafc', borderRadius: '14px', color: '#64748b', fontSize: '0.85rem', fontWeight: '700', flexShrink: 0, boxSizing: 'border-box' }}>
             <Users size={16} /> {filteredEnrollments.length} Pendaftar
           </div>
         </div>
@@ -159,8 +173,8 @@ export default function AdminEnrollmentTab({ showAlert }) {
                       {filteredEnrollments.map((enroll) => (
                         <div key={enroll.id} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '24px', padding: '1.25rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '950', fontSize: '1rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, marginRight: '1rem' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '950', fontSize: '1rem', flexShrink: 0 }}>
                                   {enroll.user?.name?.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
@@ -170,7 +184,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                               </div>
                               <button 
                                 onClick={() => handleDelete(enroll.id)}
-                                style={{ background: 'rgba(230,57,70,0.06)', border: 'none', width: 36, height: 36, borderRadius: '10px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
+                                style={{ flexShrink: 0, background: 'rgba(230,57,70,0.06)', border: 'none', width: 36, height: 36, borderRadius: '10px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                               >
                                  <Trash2 size={16} />
                               </button>

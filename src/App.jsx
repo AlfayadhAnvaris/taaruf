@@ -106,6 +106,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
   };
 
   if (isAcademyMode || isAdminAcademy) {
+    const isMobile = window.innerWidth < 768;
     const getHeaderTitle = () => {
       if (isAdminAcademy) return { main: 'Separuh Agama', sub: 'STUDIO', icon: <BookOpen size={20} color="white" /> };
       return { main: 'Separuh Agama', sub: 'ACADEMY', icon: <GraduationCap size={20} color="white" /> };
@@ -121,7 +122,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         <div className="main-wrapper" style={{ marginLeft: 0, width: '100%' }}>
           {renderAlertBanner()}
           {!isPlayer && (
-            <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'white', zIndex: 1000, padding: '0 1.5rem' }}>
+            <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', zIndex: 1000, padding: isMobile ? '0 0.75rem' : '0 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
               <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {!isAdmin ? (
                   <>
@@ -170,29 +171,34 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                   )
                 )}
 
-                <div style={{ width: '1px', height: '24px', background: '#e2e8f0', margin: '0 4px' }}></div>
+                {!isMobile && <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 4px' }}></div>}
 
                 <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                   <LayoutDashboard size={18} /> <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>
                 </button>
               </div>
-             <div className="header-brand academy-header-brand" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div className="academy-brand-icon" style={{ background: '#134E39', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {headerBrand.icon}
+
+              <div className="header-brand academy-header-brand" style={{ 
+                position: isMobile ? 'static' : 'absolute', 
+                left: '50%', 
+                transform: isMobile ? 'none' : 'translateX(-50%)', 
+                display: isMobile && window.innerWidth < 400 ? 'none' : 'flex', 
+                alignItems: 'center', 
+                gap: '8px' 
+              }}>
+                <div className="academy-brand-icon" style={{ background: '#134E39', padding: '5px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BookOpen size={18} color="white" />
                 </div>
-                <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>Separuh Agama <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span></span>
-             </div>
-             <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingRight: '2.5rem' }}>
-                  <div className="profile-menu-wrapper">
-                    <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                      <div className="profile-card-avatar">
-                        <span>{user?.name?.charAt(0).toUpperCase()}</span>
-                      </div>
-                      <div className="hide-on-mobile" style={{ textAlign: 'left' }}>
-                         <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#1e293b', lineHeight: '1' }}>{user?.name?.split(' ')[0].toLowerCase()}</div>
-                         <div style={{ fontSize: '0.75rem', fontWeight: '500', color: '#94a3b8', marginTop: '2px' }}>{isAdmin ? 'Administrator' : 'Calon Kandidat'}</div>
-                      </div>
-                      <ChevronDown size={14} className={`profile-chevron hide-on-mobile ${showProfileMenu ? 'open' : ''}`} style={{ color: '#94a3b8', marginLeft: '4px' }} />
+                <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: isMobile ? '0.9rem' : '1.05rem' }}>
+                  {!isMobile && 'Separuh Agama '}
+                  <span style={{ color: '#D4AF37' }}>STUDIO</span>
+                </span>
+              </div>
+             <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                   <div className="profile-menu-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+                    <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ padding: isMobile ? '4px' : '4px 8px', borderRadius: '12px', border: '1px solid #f1f5f9', background: 'white' }}>
+                      <div className="profile-card-avatar" style={{ width: 34, height: 34 }}><span>{user?.name.charAt(0).toUpperCase()}</span></div>
+                      <ChevronDown size={14} className={`profile-chevron hide-on-mobile ${showProfileMenu ? 'open' : ''}`} style={{ marginLeft: '4px', display: isMobile ? 'none' : 'block' }} />
                     </button>
                     {showProfileMenu && (
                       <div className="profile-dropdown" style={{ right: 0 }}>
@@ -244,35 +250,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                  -ms-overflow-style: none !important;
                  scrollbar-width: none !important;
                }
-               .profile-card-avatar {
-                  width: 32px;
-                  height: 32px;
-                  border-radius: 50%;
-                  background: #134E39;
-                  color: white;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: 700;
-                  font-size: 0.9rem;
-                  flex-shrink: 0;
-                }
-                .profile-card-btn {
-                  display: flex;
-                  align-items: center;
-                  gap: 10px;
-                  background: white;
-                  border: 1px solid #e2e8f0;
-                  padding: 4px 12px 4px 4px;
-                  cursor: pointer;
-                  border-radius: 30px;
-                  transition: all 0.2s;
-                }
-                .profile-card-btn:hover {
-                  background: #f8fafc;
-                  border-color: #cbd5e1;
-                }
-              `}</style>
+             `}</style>
              <Outlet />
           </main>
         </div>
@@ -425,7 +403,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                         <Settings size={16} /> <span>Akun & Keamanan</span>
                       </button>
                       <button className="dropdown-action-btn logout" onClick={() => { setShowProfileMenu(false); handleLogout(); }}>
-                        <LogOut size={16} /> <span>Keluar Sistem</span>
+                        <LogOut size={16} /> <span>Keluar</span>
                       </button>
                     </div>
                  </div>
@@ -467,6 +445,7 @@ const SidebarLink = ({ icon, label, active, onClick }) => (
 );
 
 function App() {
+  const isMobile = window.innerWidth < 768;
   const [user, setUser] = useState(null);
   const [cvs, setCvs] = useState([]);
   const [taarufRequests, setTaarufRequests] = useState([]);

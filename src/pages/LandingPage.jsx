@@ -44,12 +44,14 @@ export default function LandingPage() {
   return (
     <div className="landing-container">
       {/* NAVBAR */}
-      <nav className="landing-nav" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '80px', padding: '0 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000 }}>
-        <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: 'clamp(1rem, 3vw, 1.4rem)', color: 'var(--primary)' }}>
-          <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '42px', height: '42px' }} />
-          Separuh Agama
+      <nav className="landing-nav" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '80px', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(44,95,77,0.08)', zIndex: 1000, display: 'flex', alignItems: 'center', padding: 0 }}>
+        <div style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '800', fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
+            <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '40px', height: '40px' }} />
+            Separuh Agama
+          </div>
+          <Link to="/login" className="btn btn-primary" style={{ padding: '0.7rem 1.8rem', borderRadius: '14px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none', boxShadow: '0 8px 20px rgba(44,95,77,0.2)' }}>Masuk / Daftar</Link>
         </div>
-        <Link to="/login" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none' }}>Masuk / Daftar</Link>
       </nav>
 
       <main>

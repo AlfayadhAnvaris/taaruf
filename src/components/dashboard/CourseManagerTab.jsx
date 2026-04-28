@@ -707,8 +707,8 @@ export default function CourseManagerTab() {
         <div style={{ animation: 'fadeIn 0.3s ease' }}>
           {subTab === 'enrollment' ? (
              <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>Manajemen Pendaftaran Kelas</h3>
+                <div style={{ marginBottom: '2rem', padding: isMobile ? '0 1rem' : '0 1.5rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>Manajemen Pendaftaran Kelas</h3>
                   <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Kelola akses pengguna ke berbagai kelas akademi.</p>
                 </div>
                 <AdminEnrollmentTab showAlert={(t, m, s) => showToast(m, s)} />
@@ -720,14 +720,15 @@ export default function CourseManagerTab() {
             display: 'flex', 
             flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between', 
-            alignItems: isMobile ? 'flex-start' : 'flex-end', 
-            marginBottom: '2.5rem', 
+            alignItems: isMobile ? 'flex-start' : 'center', 
+            maxWidth: '1000px',
+            margin: isMobile ? '0 0 1.5rem 0' : '1.5rem auto',
             background: 'white', 
-            padding: isMobile ? '1.5rem' : '2rem', 
+            padding: isMobile ? '1.5rem' : '1.25rem 2rem', 
             borderRadius: isMobile ? '16px' : '24px', 
             border: '1px solid #f1f5f9', 
             boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
-            gap: isMobile ? '1.5rem' : '0'
+            gap: isMobile ? '1.25rem' : '0'
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -796,7 +797,15 @@ export default function CourseManagerTab() {
             </div>
           )}
 
-          {classes.sort((a,b) => a.order_index - b.order_index).map((cls) => {
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '1.25rem',
+            maxWidth: '1000px',
+            margin: '0 auto',
+            width: '100%'
+          }}>
+            {classes.sort((a,b) => a.order_index - b.order_index).map((cls) => {
             const isClassExpanded = expandedClass === cls.id;
             const classModules = courses.filter(c => c.class_id === cls.id).sort((a,b) => a.order_index - b.order_index);
             
@@ -817,67 +826,48 @@ export default function CourseManagerTab() {
                     display: 'flex', 
                     flexDirection: isMobile ? 'column' : 'row',
                     alignItems: isMobile ? 'flex-start' : 'center', 
-                    gap: isMobile ? '1rem' : '1.25rem', 
-                    padding: isMobile ? '1.5rem' : '1.25rem 1.5rem', 
+                    gap: '1.25rem', 
+                    padding: '1.25rem', 
                     cursor: 'pointer', 
                     background: isClassExpanded ? 'rgba(44,95,77,0.03)' : 'white' 
                   }}
                 >
-                  <div style={{ width: isMobile ? '100%' : 140, height: isMobile ? 180 : 85, borderRadius: '16px', overflow: 'hidden', background: '#f8fafc', border: '1.5px solid #f1f5f9', flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+                  {/* Banner Image */}
+                  <div style={{ width: isMobile ? '100%' : 140, height: isMobile ? 180 : 85, borderRadius: '16px', overflow: 'hidden', background: '#f8fafc', border: '1.5px solid #f1f5f9', flexShrink: 0, position: 'relative' }}>
                     {cls.banner_url ? (
                       <img src={cls.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', background: '#f1f5f9' }}><BookOpen size={isMobile ? 40 : 28} opacity={0.5}/></div>
                     )}
                   </div>
-                  <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
-                    <h4 style={{ margin: 0, fontSize: isMobile ? '1.15rem' : '1.25rem', fontWeight: '950', color: '#1e293b', letterSpacing: '-0.01em' }}>{cls.title}</h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
-                       <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748b', background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px' }}>{classModules.length} MODUL</span>
-                       <div style={{ width: '1px', height: '10px', background: '#e2e8f0' }} />
-                       <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#94a3b8' }}>ID: {String(cls.id).slice(0,8)}</span>
+
+                  {/* Content Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ 
+                        fontSize: '0.65rem', fontWeight: '900', padding: '3px 8px', borderRadius: '6px',
+                        background: cls.is_published ? '#f0fdf4' : '#f8fafc',
+                        color: cls.is_published ? '#166534' : '#64748b',
+                        border: `1px solid ${cls.is_published ? '#bbf7d0' : '#e2e8f0'}`
+                      }}>
+                        {cls.is_published ? 'PUBLISHED' : 'DRAFT'}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8' }}>ID: {String(cls.id).slice(0,8)}</span>
+                    </div>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '950', color: '#1e293b', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cls.title}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                       <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--primary)', background: 'rgba(19,78,57,0.06)', padding: '2px 8px', borderRadius: '6px' }}>{classModules.length} MODUL</span>
                     </div>
                   </div>
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '0.75rem', 
-                    alignItems: 'center',
-                    width: isMobile ? '100%' : 'auto',
-                    justifyContent: isMobile ? 'space-between' : 'flex-end',
-                    marginTop: isMobile ? '0.5rem' : '0',
-                    paddingTop: isMobile ? '1rem' : '0',
-                    borderTop: isMobile ? '1px solid #f1f5f9' : 'none'
-                  }} onClick={e => e.stopPropagation()}>
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => toggleClassPublished(cls)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          padding: '0.5rem 0.9rem', borderRadius: '12px',
-                          border: 'none', cursor: 'pointer',
-                          background: cls.is_published ? 'rgba(16,185,129,0.1)' : 'rgba(100,116,139,0.1)',
-                          color: cls.is_published ? '#059669' : '#475569',
-                          transition: 'all 0.3s'
-                        }}
-                      >
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: cls.is_published ? '#10b981' : '#94a3b8' }} />
-                        <span style={{ fontSize: '0.7rem', fontWeight: '900' }}>{cls.is_published ? 'PUBLISHED' : 'DRAFT'}</span>
-                      </button>
 
-                      {!isMobile && <div style={{ width: '1px', height: '24px', background: '#f1f5f9' }} />}
-                      
-                      <button onClick={() => openEditClass(cls)} style={{ width: 38, height: 38, borderRadius: '10px', border: 'none', background: 'rgba(19,78,57,0.06)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit3 size={16} /></button>
-                      <button onClick={() => deleteClass(cls.id)} style={{ width: 38, height: 38, borderRadius: '10px', border: 'none', background: 'rgba(230,57,70,0.06)', color: '#E63946', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {!isMobile && <div style={{ width: '1px', height: '24px', background: '#f1f5f9' }} />}
-                      <div style={{ width: 38, height: 38, borderRadius: '10px', background: isClassExpanded ? 'rgba(19,78,57,0.1)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
-                        <ChevronDown size={20} color={isClassExpanded ? '#134E39' : '#94a3b8'} style={{ transform: isClassExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.4s' }} />
-                      </div>
-                    </div>
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                    <button onClick={() => openEditClass(cls)} style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', width: 34, height: 34, borderRadius: '10px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><Edit3 size={14} /></button>
+                    <button onClick={() => deleteClass(cls.id)} style={{ background: '#fff1f2', border: '1.5px solid #ffe4e6', width: 34, height: 34, borderRadius: '10px', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><Trash2 size={14} /></button>
+                    <ChevronDown size={18} color="#94a3b8" style={{ transform: isClassExpanded ? 'rotate(180deg)' : 'rotate(0)', transition: '0.3s', marginLeft: '4px' }} />
                   </div>
                 </div>
+
 
                 {/* Modules inside Class */}
                 {isClassExpanded && (
@@ -1043,6 +1033,7 @@ export default function CourseManagerTab() {
               </div>
             );
           })}
+          </div>
             </>
            ) : null}
         </div>
@@ -1051,9 +1042,9 @@ export default function CourseManagerTab() {
       {/* ── PROGRESS VIEW ── */}
       {subTab === 'progress' && view === 'list' && (
         <div style={{ animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: isMobile ? '0 1rem' : '0 1.5rem' }}>
              <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39' }}>Progres Belajar Calon Kandidat</h3>
+                <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>Progres Belajar Calon Kandidat</h3>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Memantau aktivitas {userProgressList.length} orang candidate aktif.</p>
              </div>
           </div>
@@ -1080,13 +1071,13 @@ export default function CourseManagerTab() {
                           <input 
                             type="text" 
                             placeholder="Cari nama atau email..." 
-                            style={{ width: '100%', padding: '0.6rem 1rem 0.6rem 2.5rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }} 
+                            style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
                             value={progSearch}
                             onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
                           />
                         </div>
                         <select 
-                          style={{ padding: '0.7rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem', width: isMobile ? '100%' : 'auto' }}
+                          style={{ padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', width: isMobile ? '100%' : 'auto', height: '50px', flexShrink: 0, background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
                           value={progGender}
                           onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
                         >
@@ -1116,11 +1107,11 @@ export default function CourseManagerTab() {
                               {paginatedList.map((item, idx) => (
                                 <div key={idx} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                    <div>
+                                    <div style={{ flex: 1, marginRight: '1rem' }}>
                                       <div style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b', wordBreak: 'break-word' }}>{item.name}</div>
                                       <div style={{ fontSize: '0.75rem', color: '#64748b', wordBreak: 'break-all' }}>{item.email}</div>
                                     </div>
-                                    <span style={{ fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
+                                    <span style={{ flexShrink: 0, fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
                                       {item.gender || '-'}
                                     </span>
                                   </div>
