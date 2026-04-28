@@ -17,7 +17,16 @@ import { supabase } from './supabase';
 export const AppContext = createContext();
 
 // --- Private Route Helper ---
-const PrivateRoute = ({ children, user }) => {
+const PrivateRoute = ({ children, user, isInitializing }) => {
+  if (isInitializing) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: '40px', height: '40px', border: '3px solid #f1f5f9', borderTopColor: '#134E39', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+        <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '600' }}>Menyiapkan Sesi...</p>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
   return children;
 };
@@ -487,34 +496,95 @@ function App() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const fetchSessionUser = async (authUser) => {
+  const fetchSessionUser = async (authUser, mounted) => {
     if (!authUser) {
       setUser(null);
       setIsAdmin(false);
-      setIsInitializing(false);
       return;
     }
     try {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single();
-      if (profile) {
+      console.log('App: Fetching profile for auth user:', authUser.id);
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', authUser.id).single();
+      
+      if (profileError) {
+        console.warn('App: Profile fetch error (might not exist yet):', profileError);
+        setUser(authUser);
+        setIsAdmin(false);
+      } else if (profile) {
+        console.log('App: Profile found, setting user state.');
         setUser({ ...authUser, ...profile });
         setIsAdmin(profile.role === 'admin');
         setProfileNeedsCompletion(!profile.profile_complete && profile.role !== 'admin');
+      } else {
+        console.log('App: No profile record, using auth user fallback.');
+        setUser(authUser);
+        setIsAdmin(false);
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      console.error('App: fetchSessionUser error:', err);
+      setUser(authUser);
+    } finally {
+      console.log('App: fetchSessionUser completed.');
     }
-    setIsInitializing(false);
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      fetchSessionUser(session?.user);
-    });
+    let mounted = true;
+    const initSession = async () => {
+      console.log('App: Starting initSession...');
+      try {
+        // 1. Get Session (Fast)
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          console.log('App: No session in getSession, checking getUser...');
+          // 2. Double check with getUser (Slower but definitive)
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (mounted) {
+            if (authUser) {
+              console.log('App: getUser found user:', authUser.email);
+              await fetchSessionUser(authUser);
+            } else {
+              console.log('App: No user found anywhere.');
+              setIsInitializing(false);
+            }
+          }
+        } else {
+          console.log('App: Session found in getSession:', session.user.email);
+          if (mounted) await fetchSessionUser(session.user);
+        }
+      } catch (err) {
+        console.error('App: initSession error:', err);
+        if (mounted) setIsInitializing(false);
+      } finally {
+        if (mounted) {
+          // Final safety delay
+          setTimeout(() => {
+            if (mounted) {
+              console.log('App: Releasing isInitializing lock. User state is:', !!user);
+              setIsInitializing(false);
+            }
+          }, 500);
+        }
+      }
+    };
+
+    initSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      fetchSessionUser(session?.user);
+      console.log('App: Auth state change event:', _event);
+      if (mounted && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) {
+        fetchSessionUser(session?.user);
+      } else if (_event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAdmin(false);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -739,7 +809,7 @@ function App() {
           <Route path="/daftar" element={<AuthPage initialIsLogin={false} onRegister={() => {}} showAlert={showAlert} />} />
           
           <Route path="/app" element={
-            <PrivateRoute user={user}>
+            <PrivateRoute user={user} isInitializing={isInitializing}>
               <DashboardLayout 
                 isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
                 handleLogout={handleLogout} unreadCount={unreadCount} notifications={notifications}
@@ -758,7 +828,7 @@ function App() {
             <Route path=":tab/:id/:subId" element={isAdmin ? <AdminDashboard /> : <UserDashboard />} />
           </Route>
 
-          <Route path="/complete-profile" element={<PrivateRoute user={user}><CompleteProfilePage /></PrivateRoute>} />
+          <Route path="/complete-profile" element={<PrivateRoute user={user} isInitializing={isInitializing}><CompleteProfilePage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

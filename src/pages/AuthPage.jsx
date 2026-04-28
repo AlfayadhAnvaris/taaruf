@@ -83,8 +83,8 @@ function OTPInput({ value, onChange, disabled }) {
 // Komponen Utama AuthPage
 // ============================================================
 export default function AuthPage({ initialIsLogin = true, showAlert }) {
+  const { user, isInitializing } = useContext(AppContext);
   const navigate = useNavigate();
-  const { user } = useContext(AppContext);
   const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [step, setStep] = useState('form');
 
@@ -208,8 +208,14 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
     if (error) {
       showAlert('Gagal Masuk', 'Email atau Password salah.', 'error');
     }
-    setIsLoading(false);
   };
+
+  if (isInitializing) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+       <div style={{ width: '30px', height: '30px', border: '3px solid #f1f5f9', borderTopColor: '#134E39', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
     <div className="auth-split-container">
