@@ -17,7 +17,16 @@ import { supabase } from './supabase';
 export const AppContext = createContext();
 
 // --- Private Route Helper ---
-const PrivateRoute = ({ children, user }) => {
+const PrivateRoute = ({ children, user, isInitializing }) => {
+  if (isInitializing) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: '40px', height: '40px', border: '3px solid #f1f5f9', borderTopColor: '#134E39', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+        <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '600' }}>Menyiapkan Sesi...</p>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
   return children;
 };
@@ -739,7 +748,7 @@ function App() {
           <Route path="/daftar" element={<AuthPage initialIsLogin={false} onRegister={() => {}} showAlert={showAlert} />} />
           
           <Route path="/app" element={
-            <PrivateRoute user={user}>
+            <PrivateRoute user={user} isInitializing={isInitializing}>
               <DashboardLayout 
                 isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
                 handleLogout={handleLogout} unreadCount={unreadCount} notifications={notifications}
@@ -758,7 +767,7 @@ function App() {
             <Route path=":tab/:id/:subId" element={isAdmin ? <AdminDashboard /> : <UserDashboard />} />
           </Route>
 
-          <Route path="/complete-profile" element={<PrivateRoute user={user}><CompleteProfilePage /></PrivateRoute>} />
+          <Route path="/complete-profile" element={<PrivateRoute user={user} isInitializing={isInitializing}><CompleteProfilePage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
