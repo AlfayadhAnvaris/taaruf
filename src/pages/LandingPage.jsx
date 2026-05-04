@@ -163,7 +163,7 @@ export default function LandingPage() {
             <div className="process-step">
               <div className="step-number">1</div>
               <h4>Daftar & Isi CV</h4>
-              <p>Mengisi data secara komprehensif dan menunggu persetujuan kelayakan dari Ustadz.</p>
+              <p>Mengisi data secara komprehensif dan melewati screening aqidah dasar secara otomatis.</p>
             </div>
             <div className="process-step">
               <div className="step-number">2</div>

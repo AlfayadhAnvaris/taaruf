@@ -29,7 +29,7 @@
 - Supervised communication to maintain proper boundaries (*mahram*-aware design)
 - Clear conversation etiquette aligned with Islamic values
 
-### 🎓 Mawaddah Academy
+### 🎓 Separuh Agama Academy
 - Pre-marriage learning center with curated educational content
 - Courses and modules covering Islamic marriage principles, rights, and responsibilities
 - Helps users prepare spiritually and practically before entering a marriage

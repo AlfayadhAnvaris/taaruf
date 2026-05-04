@@ -1,18 +1,16 @@
-
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { supabase } from '../src/supabase';
 
 async function checkSchema() {
   const { data, error } = await supabase
-    .from('lms_lessons')
+    .from('user_reviews')
     .select('*')
-    .limit(1)
+    .limit(1);
   
-  if (error) console.error('Error:', error)
-  else console.log('Columns in lms_lessons:', Object.keys(data[0] || {}))
+  if (error) {
+    console.error('Error fetching user_reviews:', error);
+  } else {
+    console.log('Columns in user_reviews:', Object.keys(data[0] || {}));
+  }
 }
 
-checkSchema()
+checkSchema();

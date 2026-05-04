@@ -4,15 +4,15 @@ import { supabase } from '../supabase';
 import { Heart, User, Phone, MapPin, ChevronRight, ChevronLeft, CheckCircle, Loader, Users, Home, Shield, Sparkles, Briefcase, GraduationCap } from 'lucide-react';
 
 const STEPS = [
-  { id: 1, label: 'Genders', icon: <Users size={18} /> },
-  { id: 2, label: 'Data Personal', icon: <Briefcase size={18} /> },
+  { id: 1, label: 'Gender', icon: <Users size={18} /> },
+  { id: 2, label: 'Personal', icon: <Briefcase size={18} /> },
   { id: 3, label: 'Kontak', icon: <Phone size={18} /> },
-  { id: 4, label: 'Domisili', icon: <MapPin size={18} /> },
+  { id: 4, label: 'Lokasi', icon: <MapPin size={18} /> },
   { id: 5, label: 'Selesai', icon: <CheckCircle size={18} /> },
 ];
 
 export default function CompleteProfilePage({ onComplete }) {
-  const { user, showAlert } = useContext(AppContext);
+  const { user, setUser, showAlert } = useContext(AppContext);
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +40,42 @@ export default function CompleteProfilePage({ onComplete }) {
     domisili_detail: '',
     pekerjaan: '',
     pendidikan_terakhir: '',
+    // Screening Data
+    aqidah1: '',
+    aqidah2: '',
+    aqidah3: '',
+    aqidah4: '',
+    marriage_vision: '',
+    polygamy_view: '',
+    role_view: ''
   });
+
+  // Pre-populate if user has existing data
+  React.useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        gender: user.gender || prev.gender,
+        phone_wa: user.phone_wa || prev.phone_wa,
+        wali_name: user.wali_name || prev.wali_name,
+        wali_phone: user.wali_phone || prev.wali_phone,
+        domisili_kota: user.domisili_kota || prev.domisili_kota,
+        domisili_provinsi: user.domisili_provinsi || prev.domisili_provinsi,
+        domisili_detail: user.domisili_detail || prev.domisili_detail,
+        pekerjaan: user.pekerjaan || prev.pekerjaan,
+        pendidikan_terakhir: user.pendidikan_terakhir || prev.pendidikan_terakhir,
+        // Screening Data
+        aqidah1: user.screening_data?.aqidah1 || prev.aqidah1,
+        aqidah2: user.screening_data?.aqidah2 || prev.aqidah2,
+        aqidah3: user.screening_data?.aqidah3 || prev.aqidah3,
+        aqidah4: user.screening_data?.aqidah4 || prev.aqidah4,
+        marriage_vision: user.screening_data?.marriage_vision || prev.marriage_vision,
+        polygamy_view: user.screening_data?.polygamy_view || prev.polygamy_view,
+        role_view: user.screening_data?.role_view || prev.role_view
+      }));
+      
+    }
+  }, [user]);
   
   const [cities, setCities] = useState([]);
   const [isFetchingCities, setIsFetchingCities] = useState(false);
@@ -136,7 +171,7 @@ export default function CompleteProfilePage({ onComplete }) {
         domisili_detail: form.domisili_detail.trim() || null,
         pekerjaan: form.pekerjaan.trim(),
         pendidikan_terakhir: form.pendidikan_terakhir.trim(),
-        profile_complete: true,
+        profile_complete: true
       };
 
       // Update juga user_metadata agar gender bisa diakses cepat
@@ -153,7 +188,10 @@ export default function CompleteProfilePage({ onComplete }) {
         return;
       }
 
-      setStep(4); // success screen
+      // Update local context
+      setUser({ ...user, ...payload });
+
+      setStep(5); // success screen
     } catch (err) {
       showAlert('Error', err.message, 'error');
     }
@@ -199,13 +237,13 @@ export default function CompleteProfilePage({ onComplete }) {
         </div>
 
         {/* ── Step Indicator ── */}
-        {step < 5 && (
+        {step < 6 && (
           <div style={{
             display: 'flex',
             borderBottom: '1px solid var(--border)',
             background: 'var(--bg-color)',
           }}>
-            {STEPS.slice(0, 4).map((s, i) => {
+            {STEPS.slice(0, 5).map((s, i) => {
               const isActive = step === s.id;
               const isDone = step > s.id;
               return (
@@ -326,7 +364,7 @@ export default function CompleteProfilePage({ onComplete }) {
                 Latar Belakang
               </h3>
               <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                Informasi ini membantu Admin dan calon pasangan mengenal latar belakang pendidikan dan kesibukan Anda saat ini.
+                Informasi ini membantu calon pasangan mengenal latar belakang pendidikan dan kesibukan Anda saat ini secara garis besar.
               </p>
 
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
@@ -369,7 +407,7 @@ export default function CompleteProfilePage({ onComplete }) {
                 Informasi Kontak
               </h3>
               <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                Nomor WhatsApp digunakan untuk komunikasi mediasi taaruf melalui Ustadz/Admin. Tidak ditampilkan ke publik.
+                Nomor WhatsApp digunakan untuk komunikasi mediasi taaruf melalui tim mediasi platform. Tidak ditampilkan ke publik.
               </p>
 
               {/* No WA Sendiri */}
@@ -404,7 +442,7 @@ export default function CompleteProfilePage({ onComplete }) {
                     </span>
                   </div>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.5' }}>
-                    Dalam proses taaruf syar'i, wali berperan penting. Kontak wali akan digunakan oleh Admin/Ustadz saat mediasi berlangsung.
+                    Dalam proses taaruf syar'i, wali berperan penting. Kontak wali akan digunakan oleh tim mediasi saat proses mediasi berlangsung.
                   </p>
                   <div className="form-group" style={{ marginBottom: '1rem' }}>
                     <label className="form-label">
@@ -506,7 +544,7 @@ export default function CompleteProfilePage({ onComplete }) {
             </div>
           )}
 
-          {/* ════ STEP 4: Success ════ */}
+          {/* ════ STEP 5: Selesai ════ */}
           {step === 5 && (
             <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease', padding: '1rem 0' }}>
               <div style={{
@@ -539,7 +577,7 @@ export default function CompleteProfilePage({ onComplete }) {
           )}
 
           {/* ── Navigation Buttons ── */}
-          {step < 4 && (
+          {step < 6 && (
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
               {step > 1 && (
                 <button
@@ -553,7 +591,7 @@ export default function CompleteProfilePage({ onComplete }) {
                 </button>
               )}
 
-              {step < 3 ? (
+              {step < 5 ? (
                 <button
                   type="button"
                   className="btn btn-primary"

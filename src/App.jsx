@@ -70,11 +70,13 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
 
   const navigateTo = (newTab) => {
     const restrictedTabs = ['find', 'my_cv'];
-    if (restrictedTabs.includes(newTab) && !user?.profile_complete && !isAdmin) {
-      showAlert('Profil Belum Lengkap', 'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 'error');
-      navigate('/app/account?edit=true');
-      if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
-      return;
+    if (restrictedTabs.includes(newTab)) {
+      if (!user?.profile_complete) {
+        showAlert('Profil Belum Lengkap', 'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 'error');
+        navigate('/app/account?edit=true');
+        if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
+        return;
+      }
     }
     navigate(`/app/${newTab}`);
     if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
@@ -84,14 +86,17 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
   // Prevent manual URL navigation to restricted pages
   useEffect(() => {
     const restrictedTabs = ['find', 'my_cv'];
-    if (restrictedTabs.includes(activeTab) && !user?.profile_complete && !isAdmin && user) {
-       showAlert('Profil Belum Lengkap', 'Halaman ini dikunci sementara. Silakan lengkapi profil Anda di menu Akun.', 'error');
-       navigate('/app/account?edit=true', { replace: true });
+    if (restrictedTabs.includes(activeTab) && user) {
+       if (!user?.profile_complete) {
+         showAlert('Profil Belum Lengkap', 'Halaman ini dikunci sementara. Silakan lengkapi profil Anda di menu Akun.', 'error');
+         navigate('/app/account?edit=true', { replace: true });
+         return;
+       }
     }
-  }, [activeTab, user?.profile_complete, isAdmin, user]);
+  }, [activeTab, user?.profile_complete, user?.aqidah1, user?.marriage_vision, user]);
 
   // Prevent rendering restricted content if profile is incomplete
-  const isRestricted = ['find', 'my_cv'].includes(activeTab) && !user?.profile_complete && !isAdmin;
+  const isRestricted = ['find', 'my_cv'].includes(activeTab) && !user?.profile_complete;
 
   const isAcademyMode = (activeTab === 'materi' || activeTab === 'certificate') && !isAdmin;
   const isAdminAcademy = activeTab === 'courses' && isAdmin;
@@ -131,14 +136,15 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         <div className="main-wrapper" style={{ marginLeft: 0, width: '100%' }}>
           {renderAlertBanner()}
           {!isPlayer && (
-            <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', zIndex: 1000, padding: isMobile ? '0 0.75rem' : '0 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
+            <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', zIndex: 1000, padding: 0, display: 'flex', alignItems: 'center', height: '70px' }}>
+              <div style={{ width: '100%', margin: '0 auto', padding: isMobile ? '0 1rem' : '0 4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
               <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {!isAdmin ? (
                   <>
                     <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <Activity size={18} /> <span className="btn-text">DASHBOARD</span>
                     </button>
-                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/daftar-kelas')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: (id === 'daftar-kelas' || id === 'catalog') ? '#134E39' : 'transparent', color: (id === 'daftar-kelas' || id === 'catalog') ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <BookOpen size={18} /> <span className="btn-text">DAFTAR KELAS</span>
                     </button>
                   </>
@@ -196,11 +202,11 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                 gap: '8px' 
               }}>
                 <div className="academy-brand-icon" style={{ background: '#134E39', padding: '5px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <BookOpen size={18} color="white" />
+                  {headerBrand.icon}
                 </div>
                 <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: isMobile ? '0.9rem' : '1.05rem' }}>
                   {!isMobile && 'Separuh Agama '}
-                  <span style={{ color: '#D4AF37' }}>STUDIO</span>
+                  <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span>
                 </span>
               </div>
              <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -229,7 +235,8 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                     )}
                   </div>
              </div>
-          </header>
+              </div>
+            </header>
           )}
           <main className="main-content" style={{ 
             height: isPlayer ? '100vh' : 'calc(100vh - 80px)', 
@@ -242,13 +249,17 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                   width: 100% !important;
                   margin: 0 !important;
                   padding: 0 !important;
+                  background: white !important;
                 }
                 .academy-fullscreen .main-content,
-                .academy-fullscreen .main-wrapper {
+                .academy-fullscreen .main-wrapper,
+                .academy-fullscreen .dashboard-root,
+                .academy-fullscreen .dashboard-tab-container {
                   max-width: none !important;
                   margin: 0 !important;
                   width: 100% !important;
                   padding: 0 !important;
+                  background: white !important;
                 }
                .academy-fullscreen .main-content::-webkit-scrollbar,
                .academy-fullscreen .main-content *::-webkit-scrollbar {
@@ -306,7 +317,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
             <>
               <SidebarLink icon={<Activity size={20}/>} label="Mediasi Taaruf" active={activeTab === 'mediate'} onClick={() => navigateTo('mediate')} />
               <SidebarLink icon={<UserCheck size={20}/>} label="Manajemen User" active={activeTab === 'users'} onClick={() => navigateTo('users')} />
-              <SidebarLink icon={<ShieldCheck size={20}/>} label="Verifikasi Identitas" active={activeTab === 'verification'} onClick={() => navigateTo('verification')} />
+              <SidebarLink icon={<Star size={20}/>} label="Log Review" active={activeTab === 'reviews'} onClick={() => navigateTo('reviews')} />
               <SidebarLink icon={<Quote size={20}/>} label="Testimoni" active={activeTab === 'testimonials'} onClick={() => navigateTo('testimonials')} />
             </>
           )}
@@ -335,8 +346,14 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
       </aside>
 
       <div className="main-wrapper">
+        <style>{`
+          ${(!isAdmin && (window.location.pathname.includes('/app/'))) ? `
+            .main-content { padding: 0 !important; }
+            .dashboard-root { padding: 0 !important; max-width: none !important; margin: 0 !important; width: 100% !important; }
+          ` : ''}
+        `}</style>
         {renderAlertBanner()}
-        <header className="top-header" style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #f1f5f9' }}>
+        <header className="top-header" style={{ background: 'rgba(248,250,252,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #f1f5f9' }}>
           <div className="header-left">
             <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: '#f8fafc', width: 42, height: 42, borderRadius: '12px' }}>
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -344,7 +361,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
           </div>
           <div className="header-right">
              <div className="notification-wrapper">
-               <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'white', borderRadius: '12px', position: 'relative' }}>
+               <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: '#f8fafc', borderRadius: '12px', position: 'relative' }}>
                  <Bell size={20} />
                  {unreadCount > 0 && <span className="notification-badge" style={{ border: '2px solid white' }}>{unreadCount}</span>}
                </button>
@@ -393,7 +410,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
              </div>
              
              <div className="profile-menu-wrapper">
-               <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '14px', padding: '6px 12px' }}>
+               <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '14px', padding: '6px 12px' }}>
                  <div className="profile-card-avatar" style={{ background: '#134E39', color: 'white' }}><span>{user?.name.charAt(0).toUpperCase()}</span></div>
                  <div className="profile-card-info">
                    <span className="profile-card-name" style={{ fontWeight: '800' }}>{user?.name}</span>
@@ -404,7 +421,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                {showProfileMenu && (
                  <div className="profile-dropdown" style={{ borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9', top: '75px' }}>
                     <div style={{ padding: '15px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#134E39' }}>{user?.name}</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>{user?.name}</div>
                       <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user?.email}</div>
                     </div>
                     <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -461,6 +478,8 @@ function App() {
   const [usersDb, setUsersDb] = useState([]);
   const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [userReviews, setUserReviews] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(window.innerWidth > 1024);
@@ -553,6 +572,8 @@ function App() {
           console.log('App: Session found in getSession:', session.user.email);
           if (mounted) await fetchSessionUser(session.user);
         }
+
+        // Fetch additional data if session exists
       } catch (err) {
         console.error('App: initSession error:', err);
         if (mounted) setIsInitializing(false);
@@ -590,12 +611,38 @@ function App() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
+      // 0. Fetch Reviews & Bookmarks
+      const [{ data: bms }, { data: revs }] = await Promise.all([
+        supabase.from('user_bookmarks').select('*'),
+        supabase.from('user_reviews').select('*, reviewer:reviewer_id(name), target:target_id(name, cv_profiles(alias))')
+      ]);
+      setBookmarks(bms || []);
+      setUserReviews(revs || []);
+
       // 1. Fetch CVs
-      let cvQuery = supabase.from('cv_profiles').select('*, user:user_id(is_verified)');
+      let cvQuery = supabase.from('cv_profiles').select('*, user:user_id(is_verified, aqidah1, aqidah2, aqidah3, aqidah4, marriage_vision, role_view, polygamy_view)');
       if (!isAdmin) cvQuery = cvQuery.or(`status.eq.approved,user_id.eq.${user.id}`);
       const { data: cvData } = await cvQuery;
       if (cvData) {
-        setCvs(cvData.map(c => ({ ...c, is_verified: c.user?.is_verified || false })));
+        setCvs(cvData.map(c => {
+          // Reconstruct screening_data object from individual columns for app compatibility
+          const profileData = c.user || {};
+          const reconstructedScreening = {
+            aqidah1: profileData.aqidah1,
+            aqidah2: profileData.aqidah2,
+            aqidah3: profileData.aqidah3,
+            aqidah4: profileData.aqidah4,
+            marriage_vision: profileData.marriage_vision,
+            role_view: profileData.role_view,
+            polygamy_view: profileData.polygamy_view
+          };
+
+          return { 
+            ...c, 
+            is_verified: profileData.is_verified || false,
+            screening_data: reconstructedScreening
+          };
+        }));
       }
 
       // 2. Fetch Notifications with Soft Delete Filtering
@@ -700,6 +747,10 @@ function App() {
       fetchData();
     }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_lesson_progress' }, () => {
       fetchData();
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_reviews' }, () => {
+      fetchData();
+    }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_bookmarks' }, () => {
+      fetchData();
     }).subscribe();
 
     return () => {
@@ -768,6 +819,7 @@ function App() {
     <AppContext.Provider value={{ 
         user, setUser, cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, setUsersDb, 
         messages, setMessages, notifications, setNotifications, isAdmin, setIsAdmin, 
+        bookmarks, setBookmarks, userReviews, setUserReviews,
         showAlert, addNotification, profileNeedsCompletion, setProfileNeedsCompletion,
         academyLevels, setAcademyLevels, getAcademyBadge, claimedBadges, setClaimedBadges,
         hideBanner, setHideBanner, setConfirmState

@@ -10,6 +10,7 @@ import AdminHomeTab from '../components/dashboard/AdminHomeTab';
 import AdminReviewTab from '../components/dashboard/AdminReviewTab';
 import AdminMediateTab from '../components/dashboard/AdminMediateTab';
 import AdminFeedbackTab from '../components/dashboard/AdminFeedbackTab';
+import AdminReviewsTab from '../components/dashboard/AdminReviewsTab';
 import AdminAccountTab from '../components/dashboard/AdminAccountTab';
 import AdminTestimonialsTab from '../components/dashboard/AdminTestimonialsTab';
 import AdminVerificationTab from '../components/dashboard/AdminVerificationTab';
@@ -26,9 +27,9 @@ export default function AdminDashboard() {
       case 'home': return 'Dashboard Utama';
       case 'mediate': return 'Mediasi & Chat';
       case 'courses': return 'Manajemen Academy';
-      case 'feedback': return 'Feedback & Laporan';
+      case 'feedback': return 'Saran & Masukan';
+      case 'reviews': return 'Log Review & Komentar';
       case 'testimonials': return 'Manajemen Testimoni';
-      case 'verification': return 'Verifikasi Identitas';
       case 'admin': return 'Pengaturan Admin';
       default: return 'Portal Admin';
     }
@@ -52,9 +53,9 @@ export default function AdminDashboard() {
             <p className="admin-subtitle">
               {activeTab === 'home' && 'Pantau ringkasan data, pertumbuhan kandidat, dan statistik pendaftar Separuh Agama secara real-time.'}
               {activeTab === 'mediate' && 'Fasilitasi proses taaruf dengan memantau dan memoderasi ruang obrolan mediasi yang aktif.'}
-              {activeTab === 'feedback' && 'Evaluasi saran, masukan, dan laporan kendala teknis dari para pengguna untuk pengembangan platform.'}
+              {activeTab === 'feedback' && 'Evaluasi saran, masukan, dan ide pengembangan platform dari para pengguna.'}
+              {activeTab === 'reviews' && 'Pantau dan moderasi ulasan serta komentar yang diberikan antar kandidat untuk menjaga adab.'}
               {activeTab === 'testimonials' && 'Kelola cerita sukses dan testimoni dari para kandidat yang telah berhasil melalui platform Separuh Agama.'}
-              {activeTab === 'verification' && 'Tinjau dan setujui permohonan verifikasi identitas (KYC) dari para kandidat Separuh Agama.'}
               {activeTab === 'admin' && 'Kelola identitas profil, kata sandi, dan parameter keamanan akun administrator Anda.'}
             </p>
           </div>
@@ -66,8 +67,8 @@ export default function AdminDashboard() {
         {activeTab === 'mediate' && <AdminMediateTab />}
         {activeTab === 'courses' && <CourseManagerTab />}
         {activeTab === 'feedback' && <AdminFeedbackTab showAlert={showAlert} />}
+        {activeTab === 'reviews' && <AdminReviewsTab showAlert={showAlert} />}
         {activeTab === 'testimonials' && <AdminTestimonialsTab showAlert={showAlert} />}
-        {activeTab === 'verification' && <AdminVerificationTab showAlert={showAlert} />}
         {activeTab === 'admin' && <AdminAccountTab user={user} showAlert={showAlert} />}
       </div>
 

@@ -166,8 +166,9 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
       }
     } catch (err) {
       showAlert('Error Sistem', err.message, 'error');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleVerifyOtp = async (e) => {
@@ -189,24 +190,36 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
       }
     } catch (err) {
       showAlert('Error Sistem', err.message, 'error');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleResendOtp = async () => {
     if (countdown > 0) return;
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-    setIsLoading(false);
-    if (!error) { setCountdown(60); setOtpCode(''); showAlert('OTP Dikirim', 'Kode OTP baru telah dikirim.', 'info'); }
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+      if (!error) { 
+        setCountdown(60); 
+        setOtpCode(''); 
+        showAlert('OTP Dikirim', 'Kode OTP baru telah dikirim.', 'info'); 
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      showAlert('Gagal Masuk', 'Email atau Password salah.', 'error');
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        showAlert('Gagal Masuk', 'Email atau Password salah.', 'error');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 

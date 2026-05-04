@@ -6,9 +6,11 @@ import {
   Clock, Heart, User, Briefcase, GraduationCap, Globe, Ruler, Activity, ShieldCheck
 } from 'lucide-react';
 import { supabase } from '../supabase';
+import AdminReportsTab from '../components/dashboard/AdminReportsTab';
 
 export default function ManageUsersPage() {
   const { usersDb, cvs, setUsersDb, showAlert } = useContext(AppContext);
+  const [activeSubTab, setActiveSubTab] = useState('users'); // 'users' or 'reports'
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState('all');
   const [filterEducation, setFilterEducation] = useState('all');
@@ -131,218 +133,243 @@ export default function ManageUsersPage() {
             Ahlan wa Sahlan, Admin
           </h2>
           <p style={{ color: '#64748b', fontWeight: '500', fontSize: '1rem', marginTop: '6px', maxWidth: '600px', lineHeight: '1.6' }}>
-            Kelola seluruh basis data pendaftar, pantau kelengkapan profil, dan lakukan verifikasi data kandidat secara menyeluruh.
+            {activeSubTab === 'users' 
+              ? 'Kelola seluruh basis data pendaftar, pantau kelengkapan profil, dan lakukan verifikasi data kandidat secara menyeluruh.'
+              : 'Pantau laporan pelanggaran yang dikirimkan oleh user terhadap kandidat lainnya.'}
           </p>
         </div>
       </div>
 
-      {/* 🟢 HEADER SECTION 🟢 */}
-      <div style={{ display: 'none', alignItems: 'center', gap: '20px', marginBottom: '2.5rem' }}>
-        <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
-          <Users size={28} />
-        </div>
-        <div>
-          <h2 style={{ fontSize: '1.85rem', fontWeight: '900', color: '#134E39', margin: 0, letterSpacing: '-0.02em' }}>Kelola Pengguna Taaruf</h2>
-          <p style={{ color: '#64748b', fontWeight: '600', fontSize: '0.95rem', marginTop: '4px' }}>Manajemen data dan verifikasi pendaftar</p>
-        </div>
+      {/* 🧭 NAVIGATION TABS 🧭 */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1px' }}>
+         <button 
+           onClick={() => setActiveSubTab('users')}
+           style={{ 
+             padding: '1rem 2rem', border: 'none', background: 'none', 
+             color: activeSubTab === 'users' ? '#134E39' : '#94a3b8',
+             fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer',
+             borderBottom: activeSubTab === 'users' ? '3px solid #134E39' : '3px solid transparent',
+             transition: 'all 0.3s'
+           }}
+         >
+           DAFTAR PENGGUNA ({usersWithCv.filter(u => u.role !== 'admin').length})
+         </button>
+         <button 
+           onClick={() => setActiveSubTab('reports')}
+           style={{ 
+             padding: '1rem 2rem', border: 'none', background: 'none', 
+             color: activeSubTab === 'reports' ? '#ef4444' : '#94a3b8',
+             fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer',
+             borderBottom: activeSubTab === 'reports' ? '3px solid #ef4444' : '3px solid transparent',
+             transition: 'all 0.3s'
+           }}
+         >
+           LAPORAN PELANGGARAN
+         </button>
       </div>
 
-      {/* 🟢 FILTER BAR SECTION 🟢 */}
-      <div style={{ 
-        background: 'white', border: '1px solid #f1f5f9', borderRadius: '24px', 
-        padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '12px', 
-        flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' 
-      }}>
-        <select 
-          className="premium-select"
-          value={filterGender}
-          onChange={(e) => setFilterGender(e.target.value)}
-        >
-          <option value="all">Semua Gender</option>
-          <option value="ikhwan">Ikhwan</option>
-          <option value="akhwat">Akhwat</option>
-        </select>
-
-        <select 
-          className="premium-select"
-          value={filterAge}
-          onChange={(e) => setFilterAge(e.target.value)}
-        >
-          <option value="all">Semua Usia</option>
-          <option value="<25">&lt; 25 Tahun</option>
-          <option value="25-30">25 - 30 Tahun</option>
-          <option value="31-35">31 - 35 Tahun</option>
-          <option value="36-40">36 - 40 Tahun</option>
-          <option value=">40">&gt; 40 Tahun</option>
-        </select>
-        
-        <select 
-          className="premium-select"
-          value={filterEducation}
-          onChange={(e) => setFilterEducation(e.target.value)}
-        >
-          <option value="all">Pendidikan</option>
-          <option value="S1">Sarjana (S1)</option>
-          <option value="S2">Magister (S2)</option>
-          <option value="S3">Doktor (S3)</option>
-          <option value="SMA/SMK">SMA/SMK</option>
-        </select>
-
-        <select 
-          className="premium-select"
-          value={filterProvince}
-          onChange={(e) => setFilterProvince(e.target.value)}
-        >
-          <option value="all">Provinsi</option>
-          <option value="Jakarta">DKI Jakarta</option>
-          <option value="Jawa Barat">Jawa Barat</option>
-          <option value="Jawa Tengah">Jawa Tengah</option>
-          <option value="Jawa Timur">Jawa Timur</option>
-          <option value="Banten">Banten</option>
-          <option value="Yogyakarta">DI Yogyakarta</option>
-          <option value="Luar Jawa">Luar Pulau Jawa</option>
-        </select>
-
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input 
-            type="text" 
-            placeholder="Cari nama atau kota..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              width: '100%', padding: '0.9rem 1rem 0.9rem 3.2rem', borderRadius: '16px', 
-              border: '1.5px solid #f1f5f9', background: '#f8fafc', outline: 'none', 
-              fontSize: '0.9rem', fontWeight: '600', color: '#1e293b', transition: 'all 0.2s'
-            }}
-            onFocus={(e) => { e.target.style.borderColor = '#134E39'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(19,78,57,0.05)'; }}
-            onBlur={(e) => { e.target.style.borderColor = '#f1f5f9'; e.target.style.background = '#f8fafc'; e.target.style.boxShadow = 'none'; }}
-          />
-        </div>
-      </div>
-
-      {/* 🟢 LIST TABLE SECTION 🟢 */}
-      <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1.5px solid #f8fafc' }}>
-               <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pengguna</th>
-               <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Detail Kontak</th>
-               <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Status</th>
-               <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedUsers.map((user, idx) => (
-              <tr 
-                key={user.id} 
-                className="row-hover" 
-                onClick={() => setViewingUser(user)}
-                style={{ borderBottom: '1px solid #f8fafc', transition: 'all 0.2s', cursor: 'pointer' }}
-              >
-                <td style={{ padding: '1.75rem 2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <div style={{ 
-                      width: '52px', height: '52px', borderRadius: '16px', 
-                      background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)', 
-                      color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.1rem', fontWeight: '900'
-                    }}>
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '1.05rem', marginBottom: '6px' }}>{user.name}</div>
-                      <div style={{ 
-                        display: 'inline-flex', padding: '4px 10px', 
-                        background: user.gender === 'ikhwan' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(236, 72, 153, 0.1)',
-                        color: user.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
-                        borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em'
-                      }}>
-                        {user.gender || 'Bukan Pendaftar'}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '1.75rem 2rem' }}>
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.85rem', fontWeight: '600' }}>
-                        <MapPin size={15} style={{ opacity: 0.6 }} /> {user.location}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '500' }}>
-                        <Mail size={15} style={{ opacity: 0.6 }} /> {user.email}
-                      </div>
-                   </div>
-                </td>
-                <td style={{ padding: '1.75rem 2rem', textAlign: 'center' }}>
-                   {getStatusBadge(user)}
-                </td>
-                <td style={{ padding: '1.75rem 2rem', textAlign: 'right' }}>
-                   <button 
-                     onClick={() => setViewingUser(user)}
-                     style={{ 
-                       padding: '10px 24px', borderRadius: '14px', border: '1.5px solid #134E39', 
-                       background: 'transparent', color: '#134E39', fontWeight: '800', 
-                       fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' 
-                     }} 
-                     className="action-view-btn"
-                   >
-                     Lihat Detail
-                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* 🟢 FOOTER / PAGINATION SECTION 🟢 */}
-        <div className="manage-users-footer">
-          <div className="footer-stats">
-            Menampilkan <span className="stat-highlight">{startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalUsers)}</span> dari <span className="stat-highlight">{totalUsers}</span> User
-          </div>
-
-          <div className="pagination-controls">
-            <button 
-              disabled={currentPage === 1}
-              onClick={() => { setCurrentPage(currentPage - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="pagination-btn arrow-btn"
+      {activeSubTab === 'users' ? (
+        <>
+          {/* 🟢 FILTER BAR SECTION 🟢 */}
+          <div style={{ 
+            background: 'white', border: '1px solid #f1f5f9', borderRadius: '24px', 
+            padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '12px', 
+            flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' 
+          }}>
+            <select 
+              className="premium-select"
+              value={filterGender}
+              onChange={(e) => setFilterGender(e.target.value)}
             >
-              Sebelumnya
-            </button>
+              <option value="all">Semua Gender</option>
+              <option value="ikhwan">Ikhwan</option>
+              <option value="akhwat">Akhwat</option>
+            </select>
 
-            <div className="page-numbers-wrapper">
-              {[...Array(totalPages)].map((_, i) => {
-                const pageNum = i + 1;
-                // Logic to show fewer pages on mobile
-                const isNearCurrent = Math.abs(pageNum - currentPage) <= 1;
-                const isEdge = pageNum === 1 || pageNum === totalPages;
-                
-                if (!isNearCurrent && !isEdge && totalPages > 5) {
-                   if (pageNum === 2 || pageNum === totalPages - 1) return <span key={pageNum} className="pagination-ellipsis">...</span>;
-                   return null;
-                }
+            <select 
+              className="premium-select"
+              value={filterAge}
+              onChange={(e) => setFilterAge(e.target.value)}
+            >
+              <option value="all">Semua Usia</option>
+              <option value="<25">&lt; 25 Tahun</option>
+              <option value="25-30">25 - 30 Tahun</option>
+              <option value="31-35">31 - 35 Tahun</option>
+              <option value="36-40">36 - 40 Tahun</option>
+              <option value=">40">&gt; 40 Tahun</option>
+            </select>
+            
+            <select 
+              className="premium-select"
+              value={filterEducation}
+              onChange={(e) => setFilterEducation(e.target.value)}
+            >
+              <option value="all">Pendidikan</option>
+              <option value="S1">Sarjana (S1)</option>
+              <option value="S2">Magister (S2)</option>
+              <option value="S3">Doktor (S3)</option>
+              <option value="SMA/SMK">SMA/SMK</option>
+            </select>
 
-                return (
-                  <button 
-                    key={pageNum}
-                    onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className={`pagination-btn num-btn ${currentPage === pageNum ? 'active' : ''}`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
+            <select 
+              className="premium-select"
+              value={filterProvince}
+              onChange={(e) => setFilterProvince(e.target.value)}
+            >
+              <option value="all">Provinsi</option>
+              <option value="Jakarta">DKI Jakarta</option>
+              <option value="Jawa Barat">Jawa Barat</option>
+              <option value="Jawa Tengah">Jawa Tengah</option>
+              <option value="Jawa Timur">Jawa Timur</option>
+              <option value="Banten">Banten</option>
+              <option value="Yogyakarta">DI Yogyakarta</option>
+              <option value="Luar Jawa">Luar Pulau Jawa</option>
+            </select>
+
+            <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+              <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input 
+                type="text" 
+                placeholder="Cari nama atau kota..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  width: '100%', padding: '0.9rem 1rem 0.9rem 3.2rem', borderRadius: '16px', 
+                  border: '1.5px solid #f1f5f9', background: '#f8fafc', outline: 'none', 
+                  fontSize: '0.9rem', fontWeight: '600', color: '#1e293b', transition: 'all 0.2s'
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#134E39'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(19,78,57,0.05)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#f1f5f9'; e.target.style.background = '#f8fafc'; e.target.style.boxShadow = 'none'; }}
+              />
             </div>
-
-            <button 
-              disabled={currentPage === totalPages}
-              onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="pagination-btn arrow-btn"
-            >
-              Selanjutnya
-            </button>
           </div>
-        </div>
-      </div>
+
+          {/* 🟢 LIST TABLE SECTION 🟢 */}
+          <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1.5px solid #f8fafc' }}>
+                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pengguna</th>
+                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Detail Kontak</th>
+                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Status</th>
+                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedUsers.map((user, idx) => (
+                  <tr 
+                    key={user.id} 
+                    className="row-hover" 
+                    onClick={() => setViewingUser(user)}
+                    style={{ borderBottom: '1px solid #f8fafc', transition: 'all 0.2s', cursor: 'pointer' }}
+                  >
+                    <td style={{ padding: '1.75rem 2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ 
+                          width: '52px', height: '52px', borderRadius: '16px', 
+                          background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)', 
+                          color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '1.1rem', fontWeight: '900'
+                        }}>
+                          {user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '1.05rem', marginBottom: '6px' }}>{user.name}</div>
+                          <div style={{ 
+                            display: 'inline-flex', padding: '4px 10px', 
+                            background: user.gender === 'ikhwan' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(236, 72, 153, 0.1)',
+                            color: user.gender === 'ikhwan' ? '#0ea5e9' : '#ec4899',
+                            borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em'
+                          }}>
+                            {user.gender || 'Bukan Pendaftar'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '1.75rem 2rem' }}>
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.85rem', fontWeight: '600' }}>
+                            <MapPin size={15} style={{ opacity: 0.6 }} /> {user.location}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '500' }}>
+                            <Mail size={15} style={{ opacity: 0.6 }} /> {user.email}
+                          </div>
+                       </div>
+                    </td>
+                    <td style={{ padding: '1.75rem 2rem', textAlign: 'center' }}>
+                       {getStatusBadge(user)}
+                    </td>
+                    <td style={{ padding: '1.75rem 2rem', textAlign: 'right' }}>
+                       <button 
+                         onClick={() => setViewingUser(user)}
+                         style={{ 
+                           padding: '10px 24px', borderRadius: '14px', border: '1.5px solid #134E39', 
+                           background: 'transparent', color: '#134E39', fontWeight: '800', 
+                           fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' 
+                         }} 
+                         className="action-view-btn"
+                       >
+                         Lihat Detail
+                       </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* 🟢 FOOTER / PAGINATION SECTION 🟢 */}
+            <div className="manage-users-footer">
+              <div className="footer-stats">
+                Menampilkan <span className="stat-highlight">{startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalUsers)}</span> dari <span className="stat-highlight">{totalUsers}</span> User
+              </div>
+
+              <div className="pagination-controls">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => { setCurrentPage(currentPage - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="pagination-btn arrow-btn"
+                >
+                  Sebelumnya
+                </button>
+
+                <div className="page-numbers-wrapper">
+                  {[...Array(totalPages)].map((_, i) => {
+                    const pageNum = i + 1;
+                    // Logic to show fewer pages on mobile
+                    const isNearCurrent = Math.abs(pageNum - currentPage) <= 1;
+                    const isEdge = pageNum === 1 || pageNum === totalPages;
+                    
+                    if (!isNearCurrent && !isEdge && totalPages > 5) {
+                       if (pageNum === 2 || pageNum === totalPages - 1) return <span key={pageNum} className="pagination-ellipsis">...</span>;
+                       return null;
+                    }
+
+                    return (
+                      <button 
+                        key={pageNum}
+                        onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`pagination-btn num-btn ${currentPage === pageNum ? 'active' : ''}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button 
+                  disabled={currentPage === totalPages}
+                  onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="pagination-btn arrow-btn"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <AdminReportsTab showAlert={showAlert} />
+      )}
 
       {/* 🟢 USER DETAIL MODAL 🟢 */}
       {viewingUser && (
@@ -436,7 +463,7 @@ export default function ManageUsersPage() {
                                </div>
                                <div style={{ background: '#f8fafc', padding: '0.6rem 1.25rem', borderRadius: '12px', display: 'inline-block', fontSize: '0.85rem', fontWeight: '700', color: '#134E39' }}>
                                   {userCv.polygamy_view || 'Tidak Berkenan'}
-                               </div>
+                                </div>
                             </div>
                          </div>
                       </div>
@@ -800,24 +827,11 @@ export default function ManageUsersPage() {
            .user-detail-modal {
               width: 100%;
               height: 100%;
-              max-width: none;
               border-radius: 0;
            }
-           .detail-modal-header {
-              border-radius: 0;
-              padding: 2rem 1.5rem;
-           }
-           .header-content { flex-direction: column; text-align: center; gap: 1rem; }
-           .detail-badges { justify-content: center; }
-           .detail-modal-body { padding: 1.5rem; max-height: none; }
-           .detail-sections-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-           .info-value.text-right { text-align: right; }
-           .detail-modal-footer {
-              padding: 1rem 1.5rem;
-              position: sticky;
-              bottom: 0;
-           }
-           .btn-modal-close { width: 100%; }
+           .detail-modal-header { padding: 1.5rem; }
+           .detail-modal-body { padding: 1.5rem; }
+           .cv-modern-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

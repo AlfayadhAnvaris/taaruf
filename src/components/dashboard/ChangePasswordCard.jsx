@@ -56,70 +56,106 @@ export default function ChangePasswordCard({ showAlert }) {
   };
 
   return (
-    <div className="card" style={{ padding: '1.5rem 1.75rem', marginBottom: '1.25rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(44,95,77,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-            <KeyRound size={17} />
-          </div>
-          <div>
-            <div style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--text-main)' }}>Ganti Password</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Perbarui keamanan akun Anda</div>
-          </div>
-        </div>
+    <div style={{ flexShrink: 0, width: isOpen ? '100%' : 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {!isOpen && (
-          <button className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }} onClick={() => { setIsOpen(true); setDone(false); }}>
-            Ubah Password
+          <button 
+            style={{ 
+              background: 'transparent', 
+              color: '#134E39', 
+              border: '2px solid #134E39', 
+              padding: '1rem', 
+              width: '240px',
+              borderRadius: '18px', 
+              fontWeight: '900', 
+              cursor: 'pointer', 
+              transition: 'all 0.2s',
+              fontSize: '0.9rem',
+              textAlign: 'center'
+            }} 
+            onClick={() => { setIsOpen(true); setDone(false); }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(19,78,57,0.05)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            GANTI PASSWORD
           </button>
         )}
       </div>
 
       {isOpen && (
-        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', animation: 'fadeIn 0.3s ease' }}>
+        <div style={{ 
+          marginTop: '1.25rem', 
+          padding: '2.5rem', 
+          background: 'white',
+          borderRadius: '32px',
+          border: '1px solid #E4EDE8',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.02)',
+          animation: 'fadeIn 0.3s ease' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>
+            <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
+              <KeyRound size={20} />
+            </div>
+            <div>
+              <div style={{ fontWeight: '900', fontSize: '1.2rem', color: '#134E39' }}>Perbarui Password</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748B' }}>Pastikan akun Anda tetap aman dengan password yang kuat.</div>
+            </div>
+          </div>
+
           {done ? (
             <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-              <CheckCircle size={48} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
-              <p style={{ fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.25rem' }}>Password Berhasil Diubah!</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>Gunakan password baru saat login berikutnya.</p>
-              <button className="btn btn-outline" style={{ fontSize: '0.85rem' }} onClick={() => { setIsOpen(false); setDone(false); }}>Tutup</button>
+              <CheckCircle size={56} color="#22c55e" style={{ marginBottom: '1rem' }} />
+              <p style={{ fontWeight: '900', color: '#134E39', fontSize: '1.1rem', marginBottom: '0.5rem' }}>Berhasil Diperbarui!</p>
+              <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '2rem' }}>Gunakan password baru saat login berikutnya.</p>
+              <button 
+                style={{ background: '#134E39', color: 'white', border: 'none', padding: '1rem 3rem', borderRadius: '16px', fontWeight: '900', cursor: 'pointer' }}
+                onClick={() => { setIsOpen(false); setDone(false); }}
+              >
+                Selesai
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <div className="form-group" style={{ marginBottom: '1rem', textAlign: 'left' }}>
-                <label className="form-label">Password Saat Ini</label>
+              <div className="form-group" style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Password Saat Ini</label>
                 <PwInput value={current} onChange={setCurrent} show={showC} setShow={setShowC} placeholder="Masukkan password lama..." />
               </div>
-              <div style={{ height: '1px', background: 'var(--border)', margin: '1.1rem 0' }} />
-              <div className="form-group" style={{ marginBottom: '0.6rem', textAlign: 'left' }}>
-                <label className="form-label">Password Baru</label>
+              
+              <div style={{ height: '1px', background: '#F1F5F9', margin: '2rem 0' }} />
+              
+              <div className="form-group" style={{ marginBottom: '1rem', textAlign: 'left' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Password Baru</label>
                 <PwInput value={newPw} onChange={setNewPw} show={showN} setShow={setShowN} placeholder="Minimal 8 karakter..." />
                 {newPw.length > 0 && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', gap: '3px', marginBottom: '0.25rem' }}>
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '0.4rem' }}>
                       {[1,2,3,4].map(i => (
-                        <div key={i} style={{ flex: 1, height: '4px', borderRadius: '99px', background: i <= strength ? strengthColor : 'var(--border)', transition: 'background 0.3s' }} />
+                        <div key={i} style={{ flex: 1, height: '5px', borderRadius: '99px', background: i <= strength ? strengthColor : '#E2E8F0', transition: 'background 0.3s' }} />
                       ))}
                     </div>
-                    <small style={{ color: strengthColor, fontWeight: '600' }}>{strengthLabel}</small>
+                    <small style={{ color: strengthColor, fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase' }}>{strengthLabel}</small>
                   </div>
                 )}
               </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.875rem', padding: '0.6rem 0.875rem', background: 'rgba(44,95,77,0.04)', borderRadius: '8px' }}>
-                💡 Min. 8 karakter, huruf besar, angka, dan simbol untuk password yang kuat.
+
+              <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1.5rem', padding: '1rem', background: '#F8FAF9', borderRadius: '12px', border: '1px solid #E4EDE8' }}>
+                💡 Tips: Gunakan kombinasi huruf besar, angka, dan simbol untuk keamanan maksimal.
               </div>
-              <div className="form-group" style={{ marginBottom: '1.25rem', textAlign: 'left' }}>
-                <label className="form-label">Konfirmasi Password Baru</label>
+
+              <div className="form-group" style={{ marginBottom: '2rem', textAlign: 'left' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Konfirmasi Password Baru</label>
                 <PwInput value={confirm} onChange={setConfirm} show={showF} setShow={setShowF} placeholder="Ulangi password baru..." />
-                {confirm && confirm !== newPw && <small style={{ color: 'var(--danger)', marginTop: '0.25rem', display: 'block' }}>Password tidak cocok</small>}
-                {confirm && confirm === newPw && newPw.length >= 8 && <small style={{ color: '#22c55e', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CheckCircle size={12} /> Cocok</small>}
+                {confirm && confirm !== newPw && <small style={{ color: '#EF4444', marginTop: '0.5rem', display: 'block', fontWeight: 600 }}>Password tidak cocok</small>}
               </div>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" className="btn btn-outline" style={{ flex: 1, fontSize: '0.875rem' }} onClick={() => setIsOpen(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 2, fontSize: '0.875rem' }} disabled={saving || (confirm && confirm !== newPw)}>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button type="button" style={{ flex: 1, background: 'transparent', color: '#64748B', border: '1px solid #E2E8F0', padding: '1.1rem', borderRadius: '18px', fontWeight: '800', cursor: 'pointer' }} onClick={() => setIsOpen(false)}>Batal</button>
+                <button type="submit" style={{ flex: 2, background: '#134E39', color: 'white', border: 'none', padding: '1.1rem', borderRadius: '18px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }} disabled={saving || (confirm && confirm !== newPw)}>
                   {saving
-                    ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} /> Memproses...</span>
-                    : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><KeyRound size={15} /> Ganti Password</span>
+                    ? <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                    : <KeyRound size={18} />
                   }
+                  {saving ? 'MEMPROSES...' : 'GANTI PASSWORD'}
                 </button>
               </div>
             </form>
