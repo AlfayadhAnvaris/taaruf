@@ -142,10 +142,10 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                 {!isAdmin ? (
                   <>
                     <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <Activity size={18} /> <span className="btn-text">DASHBOARD</span>
+                      <Activity size={18} /> {!isMobile && <span className="btn-text">DASHBOARD</span>}
                     </button>
                     <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <BookOpen size={18} /> <span className="btn-text">DAFTAR KELAS</span>
+                      <BookOpen size={18} /> {!isMobile && <span className="btn-text">DAFTAR KELAS</span>}
                     </button>
                   </>
                 ) : (
@@ -188,8 +188,8 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
 
                 {!isMobile && <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 4px' }}></div>}
 
-                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  <LayoutDashboard size={18} /> <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>
+                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: isMobile ? '0.75rem' : '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                  <LayoutDashboard size={18} /> {!isMobile && <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>}
                 </button>
               </div>
 
@@ -271,6 +271,13 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                  scrollbar-width: none !important;
                }
              `}</style>
+             <style>{`
+                html, body { 
+                  overflow-x: hidden !important; 
+                  width: 100% !important; 
+                  position: relative;
+                }
+              `}</style>
              <Outlet />
           </main>
         </div>
@@ -295,14 +302,28 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         background: 'linear-gradient(180deg, #134E39 0%, #1a5d46 100%)', 
         color: 'white', display: 'flex', flexDirection: 'column' 
       }}>
-        <div className="sidebar-header" style={{ padding: '2rem 1.5rem' }}>
-           <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/assets/logo.svg" alt="Logo" style={{ width: 32, height: 32 }} />
-            </div>
-            <span style={{ fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.03em' }}>Separuh Agama</span>
-          </div>
-        </div>
+         <div className="sidebar-header" style={{ padding: '2.5rem 1.5rem' }}>
+            <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+             <div style={{ 
+               width: 50, height: 50, borderRadius: '16px', 
+               background: 'rgba(255, 255, 255, 0.03)', 
+               border: '1px solid rgba(255, 255, 255, 0.1)',
+               display: 'flex', alignItems: 'center', justifyContent: 'center',
+               boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+               backdropFilter: 'blur(12px)',
+               position: 'relative',
+               overflow: 'hidden'
+             }}>
+               {/* Subtle Glow Effect */}
+               <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%)' }}></div>
+               <img src="/assets/logo.svg" alt="Logo" style={{ width: 34, height: 34, position: 'relative', zIndex: 2 }} />
+             </div>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: '950', letterSpacing: '-0.02em', color: 'white', lineHeight: 1 }}>Separuh</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: '950', letterSpacing: '-0.02em', color: '#D4AF37', lineHeight: 1 }}>Agama</span>
+             </div>
+           </div>
+         </div>
         
         <nav className="sidebar-nav" style={{ padding: '1rem' }}>
           <SidebarLink icon={<LayoutDashboard size={20}/>} label="Beranda" active={activeTab === 'home'} onClick={() => navigateTo('home')} />

@@ -65,7 +65,8 @@ export default function ChangePasswordCard({ showAlert }) {
               color: '#134E39', 
               border: '2px solid #134E39', 
               padding: '1rem', 
-              width: '240px',
+              width: '100%',
+              maxWidth: '240px',
               borderRadius: '18px', 
               fontWeight: '900', 
               cursor: 'pointer', 
@@ -83,12 +84,9 @@ export default function ChangePasswordCard({ showAlert }) {
       </div>
 
       {isOpen && (
-        <div style={{ 
+        <div className="card" style={{ 
           marginTop: '1.25rem', 
           padding: '2.5rem', 
-          background: 'white',
-          borderRadius: '32px',
-          border: '1px solid #E4EDE8',
           boxShadow: '0 20px 40px rgba(0,0,0,0.02)',
           animation: 'fadeIn 0.3s ease' 
         }}>

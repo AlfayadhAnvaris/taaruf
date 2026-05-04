@@ -20,6 +20,13 @@ export default function ManageUsersPage() {
   const [viewingUser, setViewingUser] = useState(null);
   const itemsPerPage = 5;
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Merge User Data with CV data for rich display
   const usersWithCv = useMemo(() => {
     return usersDb.map(u => {
@@ -178,6 +185,7 @@ export default function ManageUsersPage() {
           }}>
             <select 
               className="premium-select"
+              style={{ flex: 1, minWidth: '160px' }}
               value={filterGender}
               onChange={(e) => setFilterGender(e.target.value)}
             >
@@ -188,6 +196,7 @@ export default function ManageUsersPage() {
 
             <select 
               className="premium-select"
+              style={{ flex: 1, minWidth: '160px' }}
               value={filterAge}
               onChange={(e) => setFilterAge(e.target.value)}
             >
@@ -201,6 +210,7 @@ export default function ManageUsersPage() {
             
             <select 
               className="premium-select"
+              style={{ flex: 1, minWidth: '160px' }}
               value={filterEducation}
               onChange={(e) => setFilterEducation(e.target.value)}
             >
@@ -213,6 +223,7 @@ export default function ManageUsersPage() {
 
             <select 
               className="premium-select"
+              style={{ flex: 1, minWidth: '160px' }}
               value={filterProvince}
               onChange={(e) => setFilterProvince(e.target.value)}
             >
@@ -250,9 +261,15 @@ export default function ManageUsersPage() {
               <thead>
                 <tr style={{ textAlign: 'left', borderBottom: '1.5px solid #f8fafc' }}>
                    <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pengguna</th>
-                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Detail Kontak</th>
-                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Status</th>
-                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Aksi</th>
+                   <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: isMobile ? 'right' : 'left' }}>
+                     {isMobile ? 'DETAIL' : 'Detail Kontak'}
+                   </th>
+                   {!isMobile && (
+                     <>
+                       <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Status</th>
+                       <th style={{ padding: '1.5rem 2rem', fontSize: '0.7rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Aksi</th>
+                     </>
+                   )}
                 </tr>
               </thead>
               <tbody>
@@ -266,15 +283,16 @@ export default function ManageUsersPage() {
                     <td style={{ padding: '1.75rem 2rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <div style={{ 
-                          width: '52px', height: '52px', borderRadius: '16px', 
+                          width: '52px', height: '52px', borderRadius: '50%', 
                           background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)', 
                           color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '1.1rem', fontWeight: '900'
+                          fontSize: '1.1rem', fontWeight: '900', flexShrink: 0
                         }}>
                           {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '1.05rem', marginBottom: '6px' }}>{user.name}</div>
+                          <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '1.05rem', marginBottom: '2px' }}>{user.name}</div>
+                          {user.age && <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#64748b', marginBottom: '6px' }}>{user.age}</div>}
                           <div style={{ 
                             display: 'inline-flex', padding: '4px 10px', 
                             background: user.gender === 'ikhwan' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(236, 72, 153, 0.1)',
@@ -286,32 +304,52 @@ export default function ManageUsersPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '1.75rem 2rem' }}>
-                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <td style={{ padding: isMobile ? '1rem' : '1.75rem 2rem' }}>
+                      {isMobile ? (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setViewingUser(user); }}
+                            style={{ 
+                              width: '40px', height: '40px', borderRadius: '12px', border: '1.5px solid #134E39', 
+                              background: 'transparent', color: '#134E39', display: 'flex', alignItems: 'center', 
+                              justifyContent: 'center', cursor: 'pointer'
+                            }}
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.85rem', fontWeight: '600' }}>
                             <MapPin size={15} style={{ opacity: 0.6 }} /> {user.location}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '500' }}>
                             <Mail size={15} style={{ opacity: 0.6 }} /> {user.email}
                           </div>
-                       </div>
+                        </div>
+                      )}
                     </td>
-                    <td style={{ padding: '1.75rem 2rem', textAlign: 'center' }}>
-                       {getStatusBadge(user)}
-                    </td>
-                    <td style={{ padding: '1.75rem 2rem', textAlign: 'right' }}>
-                       <button 
-                         onClick={() => setViewingUser(user)}
-                         style={{ 
-                           padding: '10px 24px', borderRadius: '14px', border: '1.5px solid #134E39', 
-                           background: 'transparent', color: '#134E39', fontWeight: '800', 
-                           fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' 
-                         }} 
-                         className="action-view-btn"
-                       >
-                         Lihat Detail
-                       </button>
-                    </td>
+                    {!isMobile && (
+                      <>
+                        <td style={{ padding: '1.75rem 2rem', textAlign: 'center' }}>
+                          {getStatusBadge(user)}
+                        </td>
+                        <td style={{ padding: '1.75rem 2rem', textAlign: 'right' }}>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setViewingUser(user); }}
+                              style={{ 
+                                width: '44px', height: '44px', borderRadius: '12px', border: '1.5px solid #134E39', 
+                                background: 'transparent', color: '#134E39', display: 'flex', alignItems: 'center', 
+                                justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', marginLeft: 'auto'
+                              }} 
+                              className="action-view-btn"
+                              title="Lihat Detail"
+                            >
+                              <Eye size={20} />
+                            </button>
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -368,7 +406,7 @@ export default function ManageUsersPage() {
           </div>
         </>
       ) : (
-        <AdminReportsTab showAlert={showAlert} />
+        <AdminReportsTab showAlert={showAlert} setViewingUser={setViewingUser} usersDb={usersDb} />
       )}
 
       {/* 🟢 USER DETAIL MODAL 🟢 */}
@@ -488,7 +526,7 @@ export default function ManageUsersPage() {
       <style>{`
         .manage-users-container { padding: 0.5rem; }
         .premium-select {
-          padding: 0.9rem 1.5rem;
+          padding: 0.9rem 1.25rem;
           border-radius: 16px;
           border: 1.5px solid #f1f5f9;
           background: white;
@@ -497,8 +535,13 @@ export default function ManageUsersPage() {
           font-weight: 700;
           color: #1e293b;
           cursor: pointer;
-          min-width: 140px;
           transition: all 0.2s;
+          box-sizing: border-box;
+          flex: 1;
+          min-width: 160px;
+        }
+        @media (max-width: 640px) {
+          .premium-select { min-width: 100%; }
         }
         .premium-select:hover { border-color: #134E39; }
         .row-hover:hover { 

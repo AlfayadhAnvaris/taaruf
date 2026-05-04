@@ -56,8 +56,28 @@ export default function AdminAccountTab({ user, showAlert }) {
   );
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.5s ease' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+    <div className="admin-account-container" style={{ maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.5s ease' }}>
+      <style>{`
+        .admin-account-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+        }
+        @media (max-width: 768px) {
+          .admin-account-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+          .admin-account-container {
+            padding: 0 1rem;
+          }
+          .card {
+            padding: 1.5rem !important;
+            border-radius: 24px !important;
+          }
+        }
+      `}</style>
+      <div className="admin-account-grid">
         
         {/* Profile Card */}
         <div className="card" style={{ padding: '2rem', borderRadius: '32px' }}>

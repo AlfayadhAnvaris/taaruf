@@ -280,8 +280,14 @@ export default function MyCvTab({
 
   if ((hasSubmittedCv || isViewingOther) && !isEditingCv) {
     return (
-      <div key="cv-view-root" className="cv-root" style={{ background: '#f8fafc', width: '100%', height: 'calc(100vh - 100px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 1rem' }}>
+      <div key="cv-view-root" className="cv-root-view">
         <style key="cv-style">{`
+          .cv-root-view {
+            background: #f8fafc; width: 100%; height: calc(100vh - 100px); 
+            display: flex; alignItems: center; justifyContent: center; padding: 0 1rem;
+            overflow: hidden;
+          }
+          
           .cv-full-container {
             display: flex; width: 100%; max-width: 1300px; 
             background: white; border-radius: 32px; overflow: hidden;
@@ -344,6 +350,11 @@ export default function MyCvTab({
             .cv-grid-layout { grid-template-columns: 1fr; gap: 1.25rem; }
             .cv-card-premium { padding: 1.75rem; border-radius: 24px; }
           }
+          
+          @media (max-width: 992px) {
+            .cv-root-view { height: auto; padding: 1rem 0; overflow-y: auto; display: block; }
+            .cv-full-container { height: auto; border-radius: 0; margin: 0; border: none; }
+          }
 
           @media (max-width: 768px) {
             .cv-hero-badge { margin-bottom: 1rem; padding: 4px 12px; font-size: 0.6rem; }
@@ -352,15 +363,26 @@ export default function MyCvTab({
             .cv-side-id .avatar-wrapper { width: 100px !important; height: 100px !important; margin-bottom: 1.5rem !important; }
             .cv-side-id .avatar-wrapper svg { width: 40px !important; }
             
+            .cv-tab-btn { font-size: 0.8rem !important; gap: 6px !important; }
+            
             .cv-tabs-scroll {
-              overflow-x: auto;
-              white-space: nowrap;
-              padding-bottom: 5px;
-              -webkit-overflow-scrolling: touch;
+              gap: 1.5rem !important;
+              padding: 0 1rem !important;
+              top: 0 !important;
+              background: #F8FAFC !important;
+              margin-bottom: 1.5rem !important;
+              overflow-x: auto !important;
+              white-space: nowrap !important;
+              -webkit-overflow-scrolling: touch !important;
             }
             .cv-tabs-scroll::-webkit-scrollbar { display: none; }
-            .cv-tab-btn { font-size: 0.8rem !important; gap: 6px !important; }
+            
+            .cv-side-id .cv-vision-box { height: auto !important; max-height: 200px; }
+            .cv-card-premium { padding: 1.25rem !important; }
           }
+          
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
         
         <div className="cv-full-container">
@@ -634,7 +656,7 @@ export default function MyCvTab({
                    {/* List Section */}
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
                       {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '6rem 3rem', background: 'white', borderRadius: '40px', border: '2px dashed #f1f5f9' }}>
+                        <div style={{ textAlign: 'center', padding: '6rem 3rem', background: 'white', borderRadius: '40px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                               <Quote size={40} color="#cbd5e1" />
                            </div>

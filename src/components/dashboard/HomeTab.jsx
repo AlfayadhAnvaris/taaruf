@@ -82,15 +82,15 @@ export default function HomeTab({
       </div>
 
       {/* 📈 ACTIVITY CHART 📈 */}
-      <div className="animate-up stagger-2" style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="chart-card animate-up stagger-2" style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
+        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Activity size={20} /> Aktivitas Pembelajaran
             </h3>
             <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Statistik interaksi dan progres Anda di platform.</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', background: '#f8fafc', padding: '6px', borderRadius: '100px', border: '1px solid #e2e8f0' }}>
+          <div className="chart-filter-group" style={{ display: 'flex', gap: '8px', background: '#f8fafc', padding: '6px', borderRadius: '100px', border: '1px solid #e2e8f0' }}>
             {['7_hari', '1_bulan', '6_bulan'].map(f => (
                <button 
                  key={f}
@@ -113,9 +113,9 @@ export default function HomeTab({
             ))}
           </div>
         </div>
-        <div style={{ height: '300px', width: '100%' }}>
+        <div style={{ height: '300px', width: '100%', marginTop: '1rem' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={activityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorAktivitas" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#134E39" stopOpacity={0.15}/>

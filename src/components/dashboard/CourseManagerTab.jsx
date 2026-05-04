@@ -6,7 +6,7 @@ import {
   BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown, ChevronLeft, ChevronRight,
   PlayCircle, FileQuestion, GraduationCap, CheckCircle, FileText,
   AlertCircle, Loader, ToggleLeft, ToggleRight, ArrowUp, ArrowDown,
-  Activity, Zap, Upload, GripVertical, Search, RefreshCw
+  Activity, Zap, Upload, GripVertical, Search, RefreshCw, Eye, XCircle
 } from 'lucide-react';
 import AdminEnrollmentTab from './AdminEnrollmentTab';
 
@@ -1041,7 +1041,7 @@ export default function CourseManagerTab() {
 
       {/* ── PROGRESS VIEW ── */}
       {subTab === 'progress' && view === 'list' && (
-        <div style={{ animation: 'fadeIn 0.3s ease' }}>
+        <div style={{ animation: 'fadeIn 0.3s ease', width: '100%', overflowX: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: isMobile ? '0 1rem' : '0 1.5rem' }}>
              <div>
                 <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>Progres Belajar Calon Kandidat</h3>
@@ -1049,10 +1049,18 @@ export default function CourseManagerTab() {
              </div>
           </div>
 
-          <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-            <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                {!isMobile && (
+          <div style={{ 
+            ...CARD, 
+            padding: 0, 
+            overflow: 'hidden', 
+            background: isMobile ? 'transparent' : 'white',
+            border: isMobile ? 'none' : '1px solid var(--border)',
+            boxShadow: isMobile ? 'none' : undefined,
+            width: '100%'
+          }}>
+            {!isMobile ? (
+              <div className="table-responsive">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
                       <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Nama User</th>
@@ -1061,162 +1069,192 @@ export default function CourseManagerTab() {
                       <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Progres</th>
                     </tr>
                   </thead>
-                )}
-                <tbody>
-                  <tr style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
-                    <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.75rem' }}>
-                        <div style={{ position: 'relative', flex: 1 }}>
-                          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                          <input 
-                            type="text" 
-                            placeholder="Cari nama atau email..." 
-                            style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
-                            value={progSearch}
-                            onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
-                          />
+                  <tbody>
+                    <tr style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+                      <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <div style={{ position: 'relative', flex: 1 }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input 
+                              type="text" 
+                              placeholder="Cari nama atau email..." 
+                              style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
+                              value={progSearch}
+                              onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
+                            />
+                          </div>
+                          <select 
+                            style={{ padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', height: '50px', flexShrink: 0, background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                            value={progGender}
+                            onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
+                          >
+                            <option value="all">Semua Gender</option>
+                            <option value="ikhwan">Ikhwan</option>
+                            <option value="akhwat">Akhwat</option>
+                          </select>
                         </div>
-                        <select 
-                          style={{ padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', width: isMobile ? '100%' : 'auto', height: '50px', flexShrink: 0, background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
-                          value={progGender}
-                          onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
-                        >
-                          <option value="all">Semua Gender</option>
-                          <option value="ikhwan">Ikhwan</option>
-                          <option value="akhwat">Akhwat</option>
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
 
-                  {progressLoading ? (
-                    <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="animate-spin" size={24} /></td></tr>
-                  ) : (() => {
-                    const filteredList = userProgressList.filter(item => (item.name + item.email).toLowerCase().includes(progSearch.toLowerCase()) && (progGender === 'all' || item.gender === progGender));
-                    const startIndex = (progPage - 1) * progPerPage;
-                    const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
-                    const totalPages = Math.ceil(filteredList.length / progPerPage);
+                    {progressLoading ? (
+                      <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center' }}><Loader className="animate-spin" size={24} /></td></tr>
+                    ) : (() => {
+                      const filteredList = userProgressList.filter(item => (item.name + item.email).toLowerCase().includes(progSearch.toLowerCase()) && (progGender === 'all' || item.gender === progGender));
+                      const startIndex = (progPage - 1) * progPerPage;
+                      const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
+                      const totalPages = Math.ceil(filteredList.length / progPerPage);
 
-                    if (filteredList.length === 0) return <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada data ditemukan.</td></tr>;
+                      if (filteredList.length === 0) return <tr><td colSpan={4} style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada data ditemukan.</td></tr>;
 
-                    if (isMobile) {
                       return (
-                        <tr>
-                          <td colSpan={4} style={{ padding: '1rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              {paginatedList.map((item, idx) => (
-                                <div key={idx} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                    <div style={{ flex: 1, marginRight: '1rem' }}>
-                                      <div style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b', wordBreak: 'break-word' }}>{item.name}</div>
-                                      <div style={{ fontSize: '0.75rem', color: '#64748b', wordBreak: 'break-all' }}>{item.email}</div>
-                                    </div>
-                                    <span style={{ flexShrink: 0, fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
-                                      {item.gender || '-'}
-                                    </span>
-                                  </div>
-                                  
-                                  <div style={{ marginBottom: '1rem' }}>
-                                    <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', marginBottom: '6px', textTransform: 'uppercase' }}>Sertifikat Dimenangkan</div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                      {item.earnedCertificates.length > 0 ? item.earnedCertificates.map((c, ci) => (
-                                        <span key={ci} style={{ background: '#f0fdf4', color: '#166534', padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #bbf7d0' }}>{c}</span>
-                                      )) : <span style={{ fontSize: '0.75rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>}
-                                    </div>
-                                  </div>
-
-                                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                      <div style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? '#059669' : '#1e293b' }}>{item.percent}% Selesai</div>
-                                      <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#94a3b8' }}>{item.certificatesCount} / {item.totalCourses} Kelas</div>
-                                    </div>
-                                    <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
-                                      <div style={{ width: `${item.percent}%`, height: '100%', background: '#134E39' }} />
-                                    </div>
-                                  </div>
-
-                                  <button 
-                                    onClick={() => setDetailUser(item)}
-                                    style={{ width: '100%', marginTop: '1rem', padding: '0.85rem', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
-                                  >
-                                     Lihat Rincian Belajar
-                                  </button>
+                        <>
+                          {paginatedList.map((item, idx) => (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '1rem 1.5rem' }}>
+                                <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.email}</div>
+                              </td>
+                              <td style={{ padding: '1rem' }}>
+                                <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '8px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
+                                  {item.gender || '-'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '1rem' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {item.earnedCertificates.length > 0 ? item.earnedCertificates.map((c, ci) => (
+                                    <span key={ci} style={{ background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #bbf7d0' }}>{c}</span>
+                                  )) : <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>}
                                 </div>
-                              ))}
-                              {filteredList.length > progPerPage && (
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+                              </td>
+                              <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1.5rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                      <div style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? 'var(--success)' : '#1e293b' }}>{item.percent}%</div>
+                                      <div style={{ width: '100px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${item.percent}%`, height: '100%', background: 'var(--primary)' }} />
+                                      </div>
+                                      <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.certificatesCount} / {item.totalCourses} Selesai</div>
+                                    </div>
+                                    <button 
+                                      onClick={() => setDetailUser(item)}
+                                      style={{ padding: '0.6rem 1rem', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#134E39', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                                      onMouseEnter={e => { e.currentTarget.style.background = '#134E39'; e.currentTarget.style.color = 'white'; }}
+                                      onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#134E39'; }}
+                                    >
+                                      DETAIL
+                                    </button>
+                                 </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {filteredList.length > progPerPage && (
+                            <tr>
+                              <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
                                   {[...Array(totalPages)].map((_, i) => (
-                                    <button key={i} onClick={() => setProgPage(i+1)} style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: progPage === i+1 ? '#134E39' : 'white', color: progPage === i+1 ? 'white' : '#64748b', fontWeight: '800', cursor: 'pointer' }}>{i+1}</button>
+                                    <button key={i} onClick={() => setProgPage(i+1)} className={`pagination-btn ${progPage === i+1 ? 'active' : ''}`}>{i+1}</button>
                                   ))}
                                 </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       );
-                    }
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ width: '100%', padding: '0 0.5rem', boxSizing: 'border-box' }}>
+                {/* Mobile Header Filters */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem', width: '100%', boxSizing: 'border-box' }}>
+                  <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
+                    <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input 
+                      type="text" 
+                      placeholder="Cari nama atau email..." 
+                      style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
+                      value={progSearch}
+                      onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
+                    />
+                  </div>
+                  <select 
+                    style={{ width: '100%', padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', height: '50px', background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
+                    value={progGender}
+                    onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
+                  >
+                    <option value="all">Semua Gender</option>
+                    <option value="ikhwan">Ikhwan</option>
+                    <option value="akhwat">Akhwat</option>
+                  </select>
+                </div>
 
-                    return (
-                      <>
-                        {paginatedList.map((item, idx) => (
-                          <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ padding: '1rem 1.5rem' }}>
-                              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name}</div>
-                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.email}</div>
-                            </td>
-                            <td style={{ padding: '1rem' }}>
-                              <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '8px', background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3', color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d' }}>
-                                {item.gender || '-'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '1rem' }}>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                {item.earnedCertificates.length > 0 ? item.earnedCertificates.map((c, ci) => (
-                                  <span key={ci} style={{ background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', border: '1px solid #bbf7d0' }}>{c}</span>
-                                )) : <span style={{ fontSize: '0.7rem', color: '#cbd5e1', fontStyle: 'italic' }}>Belum ada sertifikat</span>}
+                {progressLoading ? (
+                  <div style={{ padding: '3rem', textAlign: 'center' }}><Loader className="animate-spin" size={24} /></div>
+                ) : (() => {
+                  const filteredList = userProgressList.filter(item => (item.name + item.email).toLowerCase().includes(progSearch.toLowerCase()) && (progGender === 'all' || item.gender === progGender));
+                  const startIndex = (progPage - 1) * progPerPage;
+                  const paginatedList = filteredList.slice(startIndex, startIndex + progPerPage);
+                  const totalPages = Math.ceil(filteredList.length / progPerPage);
+
+                  if (filteredList.length === 0) return <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Tidak ada data ditemukan.</div>;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%', boxSizing: 'border-box' }}>
+                      {paginatedList.map((item, idx) => (
+                        <div key={idx} style={{ 
+                          background: 'white', border: '1px solid #f1f5f9', borderRadius: '20px', 
+                          padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                          width: '100%', boxSizing: 'border-box'
+                        }}>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1, boxSizing: 'border-box' }}>
+                              <div style={{ 
+                                width: '44px', height: '44px', borderRadius: '14px', 
+                                background: item.gender === 'ikhwan' ? '#e0f2fe' : '#fce7f3',
+                                color: item.gender === 'ikhwan' ? '#0369a1' : '#be185d',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontWeight: '900', fontSize: '1.1rem', flexShrink: 0
+                              }}>
+                                {item.name?.charAt(0).toUpperCase()}
                               </div>
-                            </td>
-                            <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1.5rem' }}>
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '900', color: item.percent === 100 ? 'var(--success)' : '#1e293b' }}>{item.percent}%</div>
-                                    <div style={{ width: '100px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                                      <div style={{ width: `${item.percent}%`, height: '100%', background: 'var(--primary)' }} />
+                              <div style={{ minWidth: 0, flex: 1, boxSizing: 'border-box' }}>
+                                 <div style={{ fontWeight: '800', color: '#1e293b', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', boxSizing: 'border-box' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '900', color: item.percent === 100 ? '#059669' : '#134E39', flexShrink: 0 }}>{item.percent}%</div>
+                                    <div style={{ width: '100%', maxWidth: '80px', height: '4px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                       <div style={{ width: `${item.percent}%`, height: '100%', background: item.percent === 100 ? '#059669' : '#134E39' }} />
                                     </div>
-                                    <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.certificatesCount} / {item.totalCourses} Selesai</div>
-                                  </div>
-                                  <button 
-                                    onClick={() => setDetailUser(item)}
-                                    style={{ padding: '0.6rem 1rem', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#134E39', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = '#134E39'; e.currentTarget.style.color = 'white'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#134E39'; }}
-                                  >
-                                    DETAIL
-                                  </button>
-                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                        {filteredList.length > progPerPage && (
-                          <tr>
-                            <td colSpan={4} style={{ padding: '1rem 1.5rem' }}>
-                              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                                {[...Array(totalPages)].map((_, i) => (
-                                  <button key={i} onClick={() => setProgPage(i+1)} style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: progPage === i+1 ? 'var(--primary)' : 'white', color: progPage === i+1 ? 'white' : '#64748b', fontWeight: '700', cursor: 'pointer' }}>{i+1}</button>
-                                ))}
+                                 </div>
                               </div>
-                            </td>
-                          </tr>
-                        )}
-                      </>
-                    );
-                  })()}
-                </tbody>
-              </table>
-            </div>
+                           </div>
+
+                           <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, boxSizing: 'border-box' }}>
+                              <button 
+                                onClick={() => setDetailUser(item)}
+                                style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', border: '1.5px solid #f1f5f9', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                              >
+                                <Eye size={18} />
+                              </button>
+                           </div>
+                        </div>
+                      ))}
+                      {filteredList.length > progPerPage && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem', paddingBottom: '1rem' }}>
+                          {[...Array(totalPages)].map((_, i) => (
+                            <button key={i} onClick={() => setProgPage(i+1)} className={`pagination-btn ${progPage === i+1 ? 'active' : ''}`}>{i+1}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         </div>
       )}
+
 
       {/* ── EDITOR VIEW: Class ── */}
       {view === 'class-editor' && (
@@ -1469,6 +1507,20 @@ export default function CourseManagerTab() {
             </div>
             
             <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+               {/* User Basic Info (Mobile specifically) */}
+               {isMobile && (
+                 <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderRadius: '24px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                       <div style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.7, textTransform: 'uppercase' }}>Total Penyelesaian</div>
+                       <div style={{ fontSize: '1.75rem', fontWeight: '950' }}>{detailUser.percent}%</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                       <div style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.7, textTransform: 'uppercase' }}>Sertifikat</div>
+                       <div style={{ fontSize: '1.25rem', fontWeight: '900' }}>{detailUser.certificatesCount} <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>/ {detailUser.totalCourses}</span></div>
+                    </div>
+                 </div>
+               )}
+
                {academyMeta.classes.map(cls => {
                   const clsCourses = academyMeta.courses.filter(c => c.class_id === cls.id);
                   const clsLessons = academyMeta.lessons.filter(l => clsCourses.some(c => c.id === l.course_id));
@@ -1483,9 +1535,9 @@ export default function CourseManagerTab() {
                              <div style={{ width: 36, height: 36, borderRadius: '10px', background: isClsDone ? '#10b981' : '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <BookOpen size={18} />
                              </div>
-                             <div>
-                                <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#1e293b' }}>{cls.title}</div>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>{doneInCls.length} dari {clsLessons.length} Materi Selesai</div>
+                             <div style={{ maxWidth: isMobile ? '160px' : 'auto' }}>
+                                <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cls.title}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>{doneInCls.length}/{clsLessons.length} Materi</div>
                              </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
@@ -1502,7 +1554,7 @@ export default function CourseManagerTab() {
                              return (
                                <div key={course.id} style={{ background: 'white', padding: '1rem', borderRadius: '14px', border: '1px solid #f1f5f9' }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                     <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#475569' }}>{course.title}</div>
+                                     <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#475569', maxWidth: isMobile ? '180px' : 'auto', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{course.title}</div>
                                      <div style={{ fontSize: '0.7rem', fontWeight: '800', color: isCourseDone ? '#10b981' : '#94a3b8' }}>
                                         {isCourseDone ? 'SELESAI' : `${doneInCourse.length}/${courseLessons.length}`}
                                      </div>

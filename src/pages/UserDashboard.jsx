@@ -798,6 +798,34 @@ export default function UserDashboard() {
             justify-content: center !important;
             margin-top: 1rem !important;
           }
+          
+          .chart-card {
+            padding: 1.5rem !important;
+            border-radius: 24px !important;
+          }
+          .chart-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1.25rem !important;
+          }
+          .chart-filter-group {
+            width: 100%;
+            display: flex !important;
+            gap: 4px !important;
+            background: #f1f5f9 !important;
+            padding: 4px !important;
+            border-radius: 16px !important;
+          }
+          .chart-filter-group button {
+            flex: 1;
+            padding: 8px 5px !important;
+            font-size: 0.7rem !important;
+            border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .chart-filter-group::-webkit-scrollbar { display: none; }
 
           .mobile-status-toggle { display: flex !important; }
           .status-detail-content { display: none; }

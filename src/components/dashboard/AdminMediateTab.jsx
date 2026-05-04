@@ -314,6 +314,7 @@ export default function AdminMediateTab() {
           .mediate-status-buttons { width: 100%; }
           .mediate-btn { flex: 1; text-align: center; justify-content: center; }
         }
+        .stepper-scroll::-webkit-scrollbar { display: none; }
       `}</style>
 
       {/* 🟢 Pagination */}
@@ -485,8 +486,8 @@ export default function AdminMediateTab() {
 
               <div style={{ padding: '2rem' }}>
                 {/* 🪜 Visual Stepper 🪜 */}
-                <div style={{ marginBottom: '3rem', padding: '0 10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+                <div className="stepper-scroll" style={{ marginBottom: '3rem', padding: '0 10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', minWidth: '500px', paddingBottom: '10px' }}>
                     {/* Progress Line Background */}
                     <div style={{ position: 'absolute', top: '20px', left: 0, right: 0, height: '4px', background: '#f1f5f9', zIndex: 0 }}></div>
                     {/* Active Progress Line */}
