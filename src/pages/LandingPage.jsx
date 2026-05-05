@@ -211,121 +211,142 @@ export default function LandingPage() {
           </div>
           
 
-          <div className="testimonial-grid auto-grid" style={{ position: 'relative', zIndex: 2, marginTop: '3rem' }}>
-            {testimonials.length > 0 ? (
-              testimonials.map((t, idx) => (
-                  <div 
-                    key={t.id} 
-                    className="testi-card animate-up" 
-                    style={{ 
-                      animationDelay: `${idx * 0.1}s`,
-                      background: 'rgba(255, 255, 255, 0.7)',
-                      backdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255, 255, 255, 0.8)',
-                      borderRadius: '32px',
-                      padding: '2.5rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.04)',
-                      transition: 'all 0.4s ease',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', opacity: 0.05, transform: 'rotate(15deg)' }}>
-                      <Quote size={80} color="var(--primary)" fill="currentColor" />
-                    </div>
+          <style>{`
+            @keyframes infiniteScroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .testimonial-marquee-container {
+              width: 100%;
+              overflow: hidden;
+              position: relative;
+              padding: 2rem 0;
+            }
+            .testimonial-marquee-track {
+              display: flex;
+              gap: 2rem;
+              width: max-content;
+              animation: infiniteScroll 40s linear infinite;
+            }
+            .testi-card {
+              flex: 0 0 auto;
+              width: 320px;
+              max-width: 85vw;
+              min-height: 380px;
+              background: white;
+              border: 1px solid #f1f5f9;
+              border-radius: 28px;
+              padding: 2.5rem;
+              display: flex;
+              flex-direction: column;
+              box-shadow: 0 15px 35px rgba(0,0,0,0.03);
+              transition: all 0.4s ease;
+              position: relative;
+              overflow: hidden;
+            }
+            @media (min-width: 1025px) {
+              .testimonial-marquee-container {
+                overflow: visible;
+                max-width: 1200px;
+                margin: 0 auto;
+              }
+              .testimonial-marquee-track {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                width: 100%;
+                animation: none;
+                gap: 2.5rem;
+              }
+              .testi-card {
+                width: 100%;
+                flex: 1;
+              }
+              .marquee-duplicate {
+                display: none !important;
+              }
+            }
+            @media (max-width: 1024px) {
+              .testimonial-marquee-track:hover {
+                animation-play-state: paused;
+              }
+            }
+            @media (max-width: 768px) {
+              .testimonial-marquee-track {
+                animation-duration: 25s;
+                gap: 1rem;
+              }
+              .testi-card {
+                width: 280px;
+                padding: 1.5rem !important;
+                min-height: 340px;
+              }
+            }
+          `}</style>
 
-                    <div style={{ display: 'flex', gap: '3px', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} fill={i < (t.rating || 5) ? '#D4AF37' : 'none'} color={i < (t.rating || 5) ? '#D4AF37' : '#e2e8f0'} />
-                      ))}
-                    </div>
-
-                    <p className="testi-text" style={{ 
-                      fontSize: '1.1rem', 
-                      color: '#334155', 
-                      fontWeight: '500', 
-                      lineHeight: '1.8',
-                      marginBottom: '2rem',
-                      position: 'relative',
-                      zIndex: 1,
-                      minHeight: '100px'
-                    }}>
-                      "{t.content}"
-                    </p>
-
-                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-                      <div style={{ 
-                        width: '52px', 
-                        height: '52px', 
-                        borderRadius: '16px', 
-                        background: 'linear-gradient(135deg, var(--primary), #2C5F4D)',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: '900',
-                        fontSize: '1.2rem',
-                        boxShadow: '0 8px 16px rgba(44,95,77,0.2)'
-                      }}>
-                        {t.name.charAt(0)}
-                      </div>
-                      <div>
-                        <strong style={{ display: 'block', color: '#1A2E25', fontSize: '1rem', fontWeight: '800' }}>{t.name}</strong>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          {t.role || 'Alumni'}
-                        </span>
-                      </div>
-                    </div>
+          <div className="testimonial-marquee-container" style={{ position: 'relative', zIndex: 2 }}>
+            <div className="testimonial-marquee-track">
+              {/* First Set */}
+              {(testimonials.length > 0 ? testimonials : [
+                { id: 'f1', name: 'Hamba Allah', role: 'Ikhwan, Menikah 2025', content: 'Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut.' },
+                { id: 'f2', name: 'Ukhti Fulanah', role: 'Akhwat, Menikah 2026', content: 'Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga.' },
+                { id: 'f3', name: 'Alumni 2024', role: 'Mediasi Berhasil', content: 'Prosesnya benar-benar menjaga adab taaruf Islami, mulai dari tukar menukar CV hingga khitbah. Semuanya terasa dimudahkan oleh Allah.' }
+              ]).map((t, idx) => (
+                <div key={`${t.id}-${idx}`} className="testi-card">
+                  <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', opacity: 0.05 }}>
+                    <Quote size={60} color="var(--primary)" fill="currentColor" />
                   </div>
-                ))
-              ) : (
-                <div style={{ 
-                  gridColumn: '1/-1', 
-                  textAlign: 'center', 
-                  padding: '5rem 2rem', 
-                  background: 'rgba(255,255,255,0.5)', 
-                  backdropFilter: 'blur(10px)',
-                  border: '2px dashed #e2e8f0', 
-                  borderRadius: '40px' 
-                }}>
-                  <div style={{ width: 80, height: 80, background: '#f8fafc', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                    <Quote size={40} color="#cbd5e1" />
+                  <div style={{ display: 'flex', gap: '3px', marginBottom: '1.5rem' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} fill={i < (t.rating || 5) ? '#D4AF37' : 'none'} color={i < (t.rating || 5) ? '#D4AF37' : '#e2e8f0'} />
+                    ))}
                   </div>
-                  <h4 style={{ margin: '0 0 0.5rem', color: '#1e293b', fontWeight: '800' }}>Belum Ada Testimoni</h4>
-                  <p style={{ color: '#94a3b8', fontWeight: '600', maxWidth: '300px', margin: '0 auto' }}>Kisah sukses baru akan segera hadir di sini.</p>
-                </div>
-            )}
-
-            {/* Fallback Static Testimonials (If DB empty) */}
-            {testimonials.length === 0 && (
-              <>
-                {[
-                  { name: 'Hamba Allah', role: 'Ikhwan, Menikah 2025', content: 'Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut.' },
-                  { name: 'Ukhti Fulanah', role: 'Akhwat, Menikah 2026', content: 'Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga.' }
-                ].map((st, i) => (
-                  <div key={i} style={{ 
-                    background: 'rgba(255, 255, 255, 0.7)',
-                    backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.8)',
-                    borderRadius: '32px',
-                    padding: '2.5rem',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.04)'
+                  <p style={{ 
+                    fontSize: '1rem', color: '#475569', fontWeight: '500', lineHeight: '1.7', marginBottom: '2rem', flex: 1,
+                    display: '-webkit-box', WebkitLineClamp: 8, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                   }}>
-                    <Quote size={32} color="var(--primary)" style={{ marginBottom: '1.5rem', opacity: 0.1 }} fill="currentColor" />
-                    <p style={{ fontSize: '1.1rem', color: '#334155', fontWeight: '500', lineHeight: '1.8', marginBottom: '2rem' }}>"{st.content}"</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>{st.name.charAt(0)}</div>
-                      <div>
-                        <strong style={{ display: 'block', color: '#1A2E25', fontWeight: '800' }}>{st.name}</strong>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>{st.role}</span>
-                      </div>
+                    "{t.content}"
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary), #2C5F4D)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>{t.name.charAt(0)}</div>
+                    <div>
+                      <strong style={{ display: 'block', color: '#1A2E25', fontSize: '0.9rem', fontWeight: '800' }}>{t.name}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>{t.role || 'Alumni'}</span>
                     </div>
                   </div>
-                ))}
-              </>
-            )}
+                </div>
+              ))}
+              
+              {/* Second Set (Marquee Duplicate - Hidden on Desktop) */}
+              {(testimonials.length > 0 ? testimonials : [
+                { id: 'f1-d', name: 'Hamba Allah', role: 'Ikhwan, Menikah 2025', content: 'Sangat membantu! Apalagi ada mediasi chat yang diawasi ustadz dan ada akademi untuk belajar ilmu nikah sebelum lanjut.' },
+                { id: 'f2-d', name: 'Ukhti Fulanah', role: 'Akhwat, Menikah 2026', content: 'Sistem academy-nya juara. Izzah terjaga, ilmu juga nambah banyak sebelum masuk rumah tangga.' },
+                { id: 'f3-d', name: 'Alumni 2024', role: 'Mediasi Berhasil', content: 'Prosesnya benar-benar menjaga adab taaruf Islami, mulai dari tukar menukar CV hingga khitbah. Semuanya terasa dimudahkan oleh Allah.' }
+              ]).map((t, idx) => (
+                <div key={`${t.id}-dup-${idx}`} className="testi-card marquee-duplicate">
+                  <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', opacity: 0.05 }}>
+                    <Quote size={60} color="var(--primary)" fill="currentColor" />
+                  </div>
+                  <div style={{ display: 'flex', gap: '3px', marginBottom: '1.5rem' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} fill={i < (t.rating || 5) ? '#D4AF37' : 'none'} color={i < (t.rating || 5) ? '#D4AF37' : '#e2e8f0'} />
+                    ))}
+                  </div>
+                  <p style={{ 
+                    fontSize: '1rem', color: '#475569', fontWeight: '500', lineHeight: '1.7', marginBottom: '2rem', flex: 1,
+                    display: '-webkit-box', WebkitLineClamp: 8, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                  }}>
+                    "{t.content}"
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary), #2C5F4D)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>{t.name.charAt(0)}</div>
+                    <div>
+                      <strong style={{ display: 'block', color: '#1A2E25', fontSize: '0.9rem', fontWeight: '800' }}>{t.name}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>{t.role || 'Alumni'}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

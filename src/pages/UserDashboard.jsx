@@ -229,6 +229,7 @@ export default function UserDashboard() {
               id: l.id,
               type: l.type,
               title: l.title,
+              content: l.content,
               videoUrl: l.video_url,
               duration: l.duration,
               done: doneSet.has(l.id),
@@ -257,6 +258,18 @@ export default function UserDashboard() {
   };
 
   useEffect(() => { if (user) fetchCurriculum(); }, [user?.id]);
+
+  // --- Proactive Notifications ---
+  useEffect(() => {
+    if (user && !hasSubmittedCv) {
+      const lastCheck = localStorage.getItem('last_cv_remind');
+      const now = Date.now();
+      if (!lastCheck || (now - parseInt(lastCheck)) > 24 * 60 * 60 * 1000) {
+        addNotification('Ahlan! Lengkapi CV Taaruf Anda hari ini untuk mulai berikhtiar menemukan pasangan impian.');
+        localStorage.setItem('last_cv_remind', now.toString());
+      }
+    }
+  }, [user, hasSubmittedCv]);
 
   const enrollClass = async (classId) => {
     try {
@@ -300,7 +313,7 @@ export default function UserDashboard() {
       const lessonsInThisClass = curriculum.flatMap(m => m.items);
       const doneCount = lessonsInThisClass.filter(l => l.done).length + 1;
       if (doneCount === lessonsInThisClass.length && activeClass) {
-         addNotification(`Alhamdulillah! Anda telah menyelesaikan seluruh materi di kelas "${activeClass.title}".`);
+         addNotification(`Baarakallahu fiikum! Anda telah menyelesaikan seluruh materi di kelas "${activeClass.title}". Silakan unduh sertifikat Anda.`);
       }
     } catch (err) { console.error('Error saving progress:', err); }
   };
@@ -317,7 +330,13 @@ export default function UserDashboard() {
     if (!chatInput.trim() || !activeChatId) return;
     const { error } = await supabase.from('messages').insert({ taaruf_request_id: activeChatId, sender_id: user.id, text: chatInput.trim() });
     if (!error) {
-      // Update local state correctly for the nested grouped structure
+      // Notify recipient
+      const currentReq = taarufRequests.find(r => String(r.id) === String(activeChatId));
+      if (currentReq) {
+        const recipientId = currentReq.senderId === user.id ? currentReq.targetUserId : currentReq.senderId;
+        addNotification(`Pesan baru dari ${user.name} di Ruang Mediasi.`, recipientId);
+      }
+
       setMessages(prevMessages => {
         const newMsg = { 
           id: Date.now(), 
@@ -365,13 +384,16 @@ export default function UserDashboard() {
         setCvs(cvs.map(cv => cv.id === myExistingCv.id ? data[0] : cv));
         addNotification('Alhamdulillah, CV berhasil diperbarui!');
       } else {
-        const { data, error } = await supabase.from('cv_profiles').insert(cvPayload).select();
-        if (error || !data?.length) {
-           setIsSubmittingCv(false);
-           return (showAlert('Error', 'Gagal kirim CV.', 'error'));
-        }
         setCvs([...cvs, data[0]]);
-        addNotification('Alhamdulillah, CV berhasil disubmit!');
+        addNotification('Bismillah, CV Anda telah berhasil disubmit dan sedang menunggu verifikasi Admin.');
+
+        // Notify Admins
+        const { data: admins } = await supabase.from('profiles').select('id').eq('role', 'admin');
+        if (admins && admins.length > 0) {
+          admins.forEach(adm => {
+            addNotification(`Kandidat baru (${user.name}) telah mensubmit CV. Segera lakukan verifikasi.`, adm.id);
+          });
+        }
       }
 
       // 🔄 Update Religious Data in Profiles Table

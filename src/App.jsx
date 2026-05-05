@@ -57,7 +57,7 @@ const AccessDenied = () => {
 };
 
 // --- Dashboard Layout Component ---
-const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, unreadCount, notifications, deleteNotification, markAllAsRead, deleteAllNotifications, showNotifications, setShowNotifications, showProfileMenu, setShowProfileMenu, user, isAdmin, hideBanner, setHideBanner, cvs, showAlert }) => {
+const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, unreadCount, notifications, setNotifications, deleteNotification, markAllAsRead, deleteAllNotifications, showNotifications, setShowNotifications, showProfileMenu, setShowProfileMenu, user, isAdmin, hideBanner, setHideBanner, cvs, showAlert }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { tab, id, subId } = useParams();
@@ -210,6 +210,67 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                 </span>
               </div>
              <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="notification-wrapper">
+                      <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'white', border: '1px solid #f1f5f9', width: 44, height: 44, borderRadius: '12px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
+                        <Bell size={20} />
+                        {unreadCount > 0 && <span className="notification-badge" style={{ border: '2px solid white' }}>{unreadCount}</span>}
+                      </button>
+
+                      {showNotifications && (
+                        <div className="notification-dropdown">
+                            <div className="notif-header">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Bell size={18} color="#134E39" />
+                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Notifikasi</h3>
+                              </div>
+                              <button onClick={() => setShowNotifications(false)} className="notif-close-btn-mobile"><X size={20} /></button>
+                            </div>
+                            <div className="notif-actions-bar">
+                                {unreadCount > 0 && <button onClick={markAllAsRead} className="notif-action-btn">Tandai Semua Dibaca</button>}
+                                <button onClick={deleteAllNotifications} className="notif-action-btn danger">Bersihkan</button>
+                            </div>
+                            <div className="notif-list custom-scrollbar">
+                              {notifications.length === 0 ? (
+                                <div className="notif-empty">
+                                    <div className="notif-empty-icon"><Bell size={40} /></div>
+                                    <p>Belum ada notifikasi untuk Anda saat ini.</p>
+                                </div>
+                              ) : (
+                                notifications.map(n => (
+                                  <div 
+                                    key={n.id} 
+                                    className={`notif-item ${!n.read ? 'unread' : ''}`}
+                                    onClick={async () => {
+                                      if (!n.read) {
+                                        await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                                        setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+                                      }
+                                      const text = n.text.toLowerCase();
+                                      if (text.includes('cv') || text.includes('profil')) navigateTo('my_cv');
+                                      else if (text.includes('mediasi') || text.includes('status') || text.includes('q&a') || text.includes('nadzhor')) navigateTo('status');
+                                      else if (text.includes('kelas') || text.includes('materi') || text.includes('belajar')) navigateTo(isAdmin ? 'courses' : 'materi/dashboard');
+                                      else if (text.includes('pesan') || text.includes('chat')) navigateTo('status');
+                                      setShowNotifications(false);
+                                    }}
+                                  >
+                                      <div className="notif-icon-circle">
+                                        {n.text.toLowerCase().includes('selamat') || n.text.toLowerCase().includes('berhasil') ? <CheckCircle size={16} /> : <Bell size={16} />}
+                                      </div>
+                                      <div className="notif-content">
+                                        <p className="notif-text">{n.text}</p>
+                                        <span className="notif-time">{n.time}</span>
+                                      </div>
+                                      <div className="notif-item-actions" onClick={e => e.stopPropagation()}>
+                                          <button onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }} className="notif-delete-btn" title="Hapus"><Trash2 size={14} /></button>
+                                      </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                        </div>
+                      )}
+                    </div>
+
                    <div className="profile-menu-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
                     <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ padding: isMobile ? '4px' : '4px 8px', borderRadius: '12px', border: '1px solid #f1f5f9', background: 'white' }}>
                       <div className="profile-card-avatar" style={{ width: 34, height: 34 }}><span>{user?.name.charAt(0).toUpperCase()}</span></div>
@@ -238,12 +299,21 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
               </div>
             </header>
           )}
-          <main className="main-content" style={{ 
-            height: isPlayer ? '100vh' : 'calc(100vh - 80px)', 
+          <main className={`main-content ${isPlayer ? 'player-mode' : ''}`} style={{ 
             overflowY: isPlayer ? 'hidden' : 'auto', 
-            padding: 0 
+            padding: 0,
+            display: 'flex',
+            flexDirection: 'column'
           }}>
              <style>{`
+                .main-content {
+                  height: calc(100vh - 80px);
+                  height: calc(100dvh - 80px);
+                }
+                .main-content.player-mode {
+                  height: 100vh;
+                  height: 100dvh;
+                }
                 body, #root, .app-container.academy-fullscreen {
                   max-width: none !important;
                   width: 100% !important;
@@ -261,21 +331,38 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                   padding: 0 !important;
                   background: white !important;
                 }
-               .academy-fullscreen .main-content::-webkit-scrollbar,
-               .academy-fullscreen .main-content *::-webkit-scrollbar {
-                 display: none !important;
+               .academy-fullscreen .main-content::-webkit-scrollbar {
+                 width: 6px;
+               }
+               .academy-fullscreen .main-content::-webkit-scrollbar-thumb {
+                 background: rgba(19,78,57,0.1);
+                 border-radius: 10px;
                }
                .academy-fullscreen .main-content,
                .academy-fullscreen .main-content * {
-                 -ms-overflow-style: none !important;
-                 scrollbar-width: none !important;
+                 -ms-overflow-style: auto !important;
+                 scrollbar-width: thin !important;
+               }
+               .player-fullscreen {
+                 height: 100dvh !important;
+                 overflow: hidden !important;
+                 position: relative !important;
+                 width: 100% !important;
+               }
+               .player-fullscreen .main-content {
+                 height: 100% !important;
+                 display: flex;
+                 flex-direction: column;
+                 overflow: hidden !important;
                }
              `}</style>
              <style>{`
                 html, body { 
-                  overflow-x: hidden !important; 
-                  width: 100% !important; 
-                  position: relative;
+                  overflow: hidden;
+                  height: 100%;
+                  width: 100%;
+                  position: fixed;
+                  -webkit-overflow-scrolling: touch;
                 }
               `}</style>
              <Outlet />
@@ -390,37 +477,53 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                {showNotifications && (
                  <div className="notification-dropdown">
                     <div className="notif-header">
-                       <h3>Notifikasi</h3>
-                       <div className="notif-actions">
-                          {unreadCount > 0 && <button onClick={markAllAsRead}>Tandai Semua Dibaca</button>}
-                          <button onClick={deleteAllNotifications} className="danger">Hapus Semua</button>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         <Bell size={18} color="#134E39" />
+                         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Notifikasi</h3>
                        </div>
+                       <button onClick={() => setShowNotifications(false)} className="notif-close-btn-mobile"><X size={20} /></button>
                     </div>
-                    <div className="notif-list">
+                    <div className="notif-actions-bar">
+                        {unreadCount > 0 && <button onClick={markAllAsRead} className="notif-action-btn">Tandai Semua Dibaca</button>}
+                        <button onClick={deleteAllNotifications} className="notif-action-btn danger">Bersihkan</button>
+                    </div>
+                    <div className="notif-list custom-scrollbar">
                        {notifications.length === 0 ? (
                          <div className="notif-empty">
-                            <Bell size={32} opacity={0.2} />
-                            <p>Belum ada notifikasi baru</p>
+                            <div className="notif-empty-icon"><Bell size={40} /></div>
+                            <p>Belum ada notifikasi untuk Anda saat ini.</p>
                          </div>
                        ) : (
                          notifications.map(n => (
-                           <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
-                              <div className="notif-icon">
-                                 {n.text.toLowerCase().includes('selamat') ? <CheckCircle size={18} color="#10B981" /> : <Bell size={18} color="#64748b" />}
+                           <div 
+                             key={n.id} 
+                             className={`notif-item ${!n.read ? 'unread' : ''}`}
+                             onClick={async () => {
+                               // 1. Mark as read
+                               if (!n.read) {
+                                 await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                                 setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+                               }
+                               // 2. Navigate based on content
+                               const text = n.text.toLowerCase();
+                               if (text.includes('cv') || text.includes('profil')) navigateTo('my_cv');
+                               else if (text.includes('mediasi') || text.includes('status') || text.includes('q&a') || text.includes('nadzhor')) navigateTo('status');
+                               else if (text.includes('kelas') || text.includes('materi') || text.includes('belajar')) navigateTo(isAdmin ? 'courses' : 'materi/dashboard');
+                               else if (text.includes('pesan') || text.includes('chat')) navigateTo('status');
+                               
+                               // 3. Close dropdown
+                               setShowNotifications(false);
+                             }}
+                           >
+                              <div className="notif-icon-circle">
+                                 {n.text.toLowerCase().includes('selamat') || n.text.toLowerCase().includes('berhasil') ? <CheckCircle size={16} /> : <Bell size={16} />}
                               </div>
                               <div className="notif-content">
                                  <p className="notif-text">{n.text}</p>
                                  <span className="notif-time">{n.time}</span>
                               </div>
-                              <div className="notif-item-actions">
-                                   {!n.read && (
-                                     <button onClick={async (e) => {
-                                       e.stopPropagation();
-                                       await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
-                                       setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
-                                     }} title="Tandai Dibaca"><CheckCircle size={14} /></button>
-                                   )}
-                                   <button onClick={(e) => { e.stopPropagation(); deleteNotification(n.id, n.text); }} className="notif-delete-btn" title="Hapus"><X size={14} /></button>
+                              <div className="notif-item-actions" onClick={e => e.stopPropagation()}>
+                                   <button onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }} className="notif-delete-btn" title="Hapus"><Trash2 size={14} /></button>
                               </div>
                            </div>
                          ))
@@ -877,7 +980,7 @@ function App() {
         )}
 
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={user ? <Navigate to="/app/home" replace /> : <LandingPage />} />
           <Route path="/login" element={<AuthPage initialIsLogin={true} onLogin={(e, p) => supabase.auth.signInWithPassword({ email: e, password: p })} showAlert={showAlert} />} />
           <Route path="/daftar" element={<AuthPage initialIsLogin={false} onRegister={() => {}} showAlert={showAlert} />} />
           
@@ -885,7 +988,7 @@ function App() {
             <PrivateRoute user={user} isInitializing={isInitializing}>
               <DashboardLayout 
                 isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
-                handleLogout={handleLogout} unreadCount={unreadCount} notifications={notifications}
+                handleLogout={handleLogout} unreadCount={unreadCount} notifications={notifications} setNotifications={setNotifications}
                 deleteNotification={deleteNotification} markAllAsRead={markAllAsRead} deleteAllNotifications={deleteAllNotifications}
                 showNotifications={showNotifications} setShowNotifications={setShowNotifications}
                 showProfileMenu={showProfileMenu} setShowProfileMenu={setShowProfileMenu}

@@ -17,6 +17,8 @@ export default function AdminHomeTab() {
   const [dynamicChartData, setDynamicChartData] = useState([]);
   const [taarufChartData, setTaarufChartData] = useState([]);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
 
   // Filter States
   const [chartsGender, setChartsGender] = useState('all');
@@ -105,7 +107,6 @@ export default function AdminHomeTab() {
                  const user = usersDb.find(u => u.id === p.user_id);
                  if (user?.gender !== chartsGender) return;
                }
-               // Correct path from UserDashboard: lessons -> courses -> lms_classes
                const title = p.lessons?.courses?.lms_classes?.title || 'Umum';
                stats[title] = (stats[title] || 0) + 1;
             });
@@ -129,15 +130,12 @@ export default function AdminHomeTab() {
 
       // --- 🏹 PROSES DATA TAARUF (CHART 3) ---
       if (taarufRequests && taarufRequests.length > 0) {
-        // Filter by Gender & Time Range
         const filteredRequests = taarufRequests.filter(r => {
-          // Time Filter
           const rDate = new Date(r.created_at);
           const limit = new Date();
           limit.setMonth(limit.getMonth() - monthsToShow);
           if (rDate < limit) return false;
 
-          // Gender Filter
           if (chartsGender !== 'all') {
             const sender = usersDb.find(u => u.email === r.senderEmail);
             if (sender?.gender !== chartsGender) return false;
@@ -240,28 +238,30 @@ export default function AdminHomeTab() {
         {/* 📈 CHART 1: TIME SERIES GROWTH */}
         <div className="card admin-chart-card">
           <ChartHeader Icon={TrendingUp} title="Tren Pertumbuhan User" subtitle="Akumulasi pendaftaran kandidat Separuh Agama" />
-          <div className="admin-chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  dy={10}
-                  style={{ fontSize: '11px', fill: '#64748b', fontWeight: '700', textTransform: 'uppercase' }} 
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  dx={-10}
-                  style={{ fontSize: '11px', fill: '#94a3b8', fontWeight: '600' }} 
-                />
-                <RechartsTooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', padding: '16px' }} />
-                <Line type="monotone" dataKey="users" name="Baru" stroke="#134E39" strokeWidth={5} dot={{ r: 6, fill: '#134E39', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 9, strokeWidth: 0 }} />
-                <Line type="monotone" dataKey="total" name="Total" stroke="#D4AF37" strokeWidth={2} strokeDasharray="6 6" dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="admin-chart-container" style={{ minWidth: 0, overflow: 'hidden' }}>
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <LineChart data={growthData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    dy={10}
+                    style={{ fontSize: '11px', fill: '#64748b', fontWeight: '700', textTransform: 'uppercase' }} 
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    dx={-10}
+                    style={{ fontSize: '11px', fill: '#94a3b8', fontWeight: '600' }} 
+                  />
+                  <RechartsTooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', padding: '16px' }} />
+                  <Line type="monotone" dataKey="users" name="Baru" stroke="#134E39" strokeWidth={5} dot={{ r: 6, fill: '#134E39', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 9, strokeWidth: 0 }} />
+                  <Line type="monotone" dataKey="total" name="Total" stroke="#D4AF37" strokeWidth={2} strokeDasharray="6 6" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -272,7 +272,7 @@ export default function AdminHomeTab() {
             title={`Analisis ${distributionType === 'gender' ? 'Gender' : (distributionType === 'region' ? 'Wilayah' : (distributionType === 'education' ? 'Pendidikan' : 'LMS'))}`}
             subtitle={distributionType === 'course' ? 'Materi kursus paling banyak diselesaikan' : 'Distribusi data berdasarkan filter terpilih'} 
           />
-          <div className="admin-chart-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="admin-chart-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden' }}>
              {dynamicChartData.length === 0 ? (
                <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease', width: '100%' }}>
                   <div style={{ background: '#f8fafc', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
@@ -282,8 +282,9 @@ export default function AdminHomeTab() {
                   <p style={{ fontSize: '0.7rem', margin: '4px 0 0', opacity: 0.6, fontWeight: '600' }}>Silakan sesuaikan filter atau rentang waktu</p>
                </div>
              ) : (
-               <ResponsiveContainer width="100%" height="100%">
-                 {distributionType === 'gender' ? (
+               isMounted && (
+                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  {distributionType === 'gender' ? (
                    <PieChart>
                       <Pie data={dynamicChartData} cx="50%" cy="50%" innerRadius={85} outerRadius={115} paddingAngle={10} dataKey="value" stroke="none" >
                         {dynamicChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={10} />)}
@@ -333,8 +334,9 @@ export default function AdminHomeTab() {
                         {dynamicChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                       </Bar>
                    </BarChart>
-                 )}
-               </ResponsiveContainer>
+                  )}
+                </ResponsiveContainer>
+               )
              )}
             
             {distributionType === 'gender' && (
@@ -358,23 +360,25 @@ export default function AdminHomeTab() {
         </div>
         
         <div className="taaruf-stats-layout">
-          <div style={{ height: '300px', flex: 1.5 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={taarufChartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} style={{ fontSize: '10px', fill: '#64748b', fontWeight: '700' }} />
-                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px', fill: '#94a3b8' }} />
-                <RechartsTooltip 
-                  cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="value" name="Jumlah" radius={[8, 8, 0, 0]} barSize={40}>
-                  {taarufChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div style={{ height: '300px', flex: 1.5, minWidth: 0, overflow: 'hidden' }}>
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <BarChart data={taarufChartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} style={{ fontSize: '10px', fill: '#64748b', fontWeight: '700' }} />
+                  <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px', fill: '#94a3b8' }} />
+                  <RechartsTooltip 
+                    cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey="value" name="Jumlah" radius={[8, 8, 0, 0]} barSize={40}>
+                    {taarufChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className="taaruf-summary-list">
@@ -423,19 +427,19 @@ export default function AdminHomeTab() {
         .admin-chart-card {
           padding: 2.5rem;
           border: 1px solid #f1f5f9;
-          borderRadius: 32px;
+          border-radius: 32px;
           background: white;
-          min-width: 0; /* Prevents chart overflow in flex/grid */
+          min-width: 0;
         }
 
         .admin-chart-container {
           height: 350px;
-          marginTop: 2rem;
+          margin-top: 2rem;
         }
 
         .dynamic-center-value {
-          fontSize: 2rem;
-          fontWeight: 900;
+          font-size: 2rem;
+          font-weight: 900;
           color: #134E39;
         }
 
@@ -492,8 +496,6 @@ export default function AdminHomeTab() {
     </div>
   );
 }
-
-// ─── STYLED SUB-COMPONENTS ──────────────────────────────────────────────────
 
 function StatCard({ Icon, label, value, color, bg }) {
   return (
