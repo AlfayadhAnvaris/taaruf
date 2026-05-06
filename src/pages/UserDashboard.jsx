@@ -20,7 +20,7 @@ const MAJOR_SUKU = [
 ].sort();
 
 export default function UserDashboard() {
-  const { user, setUser, cvs, setCvs, taarufRequests, setTaarufRequests, messages, setMessages, showAlert, addNotification, academyLevels, getAcademyBadge, claimedBadges, setClaimedBadges, bookmarks, setBookmarks } = useContext(AppContext);
+  const { user, setUser, cvs, setCvs, taarufRequests, setTaarufRequests, messages, setMessages, showAlert, addNotification, academyLevels, getAcademyBadge, claimedBadges, setClaimedBadges, bookmarks, setBookmarks, setReportModalState } = useContext(AppContext);
   const navigate = useNavigate();
   const { tab, id, subId } = useParams();
   const activeTab = tab || 'home';
@@ -574,6 +574,7 @@ export default function UserDashboard() {
             academyLevels={academyLevels} getAcademyBadge={getAcademyBadge} takenUserIds={takenUserIds}
             currentPage={currentPage} setCurrentPage={setCurrentPage} itemsPerPage={itemsPerPage}
             handleAjukanTaaruf={handleAjukanTaaruf} navigate={navigate} setActiveTab={setActiveTab}
+            setReportModalState={setReportModalState}
           />
         )
       )}

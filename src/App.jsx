@@ -10,7 +10,7 @@ import {
   Heart, XCircle, CheckCircle, AlertCircle, Search, UserCheck, 
   FileText, User as UserIcon, Activity, Bell, BookOpen, Menu, X, 
   LogOut, LayoutDashboard, ChevronDown, ChevronLeft, Settings, 
-  Shield, ShieldCheck, GraduationCap, Award, Star, MessageSquare, Trash2, Quote, Users
+  Shield, ShieldCheck, ShieldAlert, GraduationCap, Award, Star, MessageSquare, Trash2, Quote, Users
 } from 'lucide-react';
 import { supabase } from './supabase';
 
@@ -611,6 +611,7 @@ function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [confirmState, setConfirmState] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+  const [reportModalState, setReportModalState] = useState({ isOpen: false, reportedUserId: null, reportedCvId: null, reportedAlias: '' });
   const [profileNeedsCompletion, setProfileNeedsCompletion] = useState(false);
   const [hideBanner, setHideBanner] = useState(() => {
     return localStorage.getItem('Separuh Agama_hide_profile_banner') === 'true';
@@ -946,7 +947,7 @@ function App() {
         bookmarks, setBookmarks, userReviews, setUserReviews,
         showAlert, addNotification, profileNeedsCompletion, setProfileNeedsCompletion,
         academyLevels, setAcademyLevels, getAcademyBadge, claimedBadges, setClaimedBadges,
-        hideBanner, setHideBanner, setConfirmState
+        hideBanner, setHideBanner, setConfirmState, setReportModalState
       }}>
       <BrowserRouter>
         {modalState.isOpen && (
@@ -1007,9 +1008,126 @@ function App() {
           <Route path="/complete-profile" element={<PrivateRoute user={user} isInitializing={isInitializing}><CompleteProfilePage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <ReportModal 
+          state={reportModalState} 
+          setState={setReportModalState} 
+          showAlert={showAlert} 
+          user={user} 
+        />
       </BrowserRouter>
     </AppContext.Provider>
   );
 }
+
+// --- Report Modal Component ---
+const ReportModal = ({ state, setState, showAlert, user }) => {
+  const [reason, setReason] = useState('Ketidakjujuran');
+  const [details, setDetails] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!state.isOpen) return null;
+
+  const handleSubmit = async () => {
+    if (!details.trim()) {
+      showAlert('Gagal', 'Silakan isi detail laporan Anda.', 'error');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('user_reports').insert({
+        reporter_id: user.id,
+        reported_user_id: state.reportedUserId,
+        reported_cv_id: state.reportedCvId,
+        reason: reason,
+        details: details.trim(),
+        status: 'pending'
+      });
+
+      if (error) throw error;
+      
+      showAlert('Alhamdulillah', 'Laporan Anda telah berhasil terkirim dan akan segera ditinjau oleh admin.', 'success');
+      setState({ isOpen: false, reportedUserId: null, reportedCvId: null, reportedAlias: '' });
+      setDetails('');
+    } catch (err) {
+      console.error(err);
+      showAlert('Afwan', 'Terjadi kesalahan saat mengirim laporan. Silakan coba lagi nanti.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const reasons = [
+    "Ketidakjujuran",
+    "Perilaku Tidak Sopan",
+    "Foto/Profil Tidak Pantas",
+    "Penipuan",
+    "Lainnya"
+  ];
+
+  return (
+    <div className="modal-overlay" style={{ zIndex: 10002 }} onClick={() => setState({ ...state, isOpen: false })}>
+      <div className="modal-content" style={{ maxWidth: '500px', borderRadius: '32px', overflow: 'hidden', padding: 0 }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '2rem', background: '#fff1f2', borderBottom: '1px solid #fee2e2', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.75rem' }}>
+            <ShieldAlert size={20} color="#ef4444" />
+            <span style={{ fontSize: '0.7rem', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Laporkan Pelanggaran</span>
+          </div>
+          <h3 style={{ margin: 0, color: '#134E39', fontWeight: '900' }}>{state.reportedAlias || 'Pengguna'}</h3>
+          <button onClick={() => setState({ ...state, isOpen: false })} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'white', border: 'none', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}>
+            <X size={18} />
+          </button>
+        </div>
+        
+        <div style={{ padding: '2rem' }}>
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label className="form-label" style={{ fontSize: '0.75rem', color: '#64748b' }}>Alasan Pelaporan</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+              {reasons.map(r => (
+                <button 
+                  key={r}
+                  onClick={() => setReason(r)}
+                  style={{ 
+                    padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '700',
+                    background: reason === r ? '#ef4444' : '#f8fafc',
+                    color: reason === r ? 'white' : '#64748b',
+                    border: '1px solid ' + (reason === r ? '#ef4444' : '#e2e8f0'),
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '2rem' }}>
+            <label className="form-label" style={{ fontSize: '0.75rem', color: '#64748b' }}>Detail Laporan</label>
+            <textarea 
+              className="form-control"
+              placeholder="Berikan penjelasan lebih detail mengenai pelanggaran yang dilakukan..."
+              value={details}
+              onChange={e => setDetails(e.target.value)}
+              style={{ minHeight: '120px', borderRadius: '16px', fontSize: '0.9rem', padding: '1rem', background: '#f8fafc' }}
+            />
+          </div>
+
+          <button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            style={{ 
+              width: '100%', padding: '1rem', borderRadius: '16px', background: '#ef4444', 
+              color: 'white', border: 'none', fontWeight: '900', cursor: 'pointer',
+              boxShadow: '0 10px 20px rgba(239, 68, 68, 0.2)', transition: 'all 0.2s',
+              opacity: isSubmitting ? 0.7 : 1
+            }}
+          >
+            {isSubmitting ? 'MENGIRIM...' : 'KIRIM LAPORAN'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default App;

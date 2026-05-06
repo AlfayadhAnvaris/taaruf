@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   ChevronLeft, User, Settings, Eye, Clock, MapPin, Heart, Compass, 
-  ShieldCheck, ArrowRight, Target, GraduationCap, Briefcase, CheckCircle, 
+  ShieldCheck, ShieldAlert, ArrowRight, Target, GraduationCap, Briefcase, CheckCircle, 
   X, Users, Sparkles, Award, Quote, BookOpen, Star, BadgeCheck, Bookmark, Plus
 } from 'lucide-react';
 import { supabase } from '../../supabase';
@@ -230,7 +230,7 @@ export default function MyCvTab({
   onAjukanTaaruf = null,
   onBack = null
 }) {
-  const { userReviews, setUserReviews, showAlert, bookmarks, setBookmarks } = React.useContext(AppContext);
+  const { userReviews, setUserReviews, showAlert, bookmarks, setBookmarks, setReportModalState } = React.useContext(AppContext);
   const [fullViewItem, setFullViewItem] = useState(null);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -399,22 +399,46 @@ export default function MyCvTab({
                 ) : <div />}
                 
                 {isViewingOther && (
-                  <button 
-                    onClick={toggleBookmark}
-                    disabled={isTogglingBookmark}
-                    style={{ 
-                      background: isBookmarked ? '#EF4444' : 'white', 
-                      border: '1px solid ' + (isBookmarked ? '#EF4444' : '#f1f5f9'), 
-                      width: '40px', height: '40px', borderRadius: '12px', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
-                      color: isBookmarked ? 'white' : '#EF4444', 
-                      boxShadow: '0 8px 15px rgba(239, 68, 68, 0.1)', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                      transform: isTogglingBookmark ? 'scale(0.9)' : 'scale(1)'
-                    }}
-                    title={isBookmarked ? "Hapus dari Bookmark" : "Simpan ke Bookmark"}
-                  >
-                    <Heart size={18} fill={isBookmarked ? 'white' : 'transparent'} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => {
+                        setReportModalState({
+                          isOpen: true,
+                          reportedUserId: displayCv.user_id,
+                          reportedCvId: displayCv.id,
+                          reportedAlias: displayCv.alias
+                        });
+                      }}
+                      style={{ 
+                        background: 'white', border: '1px solid #f1f5f9', 
+                        width: '40px', height: '40px', borderRadius: '12px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+                        color: '#94a3b8', boxShadow: '0 8px 15px rgba(0,0,0,0.02)', transition: 'all 0.2s'
+                      }}
+                      title="Laporkan Profil"
+                      onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
+                    >
+                      <ShieldAlert size={18} />
+                    </button>
+
+                    <button 
+                      onClick={toggleBookmark}
+                      disabled={isTogglingBookmark}
+                      style={{ 
+                        background: isBookmarked ? '#EF4444' : 'white', 
+                        border: '1px solid ' + (isBookmarked ? '#EF4444' : '#f1f5f9'), 
+                        width: '40px', height: '40px', borderRadius: '12px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+                        color: isBookmarked ? 'white' : '#EF4444', 
+                        boxShadow: '0 8px 15px rgba(239, 68, 68, 0.1)', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        transform: isTogglingBookmark ? 'scale(0.9)' : 'scale(1)'
+                      }}
+                      title={isBookmarked ? "Hapus dari Bookmark" : "Simpan ke Bookmark"}
+                    >
+                      <Heart size={18} fill={isBookmarked ? 'white' : 'transparent'} />
+                    </button>
+                  </div>
                 )}
               </div>
               

@@ -185,7 +185,7 @@ export default function AdminHomeTab() {
       </div>
 
       {/* 🟢 INTEGRATED FILTER BAR 🟢 */}
-      <div style={{ 
+      <div className="filter-bar-container" style={{ 
         background: 'white', padding: '1.25rem 2rem', borderRadius: '28px', 
         marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', 
         alignItems: 'center', border: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '1.5rem',
@@ -352,9 +352,9 @@ export default function AdminHomeTab() {
 
       {/* 🟢 FULL WIDTH TAARUF ANALYTICS 🟢 */}
       <div className="card admin-chart-card" style={{ marginTop: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div className="taaruf-chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
           <ChartHeader Icon={Activity} title="Statistik Aktivitas Taaruf" subtitle="Distribusi tahapan mediasi yang sedang berjalan" />
-          <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '0.8rem', fontWeight: '800', color: '#134E39' }}>
+          <div className="total-requests-badge" style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '0.8rem', fontWeight: '800', color: '#134E39', whiteSpace: 'nowrap' }}>
             Total {taarufChartData.reduce((acc, curr) => acc + curr.value, 0)} Permintaan
           </div>
         </div>
@@ -491,6 +491,28 @@ export default function AdminHomeTab() {
           .dashboard-grid {
             grid-template-columns: 1fr;
           }
+          .taaruf-chart-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1.25rem !important;
+          }
+          .total-requests-badge {
+            width: 100%;
+            text-align: center;
+          }
+          .taaruf-summary-list {
+            width: 100%;
+          }
+          .chart-title {
+            font-size: 1rem !important;
+          }
+          .chart-subtitle {
+            font-size: 0.75rem !important;
+          }
+          .filter-bar-container {
+            padding: 1.25rem !important;
+            border-radius: 24px !important;
+          }
         }
       `}</style>
     </div>
@@ -515,11 +537,11 @@ function StatCard({ Icon, label, value, color, bg }) {
 
 function ChartHeader({ Icon, title, subtitle }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <div style={{ background: 'rgba(19, 78, 57, 0.05)', color: '#134E39', padding: '0.8rem', borderRadius: '16px' }}><Icon size={22} /></div>
-      <div>
-        <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#1e293b', margin: 0 }}>{title}</h3>
-        <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '4px 0 0', fontWeight: '500' }}>{subtitle}</p>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
+      <div style={{ background: 'rgba(19, 78, 57, 0.05)', color: '#134E39', padding: '0.8rem', borderRadius: '16px', flexShrink: 0 }}><Icon size={22} /></div>
+      <div style={{ minWidth: 0 }}>
+        <h3 className="chart-title" style={{ fontSize: '1.15rem', fontWeight: '900', color: '#1e293b', margin: 0, lineHeight: 1.2 }}>{title}</h3>
+        <p className="chart-subtitle" style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '4px 0 0', fontWeight: '500', lineHeight: 1.4 }}>{subtitle}</p>
       </div>
     </div>
   );

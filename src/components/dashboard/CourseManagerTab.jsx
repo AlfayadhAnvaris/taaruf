@@ -109,7 +109,22 @@ export default function CourseManagerTab() {
         courseLessons.forEach(l => classRequiredLessons[c.class_id].add(l.id));
       });
 
-      const { data: profiles, error: pErr } = await supabase.from('profiles').select('id, name, gender, email').eq('role', 'user');
+      // Filter: Only users who have enrolled in at least one class
+      const { data: enrollments } = await supabase.from('course_enrollments').select('user_id');
+      const enrolledUserIds = Array.from(new Set(enrollments?.map(e => e.user_id) || []));
+
+      if (enrolledUserIds.length === 0) {
+        setAcademyMeta({ classes: allClasses || [], courses: allCourses || [], lessons: allLessons || [] });
+        setUserProgressList([]);
+        setProgressLoading(false);
+        return;
+      }
+
+      const { data: profiles, error: pErr } = await supabase
+        .from('profiles')
+        .select('id, name, gender, email')
+        .eq('role', 'user')
+        .in('id', enrolledUserIds);
       if (pErr) throw pErr;
 
       const { data: progressData, error: prErr } = await supabase.from('user_lesson_progress').select('user_id, lesson_id').eq('completed', true);

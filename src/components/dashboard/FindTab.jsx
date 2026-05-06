@@ -12,7 +12,7 @@ export default function FindTab({
   provinces, candidateCount, bookmarks, setBookmarks,
   academyLevels, getAcademyBadge, takenUserIds,
   currentPage, setCurrentPage, itemsPerPage,
-  handleAjukanTaaruf, navigate, setActiveTab
+  handleAjukanTaaruf, navigate, setActiveTab, setReportModalState
 }) {
   return (
     <div key="tab-find" className="dashboard-tab-container" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
@@ -224,28 +224,52 @@ export default function FindTab({
                       position: 'relative', overflow: 'hidden'
                     }} onClick={() => navigate(`/app/find/${cv.id}`)} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(19,78,57,0.08)'; e.currentTarget.style.borderColor = 'rgba(19,78,57,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = '#f1f5f9'; }}>
                       
-                      <button 
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const isBookmarked = bookmarks.some(b => b.target_id === cv.user_id);
-                          if (isBookmarked) {
-                            const { error } = await supabase.from('user_bookmarks').delete().eq('user_id', user.id).eq('target_id', cv.user_id);
-                            if (!error) setBookmarks(bookmarks.filter(b => b.target_id !== cv.user_id));
-                          } else {
-                            const { data, error } = await supabase.from('user_bookmarks').insert({ user_id: user.id, target_id: cv.user_id }).select().single();
-                            if (!error) setBookmarks([...bookmarks, data]);
-                          }
-                        }}
-                        style={{ 
-                          position: 'absolute', top: '1rem', right: '1rem', zIndex: 10,
-                          width: '36px', height: '36px', borderRadius: '50%', 
-                          background: bookmarks.some(b => b.target_id === cv.user_id) ? '#EF4444' : 'white',
-                          border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'all 0.2s'
-                        }}
-                      >
-                        <Heart size={18} color={bookmarks.some(b => b.target_id === cv.user_id) ? 'white' : '#EF4444'} fill={bookmarks.some(b => b.target_id === cv.user_id) ? 'white' : 'transparent'} />
-                      </button>
+                      <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setReportModalState({ 
+                              isOpen: true, 
+                              reportedUserId: cv.user_id, 
+                              reportedCvId: cv.id, 
+                              reportedAlias: cv.alias 
+                            });
+                          }}
+                          style={{ 
+                            width: '36px', height: '36px', borderRadius: '50%', 
+                            background: 'white', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'all 0.2s',
+                            color: '#94a3b8'
+                          }}
+                          title="Laporkan Pengguna"
+                          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
+                        >
+                          <ShieldAlert size={16} />
+                        </button>
+
+                        <button 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const isBookmarked = bookmarks.some(b => b.target_id === cv.user_id);
+                            if (isBookmarked) {
+                              const { error } = await supabase.from('user_bookmarks').delete().eq('user_id', user.id).eq('target_id', cv.user_id);
+                              if (!error) setBookmarks(bookmarks.filter(b => b.target_id !== cv.user_id));
+                            } else {
+                              const { data, error } = await supabase.from('user_bookmarks').insert({ user_id: user.id, target_id: cv.user_id }).select().single();
+                              if (!error) setBookmarks([...bookmarks, data]);
+                            }
+                          }}
+                          style={{ 
+                            width: '36px', height: '36px', borderRadius: '50%', 
+                            background: bookmarks.some(b => b.target_id === cv.user_id) ? '#EF4444' : 'white',
+                            border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'all 0.2s'
+                          }}
+                        >
+                          <Heart size={18} color={bookmarks.some(b => b.target_id === cv.user_id) ? 'white' : '#EF4444'} fill={bookmarks.some(b => b.target_id === cv.user_id) ? 'white' : 'transparent'} />
+                        </button>
+                      </div>
 
                       <div style={{ position: 'absolute', top: 0, right: 0, width: '40px', height: '40px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, transparent 100%)', borderRadius: '0 0 0 40px' }}></div>
                     
