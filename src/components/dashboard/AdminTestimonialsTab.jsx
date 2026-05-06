@@ -8,7 +8,7 @@ import {
 
 const CARD_STYLE = {
   background: 'white',
-  borderRadius: '24px',
+  borderRadius: '12px',
   padding: '1.5rem',
   border: '1px solid #f1f5f9',
   boxShadow: '0 10px 25px -5px rgba(0,0,0,0.02)',
@@ -151,7 +151,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
       <style>{`
         .testi-compact-row {
           padding: 1rem;
-          border-radius: 20px;
+          border-radius: 12px;
           background: white;
           border: 1px solid #f1f5f9;
           display: flex;
@@ -168,7 +168,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
         .action-icon-btn {
           width: 38px;
           height: 38px;
-          border-radius: 12px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -199,14 +199,14 @@ export default function AdminTestimonialsTab({ showAlert }) {
               type="text" 
               placeholder="Cari nama atau isi..." 
               className="form-control" 
-              style={{ paddingLeft: '2.5rem', borderRadius: '12px', background: 'white' }}
+              style={{ paddingLeft: '2.5rem', borderRadius: '8px', background: 'white' }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <select 
             className="form-control" 
-            style={{ width: isMobile ? '100%' : '160px', borderRadius: '12px', background: 'white' }}
+            style={{ width: isMobile ? '100%' : '160px', borderRadius: '8px', background: 'white' }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -240,9 +240,9 @@ export default function AdminTestimonialsTab({ showAlert }) {
             if (isMobile) {
               return (
                 <div key={item.id} className="testi-compact-row">
-                   {!item.is_published && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '20px', borderBottomLeftRadius: '20px' }} />}
+                   {!item.is_published && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }} />}
                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: item.is_published ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: item.is_published ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: item.is_published ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: item.is_published ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
                         {item.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="reviewer-info-text-mobile">
@@ -327,7 +327,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                   </button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(19,78,57,0.08)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: 'rgba(19,78,57,0.08)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
                     {item.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -345,17 +345,17 @@ export default function AdminTestimonialsTab({ showAlert }) {
       {selectedTesti && (
         <div className="modal-overlay" onClick={() => setSelectedTesti(null)}>
            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '95%', padding: 0 }}>
-              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                  <div>
                     <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Testimoni</h3>
                     <p style={{ margin: '4px 0 0', fontSize: '0.75rem', opacity: 0.8 }}>ID: #{selectedTesti.id.substring(0,8)}</p>
                  </div>
-                 <button onClick={() => setSelectedTesti(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                 <button onClick={() => setSelectedTesti(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
               </div>
 
               <div style={{ padding: '2rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
+                    <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
                        {selectedTesti.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -371,24 +371,24 @@ export default function AdminTestimonialsTab({ showAlert }) {
                           {[1,2,3,4,5].map(v => <Star key={v} size={16} fill={v <= selectedTesti.rating ? '#D4AF37' : 'none'} color={v <= selectedTesti.rating ? '#D4AF37' : '#e2e8f0'} />)}
                        </div>
                     </div>
-                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '20px', border: '1px solid #f1f5f9', fontSize: '1rem', color: '#334155', lineHeight: 1.7, fontStyle: 'italic' }}>
+                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '1rem', color: '#334155', lineHeight: 1.7, fontStyle: 'italic' }}>
                        "{selectedTesti.content}"
                     </div>
                  </div>
 
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '14px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>
                        <Clock size={14} /> {new Date(selectedTesti.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
-                    <div style={{ padding: '4px 12px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', background: selectedTesti.is_published ? '#dcfce7' : '#fee2e2', color: selectedTesti.is_published ? '#166534' : '#991b1b' }}>
+                    <div style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', background: selectedTesti.is_published ? '#dcfce7' : '#fee2e2', color: selectedTesti.is_published ? '#166534' : '#991b1b' }}>
                        {selectedTesti.is_published ? 'PUBLIK' : 'DRAFT'}
                     </div>
                  </div>
               </div>
 
               <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                 <button className="btn btn-outline" onClick={() => setSelectedTesti(null)}>Tutup</button>
-                 <button className="btn btn-primary" onClick={() => { togglePublish(selectedTesti.id, selectedTesti.is_published); setSelectedTesti(null); }}>
+                 <button className="btn btn-outline" onClick={() => setSelectedTesti(null)} style={{ borderRadius: '8px' }}>Tutup</button>
+                 <button className="btn btn-primary" onClick={() => { togglePublish(selectedTesti.id, selectedTesti.is_published); setSelectedTesti(null); }} style={{ borderRadius: '8px' }}>
                     {selectedTesti.is_published ? 'Set Draft' : 'Publikasikan'}
                  </button>
               </div>
@@ -400,9 +400,9 @@ export default function AdminTestimonialsTab({ showAlert }) {
       {showModal && (
         <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%', padding: 0 }}>
-            <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900' }}>{form.id ? 'Edit Testimoni' : 'Testimoni Baru'}</h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+              <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
             </div>
             <form onSubmit={handleSave} style={{ padding: '2rem' }}>
               <div className="form-group">
@@ -414,7 +414,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                   onChange={e => setForm({...form, name: e.target.value})} 
                   placeholder="Contoh: Hamba Allah"
                   required
-                  style={{ borderRadius: '12px', padding: '0.8rem' }}
+                  style={{ borderRadius: '8px', padding: '0.8rem' }}
                 />
               </div>
               <div className="form-group">
@@ -425,7 +425,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                   value={form.role} 
                   onChange={e => setForm({...form, role: e.target.value})} 
                   placeholder="Contoh: Akhwat, Menikah 2025"
-                  style={{ borderRadius: '12px', padding: '0.8rem' }}
+                  style={{ borderRadius: '8px', padding: '0.8rem' }}
                 />
               </div>
               <div className="form-group">
@@ -437,7 +437,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                   onChange={e => setForm({...form, content: e.target.value})} 
                   placeholder="Ceritakan pengalaman sukses..."
                   required
-                  style={{ borderRadius: '16px', padding: '1rem', lineHeight: '1.6' }}
+                  style={{ borderRadius: '12px', padding: '1rem', lineHeight: '1.6' }}
                 />
               </div>
               <div className="form-group">
@@ -455,7 +455,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                   ))}
                 </div>
               </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '1rem', borderRadius: '14px', border: '1px solid #f1f5f9' }}>
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
                 <input 
                   type="checkbox" 
                   id="notif-pub"
@@ -468,8 +468,8 @@ export default function AdminTestimonialsTab({ showAlert }) {
                 </label>
               </div>
               <div style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem' }}>
-                <button type="button" className="btn btn-outline" style={{ flex: 1, padding: '0.8rem' }} onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '0.8rem' }} disabled={saving}>
+                <button type="button" className="btn btn-outline" style={{ flex: 1, padding: '0.8rem', borderRadius: '8px' }} onClick={() => setShowModal(false)}>Batal</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '0.8rem', borderRadius: '8px' }} disabled={saving}>
                   {saving ? <Loader className="spin" size={18} /> : <Save size={18} />} Simpan Testimoni
                 </button>
               </div>

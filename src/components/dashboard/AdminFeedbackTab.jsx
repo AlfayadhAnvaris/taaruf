@@ -79,7 +79,7 @@ export default function AdminFeedbackTab({ showAlert }) {
       <style>{`
         .feedback-compact-row {
           padding: 1rem;
-          border-radius: 20px;
+          border-radius: 12px;
           background: white;
           border: 1px solid #f1f5f9;
           display: flex;
@@ -96,7 +96,7 @@ export default function AdminFeedbackTab({ showAlert }) {
         .action-icon-btn {
           width: 38px;
           height: 38px;
-          border-radius: 12px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -119,7 +119,7 @@ export default function AdminFeedbackTab({ showAlert }) {
         }
         .feedback-card-desktop {
           padding: 1.5rem;
-          border-radius: 24px;
+          border-radius: 16px;
           background: #f8fafc;
           border: 1px solid #f1f5f9;
           transition: all 0.3s;
@@ -136,17 +136,17 @@ export default function AdminFeedbackTab({ showAlert }) {
         <div className="card" style={{ padding: '1.5rem', display: 'flex', gap: isMobile ? '1rem' : '2rem', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
           <div style={{ flex: '1', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-              <div style={{ background: 'rgba(19,78,57,0.05)', color: '#134E39', padding: '10px', borderRadius: '12px' }}>
+              <div style={{ background: 'rgba(19,78,57,0.05)', color: '#134E39', padding: '10px', borderRadius: '10px' }}>
                 <PieChartIcon size={20} />
               </div>
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#1e293b' }}>Statistik Masukan</h3>
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-               <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '16px', flex: 1, border: '1px solid #f1f5f9' }}>
+               <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', flex: 1, border: '1px solid #f1f5f9' }}>
                   <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Rating Avg</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39' }}>{avgRating} <Star size={14} fill="#D4AF37" color="#D4AF37" /></div>
                </div>
-               <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '16px', flex: 1, border: '1px solid #f1f5f9' }}>
+               <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', flex: 1, border: '1px solid #f1f5f9' }}>
                   <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Total</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b' }}>{feedback.length}</div>
                </div>
@@ -164,7 +164,7 @@ export default function AdminFeedbackTab({ showAlert }) {
         </div>
       </div>
 
-      <div className="card" style={{ padding: isMobile ? '1.25rem' : '2rem', borderRadius: '32px' }}>
+      <div className="card" style={{ padding: isMobile ? '1.25rem' : '2rem', borderRadius: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h3 style={{ margin: 0, fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', color: '#134E39', fontSize: isMobile ? '1.2rem' : '1.5rem' }}>
             <MessageSquare size={20} color="#134E39" /> Saran & Masukan
@@ -175,7 +175,7 @@ export default function AdminFeedbackTab({ showAlert }) {
             <select 
               value={filter} 
               onChange={(e) => setFilter(e.target.value)}
-              style={{ flex: isMobile ? 1 : 'unset', padding: '0.6rem 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontSize: '0.85rem', fontWeight: '700', color: '#1e293b', outline: 'none' }}
+              style={{ flex: isMobile ? 1 : 'unset', padding: '0.6rem 1rem', borderRadius: '10px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontSize: '0.85rem', fontWeight: '700', color: '#1e293b', outline: 'none' }}
             >
               <option value="all">Semua Kategori</option>
               <option value="umum">Umum</option>
@@ -197,7 +197,7 @@ export default function AdminFeedbackTab({ showAlert }) {
               return (
                 <div key={item.id} className="feedback-compact-row">
                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>
                         {item.profiles?.name?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="reviewer-info-text-mobile">
@@ -223,7 +223,7 @@ export default function AdminFeedbackTab({ showAlert }) {
               <div key={item.id} className="feedback-card-desktop">
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'white', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', fontSize: '1.1rem' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '10px', background: 'white', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', fontSize: '1.1rem' }}>
                       {item.profiles?.name?.charAt(0) || '?'}
                     </div>
                     <div>
@@ -240,11 +240,11 @@ export default function AdminFeedbackTab({ showAlert }) {
                     </div>
                   </div>
                 </div>
-                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '16px', marginBottom: '1.25rem', border: '1px solid #f1f5f9', fontSize: '0.95rem', lineHeight: 1.6, color: '#334155' }}>
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', marginBottom: '1.25rem', border: '1px solid #f1f5f9', fontSize: '0.95rem', lineHeight: 1.6, color: '#334155' }}>
                   "{item.content}"
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '10px', background: item.category === 'bug' ? '#fee2e2' : 'rgba(19,78,57,0.08)', color: item.category === 'bug' ? '#dc2626' : '#134E39', letterSpacing: '0.05em' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '8px', background: item.category === 'bug' ? '#fee2e2' : 'rgba(19,78,57,0.08)', color: item.category === 'bug' ? '#dc2626' : '#134E39', letterSpacing: '0.05em' }}>
                     {item.category}
                   </span>
                   <button onClick={() => deleteItem(item.id)} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#cbd5e1'}>
@@ -261,17 +261,17 @@ export default function AdminFeedbackTab({ showAlert }) {
       {selectedFeedback && (
         <div className="modal-overlay" onClick={() => setSelectedFeedback(null)}>
            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '95%', padding: 0 }}>
-              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                  <div>
                     <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Masukan</h3>
                     <p style={{ margin: '4px 0 0', fontSize: '0.75rem', opacity: 0.8 }}>ID: #{selectedFeedback.id.substring(0,8)}</p>
                  </div>
-                 <button onClick={() => setSelectedFeedback(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                 <button onClick={() => setSelectedFeedback(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
               </div>
 
               <div style={{ padding: '2rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
+                    <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
                        {selectedFeedback.profiles?.name?.charAt(0).toUpperCase() || '?'}
                     </div>
                     <div>
@@ -287,12 +287,12 @@ export default function AdminFeedbackTab({ showAlert }) {
                           {[1,2,3,4,5].map(v => <Star key={v} size={16} fill={v <= selectedFeedback.rating ? '#D4AF37' : 'none'} color={v <= selectedFeedback.rating ? '#D4AF37' : '#e2e8f0'} />)}
                        </div>
                     </div>
-                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '20px', border: '1px solid #f1f5f9', fontSize: '1rem', color: '#334155', lineHeight: 1.7 }}>
+                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '1rem', color: '#334155', lineHeight: 1.7 }}>
                        "{selectedFeedback.content}"
                     </div>
                  </div>
 
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '14px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>
                        <Clock size={14} /> {new Date(selectedFeedback.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
@@ -303,7 +303,7 @@ export default function AdminFeedbackTab({ showAlert }) {
               </div>
 
               <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                 <button className="btn btn-primary" onClick={() => setSelectedFeedback(null)} style={{ padding: '0.7rem 2.5rem' }}>Tutup</button>
+                 <button className="btn btn-primary" onClick={() => setSelectedFeedback(null)} style={{ padding: '0.7rem 2.5rem', borderRadius: '8px' }}>Tutup</button>
               </div>
            </div>
         </div>

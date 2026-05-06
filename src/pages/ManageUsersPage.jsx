@@ -95,7 +95,7 @@ export default function ManageUsersPage() {
         <div style={{ 
           display: 'inline-flex', alignItems: 'center', gap: '6px', 
           background: '#fef2f2', color: '#991b1b', padding: '8px 16px', 
-          borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid #fee2e2' 
+          borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid #fee2e2' 
         }}>
           <AlertCircle size={14} /> BELUM LENGKAP
         </div>
@@ -105,7 +105,7 @@ export default function ManageUsersPage() {
       <div style={{ 
         display: 'inline-flex', alignItems: 'center', gap: '6px', 
         background: '#f0fdf4', color: '#166534', padding: '8px 16px', 
-        borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid #bbf7d0' 
+        borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', border: '1px solid #bbf7d0' 
       }}>
         <CheckCircle size={14} /> LENGKAP
       </div>
@@ -115,7 +115,7 @@ export default function ManageUsersPage() {
   // Helper for CV Data Items
   const CvDataItem = ({ Icon, label, value }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-      <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'rgba(212,175,55,0.08)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Icon size={20} />
       </div>
       <div>
@@ -179,7 +179,7 @@ export default function ManageUsersPage() {
         <>
           {/* 🟢 FILTER BAR SECTION 🟢 */}
           <div style={{ 
-            background: 'white', border: '1px solid #f1f5f9', borderRadius: '24px', 
+            background: 'white', border: '1px solid #f1f5f9', borderRadius: '12px', 
             padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '12px', 
             flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' 
           }}>
@@ -245,7 +245,7 @@ export default function ManageUsersPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ 
-                  width: '100%', padding: '0.9rem 1rem 0.9rem 3.2rem', borderRadius: '16px', 
+                  width: '100%', padding: '0.9rem 1rem 0.9rem 3.2rem', borderRadius: '8px', 
                   border: '1.5px solid #f1f5f9', background: '#f8fafc', outline: 'none', 
                   fontSize: '0.9rem', fontWeight: '600', color: '#1e293b', transition: 'all 0.2s'
                 }}
@@ -256,7 +256,7 @@ export default function ManageUsersPage() {
           </div>
 
           {/* 🟢 LIST TABLE SECTION 🟢 */}
-          <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+          <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ textAlign: 'left', borderBottom: '1.5px solid #f8fafc' }}>
@@ -310,7 +310,7 @@ export default function ManageUsersPage() {
                           <button 
                             onClick={(e) => { e.stopPropagation(); setViewingUser(user); }}
                             style={{ 
-                              width: '40px', height: '40px', borderRadius: '12px', border: '1.5px solid #134E39', 
+                              width: '40px', height: '40px', borderRadius: '6px', border: '1.5px solid #134E39', 
                               background: 'transparent', color: '#134E39', display: 'flex', alignItems: 'center', 
                               justifyContent: 'center', cursor: 'pointer'
                             }}
@@ -338,7 +338,7 @@ export default function ManageUsersPage() {
                             <button 
                               onClick={(e) => { e.stopPropagation(); setViewingUser(user); }}
                               style={{ 
-                                width: '44px', height: '44px', borderRadius: '12px', border: '1.5px solid #134E39', 
+                                width: '40px', height: '40px', borderRadius: '6px', border: '1.5px solid #134E39', 
                                 background: 'transparent', color: '#134E39', display: 'flex', alignItems: 'center', 
                                 justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', marginLeft: 'auto'
                               }} 
@@ -415,7 +415,7 @@ export default function ManageUsersPage() {
           <div className="modal-content user-detail-modal" onClick={e => e.stopPropagation()}>
              {/* Header Section */}
              <div className="detail-modal-header" style={{ padding: '2rem 2.5rem', background: '#134E39', position: 'relative' }}>
-                 <div className="header-badge" style={{ display: 'inline-block', background: '#D4AF37', color: '#134E39', padding: '4px 12px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900', marginBottom: '1.25rem' }}>
+                 <div className="header-badge" style={{ display: 'inline-block', background: '#D4AF37', color: '#134E39', padding: '4px 12px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', marginBottom: '1.25rem' }}>
                     DATA CV TAARUF
                  </div>
                  
@@ -438,7 +438,7 @@ export default function ManageUsersPage() {
                        </div>
                     </div>
                     
-                    <div className="detail-profile-icon" style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}>
+                    <div className="detail-profile-icon" style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}>
                        <User size={48} />
                     </div>
                  </div>
@@ -481,14 +481,14 @@ export default function ManageUsersPage() {
                          
                          {/* RIGHT COL: CARDS */}
                          <div className="cv-right-col" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div className="cv-bubble-card" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '24px' }}>
+                            <div className="cv-bubble-card" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px' }}>
                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', color: '#D4AF37' }}>
                                   <Heart size={16} fill="#D4AF37" /> <span style={{ fontSize: '0.75rem', fontWeight: '950', color: '#134E39', textTransform: 'uppercase' }}>Visi Pernikahan</span>
                                </div>
                                <p style={{ margin: 0, fontSize: '0.95rem', fontStyle: 'italic', color: '#475569', lineHeight: 1.6 }}>"{userCv.about || '...'}"</p>
                             </div>
                             
-                            <div className="cv-bubble-card" style={{ border: '2px dashed #f1f5f9', padding: '1.5rem', borderRadius: '24px' }}>
+                            <div className="cv-bubble-card" style={{ border: '2px dashed #f1f5f9', padding: '1.5rem', borderRadius: '12px' }}>
                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', color: '#134E39' }}>
                                   <ShieldCheck size={18} /> <span style={{ fontSize: '0.75rem', fontWeight: '950', color: '#134E39', textTransform: 'uppercase' }}>Kriteria Pasangan</span>
                                </div>
@@ -499,7 +499,7 @@ export default function ManageUsersPage() {
                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.75rem', color: '#D4AF37' }}>
                                   <ShieldCheck size={16} /> <span style={{ fontSize: '0.75rem', fontWeight: '950', color: '#134E39', textTransform: 'uppercase' }}>Pandangan Poligami</span>
                                </div>
-                               <div style={{ background: '#f8fafc', padding: '0.6rem 1.25rem', borderRadius: '12px', display: 'inline-block', fontSize: '0.85rem', fontWeight: '700', color: '#134E39' }}>
+                               <div style={{ background: '#f8fafc', padding: '0.6rem 1.25rem', borderRadius: '6px', display: 'inline-block', fontSize: '0.85rem', fontWeight: '700', color: '#134E39' }}>
                                   {userCv.polygamy_view || 'Tidak Berkenan'}
                                 </div>
                             </div>
@@ -512,7 +512,7 @@ export default function ManageUsersPage() {
               {/* Footer Section */}
               <div className="detail-modal-footer" style={{ padding: '2rem', justifyContent: 'center', background: 'white' }}>
                  <button onClick={() => setViewingUser(null)} style={{ 
-                    padding: '1rem 3rem', borderRadius: '16px', background: '#134E39', color: 'white', 
+                    padding: '1rem 3rem', borderRadius: '8px', background: '#134E39', color: 'white', 
                     border: 'none', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', transition: 'all 0.2s',
                     boxShadow: '0 8px 24px rgba(19, 78, 57, 0.25)' 
                  }} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -527,7 +527,7 @@ export default function ManageUsersPage() {
         .manage-users-container { padding: 0.5rem; }
         .premium-select {
           padding: 0.9rem 1.25rem;
-          border-radius: 16px;
+          border-radius: 8px;
           border: 1.5px solid #f1f5f9;
           background: white;
           outline: none;
@@ -591,7 +591,7 @@ export default function ManageUsersPage() {
         }
         .pagination-btn {
           padding: 10px 18px;
-          border-radius: 12px;
+          border-radius: 6px;
           border: 1px solid #e2e8f0;
           background: white;
           color: #64748b;
@@ -657,7 +657,7 @@ export default function ManageUsersPage() {
            display: flex;
            flex-direction: column;
            padding: 0;
-           border-radius: 32px;
+           border-radius: 16px;
            overflow: hidden;
            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
@@ -687,7 +687,7 @@ export default function ManageUsersPage() {
         .detail-avatar {
            width: 80px;
            height: 80px;
-           border-radius: 24px;
+           border-radius: 12px;
            background: white;
            display: flex;
            align-items: center;
@@ -734,7 +734,7 @@ export default function ManageUsersPage() {
            right: 24px;
            background: rgba(255,255,255,0.1);
            border: none;
-           border-radius: 12px;
+           border-radius: 6px;
            color: white;
            width: 40px;
            height: 40px;

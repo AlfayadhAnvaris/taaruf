@@ -42,7 +42,7 @@ export default function AdminAccountTab({ user, showAlert }) {
 
   const Field = ({ label, value, icon, sub }) => (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1.25rem 0', borderBottom: '1px solid #f1f5f9' }}>
-      <div style={{ width: 44, height: 44, borderRadius: '14px', background: 'rgba(19, 78, 57, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', flexShrink: 0 }}>
+      <div style={{ width: 44, height: 44, borderRadius: '10px', background: 'rgba(19, 78, 57, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', flexShrink: 0 }}>
         {icon}
       </div>
       <div style={{ flex: 1 }}>
@@ -73,14 +73,14 @@ export default function AdminAccountTab({ user, showAlert }) {
           }
           .card {
             padding: 1.5rem !important;
-            border-radius: 24px !important;
+            border-radius: 16px !important;
           }
         }
       `}</style>
       <div className="admin-account-grid">
         
         {/* Profile Card */}
-        <div className="card" style={{ padding: '2rem', borderRadius: '32px' }}>
+        <div className="card" style={{ padding: '2rem', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
                <ShieldCheck size={24} color="#134E39" /> Identitas Admin
@@ -88,7 +88,7 @@ export default function AdminAccountTab({ user, showAlert }) {
             {!isEditing ? (
               <button 
                 onClick={() => setIsEditing(true)}
-                style={{ padding: '0.5rem 1.25rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
               >
                 Edit Profil
               </button>
@@ -96,14 +96,14 @@ export default function AdminAccountTab({ user, showAlert }) {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
                   onClick={() => setIsEditing(false)}
-                  style={{ padding: '0.5rem 1rem', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
+                  style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: '#fff', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
                 >
                   Batal
                 </button>
                 <button 
                   onClick={handleSave}
                   disabled={isSaving}
-                  style={{ padding: '0.5rem 1.25rem', borderRadius: '12px', background: '#134E39', color: 'white', border: 'none', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
+                  style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', background: '#134E39', color: 'white', border: 'none', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
                 >
                   {isSaving ? 'Menyimpan...' : 'Simpan'}
                 </button>
@@ -125,7 +125,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <input 
                   type="text" className="form-control" 
                   value={form.name} onChange={e => set('name', e.target.value)} 
-                  style={{ borderRadius: '14px', padding: '1rem', fontSize: '0.95rem' }} 
+                  style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -133,7 +133,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <input 
                   type="text" className="form-control" 
                   value={form.role_title} onChange={e => set('role_title', e.target.value)} 
-                  style={{ borderRadius: '14px', padding: '1rem', fontSize: '0.95rem' }} 
+                  style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -141,7 +141,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <input 
                   type="text" className="form-control" 
                   value={form.phone_wa} onChange={e => set('phone_wa', e.target.value)} 
-                  style={{ borderRadius: '14px', padding: '1rem', fontSize: '0.95rem' }} 
+                  style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function AdminAccountTab({ user, showAlert }) {
         <div>
           <ChangePasswordCard user={user} showAlert={showAlert} />
           
-          <div className="card" style={{ marginTop: '1.5rem', padding: '2rem', borderRadius: '32px', background: 'rgba(19,78,57,0.02)', border: '1px dashed rgba(19,78,57,0.2)' }}>
+          <div className="card" style={{ marginTop: '1.5rem', padding: '2rem', borderRadius: '16px', background: 'rgba(19,78,57,0.02)', border: '1px dashed rgba(19,78,57,0.2)' }}>
             <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: '800', color: '#134E39', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Lock size={18} /> Keamanan Sistem
             </h4>

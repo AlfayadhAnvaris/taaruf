@@ -110,7 +110,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease' }}>
-      <div className="card card-no-hover" style={{ padding: isMobile ? '1rem' : '1.5rem', marginBottom: '1.5rem', background: 'white', borderRadius: isMobile ? '16px' : '24px', border: '1px solid #f1f5f9' }}>
+      <div className="card card-no-hover" style={{ padding: isMobile ? '1rem' : '1.5rem', marginBottom: '1.5rem', background: 'white', borderRadius: isMobile ? '12px' : '16px', border: '1px solid #f1f5f9' }}>
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', alignItems: isMobile ? 'stretch' : 'center' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
@@ -119,25 +119,25 @@ export default function AdminEnrollmentTab({ showAlert }) {
               placeholder="Cari nama, email, atau kelas..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', height: '50px', padding: '0 1rem 0 3rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }}
+              style={{ width: '100%', height: '50px', padding: '0 1rem 0 3rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }}
             />
           </div>
           <select 
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
-            style={{ width: isMobile ? '100%' : 'auto', height: '50px', padding: '0 1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', fontWeight: '700', color: '#134E39', background: '#fff', cursor: 'pointer', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: isMobile ? '100%' : 'auto', height: '50px', padding: '0 1.25rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', fontWeight: '700', color: '#134E39', background: '#fff', cursor: 'pointer', outline: 'none', boxSizing: 'border-box' }}
           >
             <option value="all">Semua Gender</option>
             <option value="ikhwan">Ikhwan</option>
             <option value="akhwat">Akhwat</option>
           </select>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0 1.25rem', height: '50px', background: '#f8fafc', borderRadius: '14px', color: '#64748b', fontSize: '0.85rem', fontWeight: '700', flexShrink: 0, boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0 1.25rem', height: '50px', background: '#f8fafc', borderRadius: '10px', color: '#64748b', fontSize: '0.85rem', fontWeight: '700', flexShrink: 0, boxSizing: 'border-box' }}>
             <Users size={16} /> {filteredEnrollments.length} Pendaftar
           </div>
         </div>
       </div>
 
-      <div className="card card-no-hover" style={{ overflow: 'hidden', background: 'white', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
+      <div className="card card-no-hover" style={{ overflow: 'hidden', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           {!isMobile && (
             <thead>
@@ -160,7 +160,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
             ) : filteredEnrollments.length === 0 ? (
               <tr>
                 <td colSpan="4" style={{ padding: '4rem', textAlign: 'center' }}>
-                  <div style={{ width: '64px', height: '64px', background: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#cbd5e1' }}>
+                  <div style={{ width: '64px', height: '64px', background: '#f8fafc', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#cbd5e1' }}>
                     <AlertCircle size={32} />
                   </div>
                   <p style={{ color: '#64748b', fontWeight: '700' }}>Tidak ada data pendaftaran ditemukan.</p>
@@ -171,10 +171,10 @@ export default function AdminEnrollmentTab({ showAlert }) {
                 <td colSpan="4" style={{ padding: '0.75rem' }}>
                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {filteredEnrollments.map((enroll) => (
-                        <div key={enroll.id} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '24px', padding: '1.25rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                        <div key={enroll.id} style={{ background: 'white', border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, marginRight: '1rem' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '950', fontSize: '1rem', flexShrink: 0 }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '950', fontSize: '1rem', flexShrink: 0 }}>
                                   {enroll.user?.name?.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
@@ -184,21 +184,21 @@ export default function AdminEnrollmentTab({ showAlert }) {
                               </div>
                               <button 
                                 onClick={() => handleDelete(enroll.id)}
-                                style={{ flexShrink: 0, background: 'rgba(230,57,70,0.06)', border: 'none', width: 36, height: 36, borderRadius: '10px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
+                                style={{ flexShrink: 0, background: 'rgba(230,57,70,0.06)', border: 'none', width: 36, height: 36, borderRadius: '8px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                               >
                                  <Trash2 size={16} />
                               </button>
                            </div>
                            <button 
                              onClick={() => fetchDetail(enroll)}
-                             style={{ width: '100%', marginBottom: '1.25rem', padding: '0.85rem', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
+                             style={{ width: '100%', marginBottom: '1.25rem', padding: '0.85rem', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
                            >
                               Lihat Detail
                            </button>
 
                            <div style={{ paddingTop: '1rem', borderTop: '1px solid #f8fafc' }}>
                               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '10px' }}>
-                                 <div style={{ width: 32, height: 32, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                 <div style={{ width: 32, height: 32, borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <BookOpen size={16} color="#134E39" />
                                  </div>
                                  <div style={{ flex: 1 }}>
@@ -207,7 +207,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                                  </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                 <div style={{ width: 32, height: 32, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                 <div style={{ width: 32, height: 32, borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <Calendar size={16} color="#94a3b8" />
                                  </div>
                                  <div style={{ flex: 1 }}>
@@ -226,7 +226,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                 <tr key={enroll.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '1.25rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '800', fontSize: '0.85rem' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', fontWeight: '800', fontSize: '0.85rem' }}>
                         {enroll.user?.name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -236,7 +236,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                     </div>
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(19,78,57,0.05)', borderRadius: '8px', color: '#134E39', fontSize: '0.8rem', fontWeight: '700' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(19,78,57,0.05)', borderRadius: '6px', color: '#134E39', fontSize: '0.8rem', fontWeight: '700' }}>
                       <BookOpen size={14} /> {enroll.class?.title}
                     </div>
                   </td>
@@ -250,7 +250,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                       onClick={() => handleDelete(enroll.id)}
                       disabled={deletingId === enroll.id}
                       style={{ 
-                        padding: '0.6rem', borderRadius: '10px', 
+                        padding: '0.6rem', borderRadius: '8px', 
                         background: 'transparent', border: '1px solid #fee2e2', 
                         color: '#ef4444', cursor: 'pointer', transition: 'all 0.2s'
                       }}
@@ -262,7 +262,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                     <button 
                       onClick={() => fetchDetail(enroll)}
                       style={{ 
-                        marginLeft: '0.5rem', padding: '0.6rem 1rem', borderRadius: '10px', 
+                        marginLeft: '0.5rem', padding: '0.6rem 1rem', borderRadius: '8px', 
                         background: '#f8fafc', border: '1px solid #e2e8f0', 
                         color: '#134E39', cursor: 'pointer', transition: 'all 0.2s',
                         fontSize: '0.75rem', fontWeight: '800'
@@ -289,7 +289,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                 <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '950', color: '#134E39' }}>Data Diri Calon</h3>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Profil lengkap pendaftar</p>
               </div>
-              <button onClick={() => setDetailEnroll(null)} style={{ background: '#f8fafc', border: 'none', width: 36, height: 36, borderRadius: '10px', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
+              <button onClick={() => setDetailEnroll(null)} style={{ background: '#f8fafc', border: 'none', width: 36, height: 36, borderRadius: '8px', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
             </div>
             
             <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
@@ -302,7 +302,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {/* Header Info */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.25rem', borderBottom: '1px solid #f1f5f9' }}>
-                       <div style={{ width: 64, height: 64, borderRadius: '20px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '950' }}>
+                       <div style={{ width: 64, height: 64, borderRadius: '14px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '950' }}>
                           {userProfile.name?.charAt(0).toUpperCase()}
                        </div>
                        <div>
@@ -312,17 +312,17 @@ export default function AdminEnrollmentTab({ showAlert }) {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                       <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                       <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                           <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Gender</div>
                           <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1e293b' }}>{userProfile.gender === 'ikhwan' ? 'Laki-laki (Ikhwan)' : 'Perempuan (Akhwat)'}</div>
                        </div>
-                       <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                       <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                           <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Telepon</div>
                           <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1e293b' }}>{userProfile.phone || '-'}</div>
                        </div>
                     </div>
 
-                    <div style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
+                    <div style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                           <Users size={16} color="#134E39" />
                           <div style={{ fontSize: '0.85rem', fontWeight: '950', color: '#1e293b' }}>Status & Bio</div>
@@ -357,7 +357,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
             </div>
 
             <div className="modal-footer" style={{ borderTop: '1px solid #f1f5f9', padding: '1.25rem' }}>
-               <button className="btn btn-primary" onClick={() => setDetailEnroll(null)} style={{ width: '100%', borderRadius: '12px' }}>Tutup</button>
+               <button className="btn btn-primary" onClick={() => setDetailEnroll(null)} style={{ width: '100%', borderRadius: '10px' }}>Tutup</button>
             </div>
           </div>
         </div>

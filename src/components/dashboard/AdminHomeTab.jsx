@@ -186,13 +186,13 @@ export default function AdminHomeTab() {
 
       {/* 🟢 INTEGRATED FILTER BAR 🟢 */}
       <div className="filter-bar-container" style={{ 
-        background: 'white', padding: '1.25rem 2rem', borderRadius: '28px', 
+        background: 'white', padding: '1.25rem 2rem', borderRadius: '16px', 
         marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', 
         alignItems: 'center', border: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '14px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(19,78,57,0.15)' }}>
+          <div style={{ width: 44, height: 44, borderRadius: '10px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(19,78,57,0.15)' }}>
             <Layers size={22} />
           </div>
           <div>
@@ -256,7 +256,7 @@ export default function AdminHomeTab() {
                     dx={-10}
                     style={{ fontSize: '11px', fill: '#94a3b8', fontWeight: '600' }} 
                   />
-                  <RechartsTooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', padding: '16px' }} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', padding: '16px' }} />
                   <Line type="monotone" dataKey="users" name="Baru" stroke="#134E39" strokeWidth={5} dot={{ r: 6, fill: '#134E39', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 9, strokeWidth: 0 }} />
                   <Line type="monotone" dataKey="total" name="Total" stroke="#D4AF37" strokeWidth={2} strokeDasharray="6 6" dot={false} />
                 </LineChart>
@@ -287,9 +287,9 @@ export default function AdminHomeTab() {
                   {distributionType === 'gender' ? (
                    <PieChart>
                       <Pie data={dynamicChartData} cx="50%" cy="50%" innerRadius={85} outerRadius={115} paddingAngle={10} dataKey="value" stroke="none" >
-                        {dynamicChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={10} />)}
+                        {dynamicChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={8} />)}
                       </Pie>
-                      <RechartsTooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }} />
+                      <RechartsTooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }} />
                       <Legend verticalAlign="bottom" align="center" iconType="circle" iconSize={12} wrapperStyle={{ paddingTop: '20px', fontWeight: '800', fontSize: '0.85rem' }} />
                    </PieChart>
                  ) : (
@@ -326,11 +326,11 @@ export default function AdminHomeTab() {
                       )}
                       <RechartsTooltip 
                         cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }} 
-                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }} 
+                        contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }} 
                         formatter={(v, name, props) => [v, 'Penyelesaian']}
                         labelFormatter={(label, payload) => payload[0]?.payload?.full || label}
                       />
-                      <Bar dataKey="value" name="Jumlah" fill="#134E39" radius={distributionType === 'region' ? [0, 10, 10, 0] : [10, 10, 0, 0]} barSize={25}>
+                      <Bar dataKey="value" name="Jumlah" fill="#134E39" radius={distributionType === 'region' ? [0, 8, 8, 0] : [8, 8, 0, 0]} barSize={25}>
                         {dynamicChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                       </Bar>
                    </BarChart>
@@ -369,7 +369,7 @@ export default function AdminHomeTab() {
                   <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px', fill: '#94a3b8' }} />
                   <RechartsTooltip 
                     cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }}
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}
                   />
                   <Bar dataKey="value" name="Jumlah" radius={[8, 8, 0, 0]} barSize={40}>
                     {taarufChartData.map((entry, index) => (
@@ -398,7 +398,7 @@ export default function AdminHomeTab() {
       <style>{`
         .premium-select-sm {
           padding: 0.6rem 1rem;
-          border-radius: 12px;
+          border-radius: 8px;
           border: 1.5px solid #f1f5f9;
           background: #fcfcfc;
           font-size: 0.8rem;
@@ -427,7 +427,7 @@ export default function AdminHomeTab() {
         .admin-chart-card {
           padding: 2.5rem;
           border: 1px solid #f1f5f9;
-          border-radius: 32px;
+          border-radius: 16px;
           background: white;
           min-width: 0;
         }
@@ -460,7 +460,7 @@ export default function AdminHomeTab() {
           align-items: center;
           padding: 12px 16px;
           background: #f8fafc;
-          border-radius: 12px;
+          border-radius: 8px;
           border: 1px solid #f1f5f9;
         }
 
@@ -480,7 +480,7 @@ export default function AdminHomeTab() {
         @media (max-width: 768px) {
           .admin-chart-card {
             padding: 1.5rem;
-            border-radius: 24px;
+            border-radius: 16px;
           }
           .admin-chart-container {
             height: 280px;
@@ -511,7 +511,7 @@ export default function AdminHomeTab() {
           }
           .filter-bar-container {
             padding: 1.25rem !important;
-            border-radius: 24px !important;
+            border-radius: 16px !important;
           }
         }
       `}</style>
@@ -522,11 +522,11 @@ export default function AdminHomeTab() {
 function StatCard({ Icon, label, value, color, bg }) {
   return (
     <div style={{ 
-      background: 'white', padding: '1.5rem', borderRadius: '24px', 
+      background: 'white', padding: '1.5rem', borderRadius: '16px', 
       border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '1.25rem',
       boxShadow: '0 4px 12px rgba(0,0,0,0.02)', transition: 'all 0.3s'
     }}>
-      <div style={{ background: bg, color: color, padding: '1rem', borderRadius: '18px' }}><Icon size={24} /></div>
+      <div style={{ background: bg, color: color, padding: '1rem', borderRadius: '12px' }}><Icon size={24} /></div>
       <div>
         <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#64748b', marginBottom: '0.25rem' }}>{label}</div>
         <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#1e293b' }}>{value}</div>
@@ -538,7 +538,7 @@ function StatCard({ Icon, label, value, color, bg }) {
 function ChartHeader({ Icon, title, subtitle }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
-      <div style={{ background: 'rgba(19, 78, 57, 0.05)', color: '#134E39', padding: '0.8rem', borderRadius: '16px', flexShrink: 0 }}><Icon size={22} /></div>
+      <div style={{ background: 'rgba(19, 78, 57, 0.05)', color: '#134E39', padding: '0.8rem', borderRadius: '12px', flexShrink: 0 }}><Icon size={22} /></div>
       <div style={{ minWidth: 0 }}>
         <h3 className="chart-title" style={{ fontSize: '1.15rem', fontWeight: '900', color: '#1e293b', margin: 0, lineHeight: 1.2 }}>{title}</h3>
         <p className="chart-subtitle" style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '4px 0 0', fontWeight: '500', lineHeight: 1.4 }}>{subtitle}</p>

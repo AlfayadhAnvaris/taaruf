@@ -12,7 +12,7 @@ import AdminEnrollmentTab from './AdminEnrollmentTab';
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2, 9);
-const CARD = { borderRadius: '14px', border: '1px solid var(--border)', background: 'white', padding: '1.25rem 1.5rem', marginBottom: '1rem' };
+const CARD = { borderRadius: '8px', border: '1px solid var(--border)', background: 'white', padding: '1.25rem 1.5rem', marginBottom: '1rem' };
 const BTN_SM = (extra = {}) => ({
   display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
   padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem',
@@ -705,7 +705,7 @@ export default function CourseManagerTab() {
       {toast && (
         <div style={{
           position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999,
-          padding: '0.85rem 1.5rem', borderRadius: '12px', fontWeight: '700',
+          padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: '700',
           fontSize: '0.875rem', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           background: toast.type === 'error' ? '#E63946' : 'var(--primary)',
           color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -740,14 +740,14 @@ export default function CourseManagerTab() {
             margin: isMobile ? '0 0 1.5rem 0' : '1.5rem auto',
             background: 'white', 
             padding: isMobile ? '1.5rem' : '1.25rem 2rem', 
-            borderRadius: isMobile ? '16px' : '24px', 
+            borderRadius: isMobile ? '12px' : '16px', 
             border: '1px solid #f1f5f9', 
             boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
             gap: isMobile ? '1.25rem' : '0'
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '10px', background: 'rgba(19,78,57,0.1)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <BookOpen size={20} />
                 </div>
                 <h3 style={{ margin: 0, fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>Manajemen Kurikulum</h3>
@@ -771,7 +771,7 @@ export default function CourseManagerTab() {
                 onClick={openNewClass}
                 style={{ 
                   background: '#134E39', color: 'white', border: 'none', 
-                  padding: '0.85rem 1.75rem', borderRadius: '16px', 
+                  padding: '0.85rem 1.75rem', borderRadius: '12px', 
                   fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '10px',
                   boxShadow: '0 10px 20px rgba(19,78,57,0.2)',
@@ -789,8 +789,8 @@ export default function CourseManagerTab() {
 
           {/* Classes list */}
           {classes.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
-              <div style={{ width: 80, height: 80, borderRadius: '24px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+              <div style={{ width: 80, height: 80, borderRadius: '14px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                 <BookOpen size={40} color="#cbd5e1" strokeWidth={1.5} />
               </div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', marginBottom: '0.5rem' }}>Belum Ada Kurikulum</h3>
@@ -1441,8 +1441,43 @@ export default function CourseManagerTab() {
               )}
               {(lessonForm.type === 'video' || lessonForm.type === 'text') && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Konten Teks / Ringkasan</label>
-                  <textarea className="form-control" rows={10} value={lessonForm.content} onChange={e => setLessonForm(p => ({ ...p, content: e.target.value }))} placeholder="Tuliskan ringkasan materi atau konten teks di sini..." />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <label className="form-label" style={{ margin: 0 }}>Konten Teks / Ringkasan</label>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        let text = lessonForm.content;
+                        if (!text) return;
+                        
+                        // Intelligent formatting logic
+                        // 1. Detect "Materi Kajian: ..." and wrap in strong
+                        text = text.replace(/^(Materi Kajian:\s*.*?)(\d+\.)/i, '<p><strong>$1</strong></p>\n\n$2');
+                        
+                        // 2. Wrap numbered sections (e.g., 1. Title Description) into <h3> and <p>
+                        // Matches "1. Title description text..." where description starts after a space
+                        // This is a bit complex but we can try to find common patterns
+                        const parts = text.split(/(?=\d+\.\s+)/);
+                        const formattedParts = parts.map(part => {
+                          const match = part.match(/^(\d+\.\s+)([^\n.]+)([.!\s])(.*)/s);
+                          if (match) {
+                            const [_, num, title, punc, rest] = match;
+                            return `<h3>${num}${title.trim()}</h3>\n<p>${rest.trim()}</p>\n`;
+                          }
+                          return part;
+                        });
+                        
+                        setLessonForm(p => ({ ...p, content: formattedParts.join('\n').trim() }));
+                      }}
+                      style={{ 
+                        fontSize: '0.65rem', padding: '2px 8px', borderRadius: '6px', 
+                        background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)',
+                        fontWeight: '800', cursor: 'pointer'
+                      }}
+                    >
+                      ✨ FORMAT OTOMATIS
+                    </button>
+                  </div>
+                  <textarea className="form-control" rows={12} value={lessonForm.content} onChange={e => setLessonForm(p => ({ ...p, content: e.target.value }))} placeholder="Tuliskan ringkasan materi atau konten teks di sini..." style={{ fontSize: '0.9rem', lineHeight: 1.5 }} />
                 </div>
               )}
             </div>

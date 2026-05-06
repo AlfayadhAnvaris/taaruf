@@ -19,8 +19,8 @@
   --success: #10B981;
   --border: #F1F5F9;
   --border-color: #F1F5F9;
-  --radius: 14px;
-  --radius-lg: 24px;
+  --radius: 8px;
+  --radius-lg: 12px;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow: 0 10px 15px -3px rgba(19, 78, 57, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 20px 25px -5px rgba(19, 78, 57, 0.1), 0 10px 10px -5px rgba(19, 78, 57, 0.04);

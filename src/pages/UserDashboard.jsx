@@ -518,8 +518,8 @@ export default function UserDashboard() {
       {/* ══ STATUS TAB ══ */}
       {activeTab === 'status' && (
         !hasSubmittedCv ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', background: 'white', borderRadius: '40px', border: '1px solid #f1f5f9', textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
-             <div style={{ width: '120px', height: '120px', borderRadius: '40px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', marginBottom: '2.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
+             <div style={{ width: '120px', height: '120px', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', marginBottom: '2.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
                 <FileText size={60} strokeWidth={1.5} />
              </div>
              <h2 style={{ fontSize: '2.2rem', fontWeight: '900', color: '#134E39', marginBottom: '1.2rem', letterSpacing: '-0.02em' }}>Fitur Masih Terkunci</h2>
@@ -528,7 +528,7 @@ export default function UserDashboard() {
              </p>
              <button 
                onClick={() => setActiveTab('my_cv')}
-               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '20px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.25)', transition: 'all 0.3s' }}
+               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '14px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.25)', transition: 'all 0.3s' }}
                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
              >
@@ -550,8 +550,8 @@ export default function UserDashboard() {
       {/* ══ FIND TAB ══ */}
       {activeTab === 'find' && (
         !hasSubmittedCv ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', background: 'white', borderRadius: '40px', border: '1px solid #f1f5f9', textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
-             <div style={{ width: '120px', height: '120px', borderRadius: '40px', background: 'rgba(212,175,55,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', marginBottom: '2.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', background: 'white', borderRadius: '12px', border: '1px solid #f1f5f9', textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
+             <div style={{ width: '120px', height: '120px', borderRadius: '12px', background: 'rgba(212,175,55,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', marginBottom: '2.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
                 <Sparkles size={60} strokeWidth={1.5} />
              </div>
              <h2 style={{ fontSize: '2.2rem', fontWeight: '900', color: '#134E39', marginBottom: '1.2rem', letterSpacing: '-0.02em' }}>Buka Akses Cari Jodoh</h2>
@@ -560,7 +560,7 @@ export default function UserDashboard() {
              </p>
              <button 
                onClick={() => setActiveTab('my_cv')}
-               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '20px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.25)', transition: 'all 0.3s' }}
+               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '14px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.25)', transition: 'all 0.3s' }}
              >
                LENGKAPI CV SEKARANG
              </button>
@@ -694,12 +694,12 @@ export default function UserDashboard() {
         .cv-container::-webkit-scrollbar-track,
         .modal-content::-webkit-scrollbar-track {
           background: #f1f5f9;
-          border-radius: 10px;
+          border-radius: 8px;
         }
         .cv-container::-webkit-scrollbar-thumb,
         .modal-content::-webkit-scrollbar-thumb {
           background: #cbd5e1;
-          border-radius: 10px;
+          border-radius: 8px;
         }
         .cv-container::-webkit-scrollbar-thumb:hover,
         .modal-content::-webkit-scrollbar-thumb:hover {
@@ -707,7 +707,7 @@ export default function UserDashboard() {
         }
         
         .form-control { 
-          border-radius: 12px; 
+          border-radius: 8px; 
           border: 1.5px solid #e2e8f0; 
           padding: 0.8rem 1rem; 
           transition: all 0.2s; 
@@ -746,7 +746,7 @@ export default function UserDashboard() {
           }
           .cv-container {
             padding: 1.25rem !important;
-            border-radius: 20px !important;
+            border-radius: 14px !important;
           }
           .cv-preview-grid { 
             grid-template-columns: 1fr !important; 
@@ -756,7 +756,7 @@ export default function UserDashboard() {
           }
           .cv-preview-grid section {
             padding: 1.5rem !important;
-            border-radius: 24px !important;
+            border-radius: 16px !important;
           }
           .my-cv-header {
             flex-direction: column;
@@ -797,7 +797,7 @@ export default function UserDashboard() {
           
           .candidate-detail-card { 
             padding: 1.5rem !important; 
-            border-radius: 24px !important; 
+            border-radius: 16px !important; 
           }
           .candidate-profile-header {
             flex-direction: column !important;

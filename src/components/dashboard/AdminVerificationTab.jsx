@@ -78,7 +78,7 @@ export default function AdminVerificationTab({ showAlert }) {
       <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center' }}>
         <div style={{ flex: '1', minWidth: '300px' }}>
            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-              <div style={{ background: 'rgba(19,78,57,0.05)', color: '#134E39', padding: '10px', borderRadius: '12px' }}>
+              <div style={{ background: 'rgba(19,78,57,0.05)', color: '#134E39', padding: '10px', borderRadius: '10px' }}>
                 <PieChartIcon size={20} />
               </div>
               <div>
@@ -105,7 +105,7 @@ export default function AdminVerificationTab({ showAlert }) {
               <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value" stroke="none">
                 {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={4} />)}
               </Pie>
-              <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} />
+              <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -124,7 +124,7 @@ export default function AdminVerificationTab({ showAlert }) {
         .stat-mini-card {
           background: #f8fafc;
           padding: 1rem;
-          border-radius: 16px;
+          border-radius: 12px;
           border: 1px solid #f1f5f9;
         }
       `}</style>
@@ -137,7 +137,7 @@ export default function AdminVerificationTab({ showAlert }) {
               type="text" 
               placeholder="Cari user (nama/email)..." 
               className="form-control" 
-              style={{ paddingLeft: '2.5rem' }} 
+              style={{ paddingLeft: '2.5rem', borderRadius: '8px' }} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -146,7 +146,7 @@ export default function AdminVerificationTab({ showAlert }) {
             <Filter size={18} color="#64748b" />
             <select 
               className="form-control" 
-              style={{ width: '180px' }}
+              style={{ width: '180px', borderRadius: '8px' }}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -204,7 +204,7 @@ export default function AdminVerificationTab({ showAlert }) {
                   </td>
                   <td style={{ padding: '1.25rem' }}>
                     <span style={{ 
-                      fontSize: '0.7rem', fontWeight: '900', padding: '6px 12px', borderRadius: '8px',
+                      fontSize: '0.7rem', fontWeight: '900', padding: '6px 12px', borderRadius: '6px',
                       background: u.verification_status === 'verified' ? '#dcfce7' : (u.verification_status === 'pending' ? '#fef3c7' : '#f1f5f9'),
                       color: u.verification_status === 'verified' ? '#166534' : (u.verification_status === 'pending' ? '#92400e' : '#64748b')
                     }}>
@@ -217,7 +217,7 @@ export default function AdminVerificationTab({ showAlert }) {
                         <button 
                           onClick={() => handleVerify(u.id, false)} 
                           disabled={processingId === u.id}
-                          style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           title="Reject"
                         >
                           <X size={18} />
@@ -225,7 +225,7 @@ export default function AdminVerificationTab({ showAlert }) {
                         <button 
                           onClick={() => handleVerify(u.id, true)} 
                           disabled={processingId === u.id}
-                          style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           title="Approve"
                         >
                           <Check size={18} />
@@ -234,7 +234,7 @@ export default function AdminVerificationTab({ showAlert }) {
                     ) : (
                       <button 
                         onClick={() => handleVerify(u.id, !u.is_verified)} 
-                        style={{ background: 'none', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.7rem', fontWeight: '800', padding: '6px 14px', borderRadius: '10px', cursor: 'pointer' }}
+                        style={{ background: 'none', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.7rem', fontWeight: '800', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer' }}
                       >
                         RE-EVALUATE
                       </button>

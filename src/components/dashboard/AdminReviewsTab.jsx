@@ -83,7 +83,7 @@ export default function AdminReviewsTab({ showAlert }) {
       <style>{`
         .review-card-desktop {
           padding: 1.75rem;
-          border-radius: 28px;
+          border-radius: 14px;
           background: white;
           border: 1px solid #f1f5f9;
           box-shadow: 0 4px 20px rgba(0,0,0,0.02);
@@ -94,7 +94,7 @@ export default function AdminReviewsTab({ showAlert }) {
         }
         .review-compact-row-mobile {
           padding: 1rem;
-          border-radius: 20px;
+          border-radius: 10px;
           background: white;
           border: 1px solid #f1f5f9;
           display: flex;
@@ -106,7 +106,7 @@ export default function AdminReviewsTab({ showAlert }) {
         .action-icon-btn {
           width: 38px;
           height: 38px;
-          border-radius: 12px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -129,7 +129,7 @@ export default function AdminReviewsTab({ showAlert }) {
         }
       `}</style>
 
-      <div className="card" style={{ padding: isMobile ? '1.25rem' : '2rem', borderRadius: '32px' }}>
+      <div className="card" style={{ padding: isMobile ? '1.25rem' : '2rem', borderRadius: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '1.5rem' : '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h3 style={{ margin: 0, fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px', fontSize: isMobile ? '1.2rem' : '1.5rem', color: '#134E39' }}>
@@ -142,7 +142,7 @@ export default function AdminReviewsTab({ showAlert }) {
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
             style={{ 
-              padding: '0.6rem 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9', 
+              padding: '0.6rem 1rem', borderRadius: '10px', border: '1.5px solid #f1f5f9', 
               background: '#f8fafc', fontSize: '0.8rem', fontWeight: '700', color: '#1e293b', 
               outline: 'none', cursor: 'pointer', width: isMobile ? '100%' : 'auto'
             }}
@@ -154,7 +154,7 @@ export default function AdminReviewsTab({ showAlert }) {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {filteredReviews.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+            <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0' }}>
               <Star size={48} style={{ opacity: 0.1, marginBottom: '1.5rem', color: '#134E39' }} />
               <p style={{ fontWeight: '700', color: '#94a3b8' }}>Belum ada data review.</p>
             </div>
@@ -164,9 +164,9 @@ export default function AdminReviewsTab({ showAlert }) {
             if (isMobile) {
               return (
                 <div key={review.id} className="review-compact-row-mobile" style={{ opacity: isActive ? 1 : 0.8 }}>
-                   {!isActive && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '20px', borderBottomLeftRadius: '20px' }} />}
+                   {!isActive && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }} />}
                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: isActive ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: isActive ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: isActive ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: isActive ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
                         {review.reviewer?.name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="reviewer-info-text-mobile">
@@ -218,7 +218,7 @@ export default function AdminReviewsTab({ showAlert }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
                           {review.reviewer?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -230,7 +230,7 @@ export default function AdminReviewsTab({ showAlert }) {
                       <ChevronRight size={18} color="#cbd5e1" />
 
                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212, 175, 55, 0.05)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(212, 175, 55, 0.05)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>
                           {review.target?.cv_profiles?.[0]?.alias?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div>
@@ -255,7 +255,7 @@ export default function AdminReviewsTab({ showAlert }) {
 
                 <div style={{ 
                   background: isActive ? '#f8fafc' : '#fef2f2', 
-                  padding: '1.25rem 1.5rem', borderRadius: '20px', fontSize: '0.95rem', 
+                  padding: '1.25rem 1.5rem', borderRadius: '10px', fontSize: '0.95rem', 
                   color: isActive ? '#334155' : '#991b1b', lineHeight: 1.7, 
                   marginBottom: '1rem', border: '1px solid',
                   borderColor: isActive ? '#f1f5f9' : '#fee2e2',
@@ -284,7 +284,7 @@ export default function AdminReviewsTab({ showAlert }) {
                         background: isActive ? 'rgba(19, 78, 57, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                         color: isActive ? '#134E39' : '#ef4444',
                         padding: '0.6rem 1.2rem',
-                        borderRadius: '12px',
+                        borderRadius: '8px',
                         border: 'none',
                         cursor: 'pointer',
                         display: 'flex',
@@ -332,21 +332,21 @@ export default function AdminReviewsTab({ showAlert }) {
       {selectedReview && (
         <div className="modal-overlay" onClick={() => setSelectedReview(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '95%', padding: 0 }}>
-             <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Review</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '0.75rem', opacity: 0.8 }}>ID: #{selectedReview.id.substring(0,8)}</p>
                 </div>
-                <button onClick={() => setSelectedReview(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                <button onClick={() => setSelectedReview(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
              </div>
 
              <div style={{ padding: '2rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
-                   <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                   <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                       <div style={{ fontSize: '0.6rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>Pengulas</div>
                       <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '0.95rem' }}>{selectedReview.reviewer?.name}</div>
                    </div>
-                   <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                   <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                       <div style={{ fontSize: '0.6rem', fontWeight: '800', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Target</div>
                       <div style={{ fontWeight: '900', color: '#134E39', fontSize: '0.95rem' }}>{selectedReview.target?.cv_profiles?.[0]?.alias}</div>
                       <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>({selectedReview.target?.name})</div>
@@ -361,7 +361,7 @@ export default function AdminReviewsTab({ showAlert }) {
                       </div>
                    </div>
                    <div style={{ 
-                      background: '#f8fafc', padding: '1.5rem', borderRadius: '20px', 
+                      background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', 
                       fontSize: '1rem', color: '#334155', lineHeight: 1.7, 
                       border: '1px solid #f1f5f9', fontStyle: 'italic'
                    }}>
@@ -369,7 +369,7 @@ export default function AdminReviewsTab({ showAlert }) {
                    </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '10px' }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>
                       <Clock size={14} /> {new Date(selectedReview.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                    </div>
@@ -385,10 +385,10 @@ export default function AdminReviewsTab({ showAlert }) {
              </div>
 
              <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                <button className="btn btn-outline" onClick={() => setSelectedReview(null)} style={{ padding: '0.7rem 1.5rem' }}>Tutup</button>
+                <button className="btn btn-outline" onClick={() => setSelectedReview(null)} style={{ padding: '0.7rem 1.5rem', borderRadius: '8px' }}>Tutup</button>
                 <button 
                   className="btn btn-primary" 
-                  style={{ padding: '0.7rem 2rem' }}
+                  style={{ padding: '0.7rem 2rem', borderRadius: '8px' }}
                   onClick={() => {
                     toggleStatus(selectedReview);
                     setSelectedReview(null);

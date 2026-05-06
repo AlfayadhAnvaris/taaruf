@@ -59,7 +59,7 @@ const styles = `
   }
   .cv-avatar {
     width: 100%; height: 100%;
-    border-radius: 48px;
+    border-radius: 24px;
     background: white;
     border: 1px solid rgba(19, 78, 57, 0.1);
     display: flex; align-items: center; justify-content: center;
@@ -78,12 +78,12 @@ const styles = `
   }
   .cv-meta-v span { 
     display: flex; align-items: center; gap: 12px; 
-    padding: 12px 18px; background: white; border-radius: 16px;
+    padding: 12px 18px; background: white; border-radius: 8px;
     border: 1px solid ${C.border}; font-weight: 700; color: ${C.primary}; font-size: 0.9rem;
   }
 
   .cv-vision-side {
-    background: white; border-radius: 28px; padding: 2rem; 
+    background: white; border-radius: 14px; padding: 2rem; 
     border: 1px solid ${C.border}; text-align: left; width: 100%;
     margin-top: auto;
   }
@@ -115,7 +115,7 @@ const styles = `
   }
 
   .cv-card-compact {
-    background: white; padding: 1.25rem; border-radius: 24px;
+    background: white; padding: 1.25rem; border-radius: 12px;
     border: 1px solid ${C.border}; display: flex; flex-direction: column;
     height: 100%;
   }
@@ -124,7 +124,7 @@ const styles = `
     display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.25rem;
   }
   .cv-card-header-compact i {
-    width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0;
     background: rgba(19,78,57,0.05); color: ${C.primary};
     display: flex; align-items: center; justify-content: center;
   }
@@ -136,7 +136,7 @@ const styles = `
   .cv-info-item-compact span { font-size: 0.9rem; line-height: 1.4; font-weight: 800; color: ${C.text}; text-align: left; word-break: break-word; }
 
   .cv-screening-full {
-    background: #F8FAFC; border-radius: 32px; padding: 2rem;
+    background: #F8FAFC; border-radius: 16px; padding: 2rem;
     border: 1px solid ${C.border};
     flex: 1;
     display: flex;
@@ -156,13 +156,13 @@ const styles = `
   .cv-q-grid-full::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 10px; }
 
   .cv-q-item-compact {
-    background: white; padding: 1.25rem; border-radius: 20px; border: 1px solid ${C.border};
+    background: white; padding: 1.25rem; border-radius: 10px; border: 1px solid ${C.border};
   }
   .cv-q-item-compact label { display: block; font-size: 0.65rem; font-weight: 800; color: ${C.gold}; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em; }
   .cv-q-item-compact p { margin: 0; font-size: 0.9rem; line-height: 1.5; font-weight: 600; color: ${C.primary}; }
 
   .cv-btn-side {
-    width: 100%; padding: 1rem; border-radius: 16px; font-weight: 800; font-size: 0.9rem;
+    width: 100%; padding: 1rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem;
     display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s;
     margin-bottom: 10px;
   }
@@ -187,14 +187,14 @@ const styles = `
     .cv-name { font-size: 1.75rem; }
     .cv-meta-v { margin: 1.25rem 0; gap: 8px; }
     .cv-meta-v span { padding: 10px 14px; font-size: 0.8rem; border-radius: 14px; }
-    .cv-vision-side { padding: 1.5rem; margin-top: 1rem; border-radius: 24px; }
+    .cv-vision-side { padding: 1.5rem; margin-top: 1rem; border-radius: 12px; }
     .cv-vision-side p { font-size: 1rem; }
-    .cv-btn-side { padding: 0.8rem; font-size: 0.85rem; margin-bottom: 8px; border-radius: 12px; }
+    .cv-btn-side { padding: 0.8rem; font-size: 0.85rem; margin-bottom: 8px; border-radius: 6px; }
     
     .cv-right-panel { padding: 1rem; gap: 1rem; }
-    .cv-card-compact { padding: 1.25rem; border-radius: 20px; }
-    .cv-screening-full { padding: 1.5rem; border-radius: 24px; }
-    .cv-q-item-compact { padding: 1rem; border-radius: 16px; }
+    .cv-card-compact { padding: 1.25rem; border-radius: 10px; }
+    .cv-screening-full { padding: 1.5rem; border-radius: 12px; }
+    .cv-q-item-compact { padding: 1rem; border-radius: 8px; }
 
     .cv-grid-full { grid-template-columns: 1fr; }
     .cv-q-grid-full { grid-template-columns: 1fr; }
@@ -290,21 +290,20 @@ export default function MyCvTab({
           
           .cv-full-container {
             display: flex; width: 100%; max-width: 1300px; 
-            background: white; border-radius: 32px; overflow: hidden;
-            border: 1px solid #f1f5f9; box-shadow: 0 10px 40px rgba(0,0,0,0.02);
-            height: 100%;
+            height: 100%; gap: 1.5rem;
           }
           .cv-side-id {
-            width: 320px; flex-shrink: 0; background: white; border-right: 1px solid #f1f5f9;
-            padding: 2.5rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center;
-            overflow-y: auto; height: 100%;
+            width: 280px; flex-shrink: 0; background: white; 
+            padding: 2rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center;
+            height: fit-content; max-height: 100%; overflow-y: auto;
+            border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 10px 40px rgba(0,0,0,0.02);
           }
           .cv-side-id::-webkit-scrollbar { width: 5px; }
           .cv-side-id::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
           
           .cv-main-body {
             flex: 1; padding: 2.5rem; overflow-y: auto; height: 100%;
-            background: #F8FAFC;
+            background: #F8FAFC; border-radius: 16px; border: 1px solid #f1f5f9;
           }
           
           .cv-hero-badge {
@@ -314,13 +313,13 @@ export default function MyCvTab({
           }
           
           .cv-stat-card-small {
-            width: 100%; min-height: 48px; padding: 0.75rem 1rem; border-radius: 16px; border: 1px solid #f1f5f9;
+            width: 100%; min-height: 48px; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #f1f5f9;
             background: white; margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
             font-weight: 800; color: #134E39; font-size: 0.85rem; transition: all 0.2s;
             text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
           }
           .cv-stat-card-small i {
-            width: 32px; height: 32px; border-radius: 10px; background: rgba(19,78,57,0.05);
+            width: 32px; height: 32px; border-radius: 6px; background: rgba(19,78,57,0.05);
             display: flex; align-items: center; justify-content: center; color: #D4AF37;
             flex-shrink: 0;
           }
@@ -330,13 +329,14 @@ export default function MyCvTab({
           }
           
           .cv-card-premium {
-            background: white; border-radius: 28px; padding: 1.75rem;
+            background: white; border-radius: 14px; padding: 1.75rem;
             border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
             position: relative; overflow: hidden;
+            display: flex; flex-direction: column; height: 100%;
           }
           
           .cv-q-box {
-            background: #f8fafc; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9;
+            background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #f1f5f9;
           }
           
           @media (max-width: 1200px) {
@@ -348,7 +348,7 @@ export default function MyCvTab({
             }
             .cv-main-body { padding: 2rem 1.5rem; }
             .cv-grid-layout { grid-template-columns: 1fr; gap: 1.25rem; }
-            .cv-card-premium { padding: 1.75rem; border-radius: 24px; }
+            .cv-card-premium { padding: 1.75rem; border-radius: 12px; }
           }
           
           @media (max-width: 992px) {
@@ -411,7 +411,7 @@ export default function MyCvTab({
                       }}
                       style={{ 
                         background: 'white', border: '1px solid #f1f5f9', 
-                        width: '40px', height: '40px', borderRadius: '12px', 
+                        width: '40px', height: '40px', borderRadius: '6px', 
                         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
                         color: '#94a3b8', boxShadow: '0 8px 15px rgba(0,0,0,0.02)', transition: 'all 0.2s'
                       }}
@@ -428,7 +428,7 @@ export default function MyCvTab({
                       style={{ 
                         background: isBookmarked ? '#EF4444' : 'white', 
                         border: '1px solid ' + (isBookmarked ? '#EF4444' : '#f1f5f9'), 
-                        width: '40px', height: '40px', borderRadius: '12px', 
+                        width: '40px', height: '40px', borderRadius: '6px', 
                         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
                         color: isBookmarked ? 'white' : '#EF4444', 
                         boxShadow: '0 8px 15px rgba(239, 68, 68, 0.1)', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -456,33 +456,19 @@ export default function MyCvTab({
                  <div className="cv-stat-card-small"><i><Heart size={16} /></i> {displayCv.marital_status}</div>
               </div>
 
-              <div className="cv-vision-box" style={{ background: 'white', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', textAlign: 'left', width: '100%', position: 'relative', boxShadow: '0 10px 20px rgba(0,0,0,0.03)', height: '140px', overflow: 'hidden' }}>
-                 <Quote size={30} style={{ position: 'absolute', top: '10px', right: '10px', opacity: 0.05, color: '#134E39' }} />
-                 <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.1em' }}>Visi Pernikahan</label>
-                 <p style={{ fontStyle: 'italic', fontSize: '0.95rem', lineHeight: 1.6, color: '#134E39', fontWeight: '600', margin: 0, position: 'relative', zIndex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>"{displayCv.about}"</p>
-                 {displayCv.about?.length > 80 && (
-                   <button 
-                     onClick={() => setFullViewItem({ l: 'Visi Pernikahan', v: displayCv.about })}
-                     style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(212,175,55,0.1)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.gold, zIndex: 2 }}
-                   >
-                     <Eye size={14} />
-                   </button>
-                 )}
-              </div>
-
-              <div style={{ marginTop: '2.5rem', width: '100%' }}>
-                {!isViewingOther && !isPreviewingCv ? (
-                  <button className="cv-btn-side cv-btn-side-primary" style={{ margin: 0, padding: '1rem', borderRadius: '16px', width: '100%' }} onClick={() => setIsPreviewingCv(true)}>
-                    <Eye size={18} /> PRATINJAU PUBLIK
-                  </button>
-                ) : (
-                  onAjukanTaaruf && displayCv.user_id !== user.id && (
-                    <button className="cv-btn-side cv-btn-side-primary" style={{ margin: 0, padding: '1rem', borderRadius: '16px', background: '#134E39', width: '100%', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }} onClick={() => onAjukanTaaruf(displayCv)}>
-                      <Heart size={18} /> AJUKAN TAARUF
+                <div className="cv-vision-box" style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', textAlign: 'left', width: '100%', position: 'relative', boxShadow: '0 10px 20px rgba(0,0,0,0.03)', height: '140px', overflow: 'hidden' }}>
+                  <Quote size={30} style={{ position: 'absolute', top: '10px', right: '10px', opacity: 0.05, color: '#134E39' }} />
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.1em' }}>Visi Pernikahan</label>
+                  <p style={{ fontStyle: 'italic', fontSize: '0.95rem', lineHeight: 1.6, color: '#134E39', fontWeight: '600', margin: 0, position: 'relative', zIndex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>"{displayCv.about}"</p>
+                  {displayCv.about?.length > 80 && (
+                    <button 
+                      onClick={() => setFullViewItem({ l: 'Visi Pernikahan', v: displayCv.about })}
+                      style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(212,175,55,0.1)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.gold, zIndex: 2 }}
+                    >
+                      <Eye size={14} />
                     </button>
-                  )
-                )}
-              </div>
+                  )}
+                </div>
            </div>
 
            {/* 📄 RIGHT PANEL (CONTENT) 📄 */}
@@ -546,12 +532,12 @@ export default function MyCvTab({
                </div>
 
               {activeViewTab === 'cv' ? (
-                <div className="cv-grid-layout" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', animation: 'fadeIn 0.4s ease' }}>
+                <div className="cv-grid-layout" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', alignItems: 'stretch', animation: 'fadeIn 0.4s ease' }}>
                  
                  {/* Card: Education & Job */}
                  <div className="cv-card-premium">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem', color: '#134E39' }}>
-                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <GraduationCap size={24} />
                        </div>
                        <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Pendidikan & Karir</h3>
@@ -567,7 +553,7 @@ export default function MyCvTab({
                  {/* Card: Physical & Health */}
                  <div className="cv-card-premium">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem', color: '#134E39' }}>
-                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Target size={24} />
                        </div>
                        <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Fisik & Karakter</h3>
@@ -583,7 +569,7 @@ export default function MyCvTab({
                  {/* Card: Criteria (Full Width) */}
                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1', height: '180px', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1.5rem' }}>
-                       <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37' }}>
+                       <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: 'rgba(212,175,55,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37' }}>
                           <Compass size={20} />
                        </div>
                        <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#134E39' }}>Kriteria Pasangan Impian</h3>
@@ -595,7 +581,7 @@ export default function MyCvTab({
                     {displayCv.criteria?.length > 150 && (
                       <button 
                         onClick={() => setFullViewItem({ l: 'Kriteria Pasangan Impian', v: displayCv.criteria })}
-                        style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', background: C.primary, color: 'white', border: 'none', padding: '8px 16px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}
+                        style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', background: C.primary, color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}
                       >
                         <Eye size={14} /> LIHAT SELENGKAPNYA
                       </button>
@@ -604,9 +590,9 @@ export default function MyCvTab({
               </div>
             ) : activeViewTab === 'aqidah' ? (
               <div style={{ animation: 'fadeIn 0.5s ease' }}>
-                <div className="cv-card-premium" style={{ padding: '2.5rem', borderRadius: '32px' }}>
+                <div className="cv-card-premium" style={{ padding: '2.5rem', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '2.5rem' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '56px', height: '56px', borderRadius: '9px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <BookOpen size={28} color="#D4AF37" />
                         </div>
                         <div>
@@ -624,7 +610,7 @@ export default function MyCvTab({
                           { l: 'Tanggung Jawab Suami/Istri', v: displayCv.screening_data?.role_view || (isViewingOther ? null : user.role_view) },
                           { l: 'Pandangan Poligami', v: displayCv.screening_data?.polygamy_view || (isViewingOther ? null : user.polygamy_view) }
                         ].filter(q => q && q.v).map((q, idx) => (
-                           <div key={idx} className="cv-q-box" style={{ background: '#f8fafc', border: '1px solid #f1f5f9', padding: '1.5rem', borderRadius: '24px', height: '160px', position: 'relative', overflow: 'hidden' }}>
+                           <div key={idx} className="cv-q-box" style={{ background: '#f8fafc', border: '1px solid #f1f5f9', padding: '1.5rem', borderRadius: '12px', height: '160px', position: 'relative', overflow: 'hidden' }}>
                                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.1em' }}>{q.l}</label>
                                <p style={{ 
                                  margin: 0, fontSize: '0.95rem', lineHeight: 1.6, color: '#1e293b', fontWeight: '500',
@@ -633,7 +619,7 @@ export default function MyCvTab({
                                {q.v?.length > 100 && (
                                  <button 
                                    onClick={() => setFullViewItem({ l: q.l, v: q.v })}
-                                   style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'white', border: '1px solid #f1f5f9', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.primary, boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}
+                                   style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'white', border: '1px solid #f1f5f9', width: '32px', height: '32px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.primary, boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}
                                  >
                                    <Eye size={14} />
                                  </button>
@@ -647,7 +633,7 @@ export default function MyCvTab({
               <div style={{ animation: 'fadeInUp 0.4s ease' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '3.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '22px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.gold, border: '1px solid rgba(212,175,55,0.1)' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '11px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.gold, border: '1px solid rgba(212,175,55,0.1)' }}>
                           <Star size={32} fill={C.gold} />
                         </div>
                         <div>
@@ -660,7 +646,7 @@ export default function MyCvTab({
                         onClick={() => setShowReviewModal(true)}
                         style={{ 
                           background: C.primary, color: 'white', border: 'none', 
-                          padding: '0.85rem 1.5rem', borderRadius: '16px', 
+                          padding: '0.85rem 1.5rem', borderRadius: '8px', 
                           fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: '10px',
                           boxShadow: '0 10px 20px rgba(19,78,57,0.15)',
@@ -680,7 +666,7 @@ export default function MyCvTab({
                    {/* List Section */}
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
                       {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '6rem 3rem', background: 'white', borderRadius: '40px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
+                        <div style={{ textAlign: 'center', padding: '6rem 3rem', background: 'white', borderRadius: '20px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                               <Quote size={40} color="#cbd5e1" />
                            </div>
@@ -688,7 +674,7 @@ export default function MyCvTab({
                         </div>
                       ) : (
                         userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
-                          <div key={review.id} style={{ background: 'white', padding: '2.25rem', borderRadius: '32px', border: '1px solid #f1f5f9', boxShadow: '0 15px 35px rgba(0,0,0,0.02)', position: 'relative', transition: 'transform 0.3s ease' }}>
+                          <div key={review.id} style={{ background: 'white', padding: '2.25rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 15px 35px rgba(0,0,0,0.02)', position: 'relative', transition: 'transform 0.3s ease' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: '900', color: 'white', boxShadow: '0 8px 15px rgba(19,78,57,0.15)' }}>
@@ -699,7 +685,7 @@ export default function MyCvTab({
                                     <span style={{ fontSize: '0.75rem', color: C.muted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                  </div>
                               </div>
-                              <div style={{ display: 'flex', gap: '4px', background: 'rgba(212,175,55,0.05)', padding: '6px 12px', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.1)' }}>
+                              <div style={{ display: 'flex', gap: '4px', background: 'rgba(212,175,55,0.05)', padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
                                 {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} color={s <= review.rating ? C.gold : '#e2e8f0'} fill={s <= review.rating ? C.gold : 'transparent'} />)}
                               </div>
                             </div>
@@ -720,8 +706,8 @@ export default function MyCvTab({
         {/* 🔍 FULL VIEW MODAL 🔍 */}
         {fullViewItem && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={() => setFullViewItem(null)}>
-            <div style={{ background: 'white', padding: '3.5rem', borderRadius: '48px', maxWidth: '700px', width: '100%', maxHeight: '85vh', overflowY: 'auto', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
-              <button onClick={() => setFullViewItem(null)} style={{ position: 'absolute', top: '2rem', right: '2rem', background: '#f8fafc', border: 'none', width: '48px', height: '48px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <div style={{ background: 'white', padding: '3.5rem', borderRadius: '24px', maxWidth: '700px', width: '100%', maxHeight: '85vh', overflowY: 'auto', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+              <button onClick={() => setFullViewItem(null)} style={{ position: 'absolute', top: '2rem', right: '2rem', background: '#f8fafc', border: 'none', width: '48px', height: '48px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
                 <X size={24} color={C.primary} />
               </button>
               <h3 style={{ fontSize: '0.75rem', fontWeight: '900', color: C.gold, marginBottom: '2rem', paddingRight: '4rem', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
@@ -737,13 +723,13 @@ export default function MyCvTab({
         {/* 📝 CREATE REVIEW MODAL 📝 */}
         {showReviewModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={() => setShowReviewModal(false)}>
-            <div style={{ background: 'white', padding: '3rem', borderRadius: '48px', maxWidth: '540px', width: '100%', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
-               <button onClick={() => setShowReviewModal(false)} style={{ position: 'absolute', top: '2rem', right: '2rem', background: '#f8fafc', border: 'none', width: '44px', height: '44px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', maxWidth: '540px', width: '100%', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+               <button onClick={() => setShowReviewModal(false)} style={{ position: 'absolute', top: '2rem', right: '2rem', background: '#f8fafc', border: 'none', width: '44px', height: '44px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                  <X size={20} color={C.primary} />
                </button>
                
                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'rgba(19,78,57,0.05)', color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '9px', background: 'rgba(19,78,57,0.05)', color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Quote size={24} />
                   </div>
                   <div>
@@ -774,7 +760,7 @@ export default function MyCvTab({
                      value={newComment}
                      onChange={e => setNewComment(e.target.value)}
                      style={{ 
-                       width: '100%', padding: '1.5rem', borderRadius: '24px', border: '1.5px solid #f1f5f9', 
+                       width: '100%', padding: '1.5rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', 
                        minHeight: '150px', fontSize: '1rem', outline: 'none', resize: 'none', 
                        background: '#F8FAFC', lineHeight: 1.7, color: C.text
                      }}

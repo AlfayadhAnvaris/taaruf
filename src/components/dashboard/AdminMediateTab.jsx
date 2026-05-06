@@ -125,8 +125,8 @@ export default function AdminMediateTab() {
               }}>
                 <div className="mediate-card-info">
                   <div className="mediate-card-header">
-                    <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#94a3b8', background: '#f8fafc', padding: '2px 8px', borderRadius: '6px' }}>#{req.id.substring(0, 8)}</span>
-                    <span style={{ background: config.bg, color: config.text, padding: '4px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800', border: `1px solid ${config.text}20` }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#94a3b8', background: '#f8fafc', padding: '2px 8px', borderRadius: '4px' }}>#{req.id.substring(0, 8)}</span>
+                    <span style={{ background: config.bg, color: config.text, padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', border: `1px solid ${config.text}20` }}>
                       {config.label}
                     </span>
                   </div>
@@ -275,12 +275,12 @@ export default function AdminMediateTab() {
         }
         .mediate-btn {
           padding: 0.6rem 1.2rem;
-          border-radius: 12px;
+          border-radius: 8px;
           font-size: 0.85rem;
         }
         .mediate-delete-btn {
           padding: 0.6rem;
-          border-radius: 12px;
+          border-radius: 8px;
           background: #fef2f2;
           color: #991b1b;
           border: 1px solid #fee2e2;
@@ -323,7 +323,7 @@ export default function AdminMediateTab() {
           <button 
             disabled={currentPage === 1} 
             onClick={() => setCurrentPage(prev => prev - 1)}
-            style={{ padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: currentPage === 1 ? '#cbd5e1' : '#134E39', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', color: currentPage === 1 ? '#cbd5e1' : '#134E39', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
           >
             <ChevronLeft size={20} />
           </button>
@@ -331,7 +331,7 @@ export default function AdminMediateTab() {
           <button 
             disabled={currentPage === totalPages} 
             onClick={() => setCurrentPage(prev => prev + 1)}
-            style={{ padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', color: currentPage === totalPages ? '#cbd5e1' : '#134E39', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', color: currentPage === totalPages ? '#cbd5e1' : '#134E39', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
           >
             <ChevronRight size={20} />
           </button>
@@ -349,13 +349,13 @@ export default function AdminMediateTab() {
                   <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Verifikasi Kontak Wali</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.8 }}>Konfirmasi nomor wali sebelum proses lanjut</p>
                 </div>
-                <button onClick={() => setVerifyingWaliId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                <button onClick={() => setVerifyingWaliId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
               </div>
 
               <div style={{ padding: '2rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   {/* Wali Sender */}
-                  <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                     <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Wali {req.senderAlias} (Pengirim)</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39' }}>{req.senderWaliPhone || '-'}</div>
@@ -366,7 +366,7 @@ export default function AdminMediateTab() {
                   </div>
 
                   {/* Wali Target */}
-                  <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                     <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Wali {req.targetAlias} (Target)</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39' }}>{req.targetWaliPhone || '-'}</div>
@@ -377,7 +377,7 @@ export default function AdminMediateTab() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: '2rem', padding: '1rem', background: '#eff6ff', borderRadius: '12px', border: '1px solid #bfdbfe', display: 'flex', gap: '10px' }}>
+                <div style={{ marginTop: '2rem', padding: '1rem', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe', display: 'flex', gap: '10px' }}>
                   <ShieldAlert size={20} color="#1d4ed8" />
                   <p style={{ margin: 0, fontSize: '0.8rem', color: '#1e40af', fontWeight: '500' }}>Pastikan Anda telah melakukan verifikasi manual kepada kedua wali sebelum meneruskan proses ini.</p>
                 </div>
@@ -385,7 +385,7 @@ export default function AdminMediateTab() {
 
               <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                 <button className="btn btn-outline" onClick={() => setVerifyingWaliId(null)}>Batal</button>
-                <button className="btn btn-primary" style={{ padding: '0.7rem 2rem' }} onClick={() => {
+                <button className="btn btn-primary" style={{ padding: '0.7rem 2rem', borderRadius: '8px' }} onClick={() => {
                   updateTaarufStatus(req.id, 'wali_process');
                   addNotification(`Verifikasi Wali selesai. Mediasi #${req.id.substring(0,8)} masuk ke Tahap Wali.`);
                   setVerifyingWaliId(null);
@@ -409,16 +409,16 @@ export default function AdminMediateTab() {
                   <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Pemantauan Mediasi</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.8 }}>ID: #{req.id}</p>
                 </div>
-                <button onClick={() => setMonitoringChatId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                <button onClick={() => setMonitoringChatId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
               </div>
 
               <div style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #f1f5f9' }}>
                    <ShieldAlert size={20} color="#134E39" />
                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', fontWeight: '500' }}>Anda sedang memantau percakapan Q&A antara <strong>{req.senderAlias}</strong> dan <strong>{req.targetAlias}</strong>. Patuhi kode etik kerahasiaan Separuh Agama.</p>
                 </div>
 
-                <div className="chat-container" style={{ border: '1px solid #f1f5f9', borderRadius: '20px', overflow: 'hidden' }}>
+                <div className="chat-container" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
                   <div className="chat-history" style={{ maxHeight: '400px', padding: '1rem' }}>
                     {(!chatData || chatData.chats.length === 0) ? (
                       <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
@@ -445,8 +445,8 @@ export default function AdminMediateTab() {
               </div>
 
               <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                <button className="btn btn-outline" onClick={() => setMonitoringChatId(null)}>Tutup Pantauan</button>
-                <button className="btn btn-success" onClick={() => setVerifyingWaliId(req.id)}>Verifikasi Wali & Lanjut</button>
+                <button className="btn btn-outline" style={{ borderRadius: '8px' }} onClick={() => setMonitoringChatId(null)}>Tutup Pantauan</button>
+                <button className="btn btn-success" style={{ borderRadius: '8px' }} onClick={() => setVerifyingWaliId(req.id)}>Verifikasi Wali & Lanjut</button>
               </div>
             </div>
           </div>
@@ -476,12 +476,12 @@ export default function AdminMediateTab() {
         return (
           <div className="modal-overlay" onClick={() => setViewingRequestId(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%', padding: 0 }}>
-              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Progres Mediasi</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.8 }}>ID: #{req.id}</p>
                 </div>
-                <button onClick={() => setViewingRequestId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                <button onClick={() => setViewingRequestId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
               </div>
 
               <div style={{ padding: '2rem' }}>
@@ -529,7 +529,7 @@ export default function AdminMediateTab() {
                   </div>
                 </div>
 
-                <div style={{ background: '#f8fafc', borderRadius: '20px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
+                <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
                       <Activity size={18} color="#134E39" />
                       <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '900', color: '#134E39' }}>Log Histori Mediasi</h4>
@@ -561,7 +561,7 @@ export default function AdminMediateTab() {
                 </div>
 
                 {req.status === 'rejected' && (
-                  <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', color: '#991b1b' }}>
+                  <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', color: '#991b1b' }}>
                     <XCircle size={20} />
                     <div style={{ fontSize: '0.85rem', fontWeight: '700' }}>Proses mediasi ini telah dibatalkan/ditolak.</div>
                   </div>
@@ -569,7 +569,7 @@ export default function AdminMediateTab() {
               </div>
 
               <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn btn-primary" onClick={() => setViewingRequestId(null)} style={{ padding: '0.7rem 2.5rem' }}>Tutup</button>
+                <button className="btn btn-primary" onClick={() => setViewingRequestId(null)} style={{ padding: '0.7rem 2.5rem', borderRadius: '8px' }}>Tutup</button>
               </div>
             </div>
           </div>

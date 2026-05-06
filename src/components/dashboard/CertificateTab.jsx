@@ -73,8 +73,8 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
         </div>
 
         <div style={{ padding: '5rem 5%', flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', padding: '5rem 3rem', background: 'white', borderRadius: '40px', border: '1px solid #E2E8F0', maxWidth: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '32px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem' }}>
+          <div style={{ textAlign: 'center', padding: '5rem 3rem', background: 'white', borderRadius: '20px', border: '1px solid #E2E8F0', maxWidth: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+            <div style={{ width: '100px', height: '100px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem' }}>
               <Award size={54} color="#134E39" strokeWidth={1.5} />
             </div>
             <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Sertifikat Belum Siap</h3>
@@ -83,7 +83,7 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
             </p>
             <button 
               onClick={() => navigate('/app/materi/daftar-kelas')} 
-              style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
+              style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '10px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
             >
               JELAJAHI DAFTAR KELAS
             </button>
@@ -120,14 +120,14 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button 
                 onClick={() => navigate('/app/materi/dashboard')}
-                style={{ background: 'white', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '16px', color: '#134E39', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                style={{ background: 'white', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '10px', color: '#134E39', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
               >
                 <ChevronLeft size={20} /> KEMBALI
               </button>
               <button 
                 onClick={handleDownloadPDF} 
                 disabled={isGenerating}
-                style={{ background: '#134E39', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '16px', fontWeight: '900', cursor: isGenerating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 25px rgba(19,78,57,0.2)' }}
+                style={{ background: '#134E39', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '10px', fontWeight: '900', cursor: isGenerating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 25px rgba(19,78,57,0.2)' }}
               >
                 {isGenerating ? <Loader2 size={20} className="spin" /> : <Download size={20} />}
                 {isGenerating ? 'MENYIAPKAN...' : 'UNDUH PDF'}
@@ -194,7 +194,7 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
                 penugasan, serta kuis pada program kelas intensif:
               </p>
               
-              <div style={{ padding: '15px 40px', background: '#134E39', borderRadius: '16px', margin: '15px 0', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>
+              <div style={{ padding: '15px 40px', background: '#134E39', borderRadius: '8px', margin: '15px 0', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>
                 <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#D4AF37', margin: 0, letterSpacing: '0.05em' }}>{displayClass.title.toUpperCase()}</h3>
               </div>
 
@@ -213,7 +213,7 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
                    }}>
                       <GraduationCap size={45} color="white" />
                    </div>
-                   <div style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', background: '#134E39', color: '#D4AF37', padding: '4px 14px', borderRadius: '20px', fontSize: '0.6rem', fontWeight: '900', whiteSpace: 'nowrap', border: '2px solid #D4AF37', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>VERIFIED PLATFORM</div>
+                   <div style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', background: '#134E39', color: '#D4AF37', padding: '4px 14px', borderRadius: '10px', fontSize: '0.6rem', fontWeight: '900', whiteSpace: 'nowrap', border: '2px solid #D4AF37', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>VERIFIED PLATFORM</div>
                 </div>
 
                 <div style={{ textAlign: 'center', width: '200px' }}>

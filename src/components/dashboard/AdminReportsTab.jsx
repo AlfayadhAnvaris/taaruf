@@ -84,7 +84,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
       <style>{`
         .report-list-item {
           padding: 1.25rem 1.5rem;
-          border-radius: 20px;
+          border-radius: 12px;
           background: white;
           border: 1px solid #f1f5f9;
           display: flex;
@@ -123,7 +123,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
           width: 95%;
           max-width: 550px;
           background: white;
-          border-radius: 32px;
+          border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
           animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -144,7 +144,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
         }
       `}</style>
 
-      <div className="card" style={{ padding: '1.5rem', borderRadius: '32px' }}>
+      <div className="card" style={{ padding: '1.5rem', borderRadius: '16px' }}>
         <div className="report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h3 style={{ margin: 0, fontWeight: '950', color: '#134E39', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25rem' }}>
@@ -156,7 +156,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
           <select 
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
-            style={{ padding: '0.6rem 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9', background: 'white', fontSize: '0.85rem', fontWeight: '700', color: '#134E39', outline: 'none', cursor: 'pointer' }}
+            style={{ padding: '0.6rem 1rem', borderRadius: '10px', border: '1.5px solid #f1f5f9', background: 'white', fontSize: '0.85rem', fontWeight: '700', color: '#134E39', outline: 'none', cursor: 'pointer' }}
           >
             <option value="all">Semua Alasan</option>
             <option value="Ketidakjujuran">Ketidakjujuran</option>
@@ -170,7 +170,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredReports.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '6rem 2rem', color: '#94a3b8' }}>
-              <div style={{ width: 80, height: 80, borderRadius: '24px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <div style={{ width: 80, height: 80, borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                 <ShieldCheck size={40} style={{ opacity: 0.2 }} />
               </div>
               <p style={{ fontWeight: '800', fontSize: '1.1rem' }}>Kotak Laporan Kosong</p>
@@ -180,7 +180,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
             <div key={report.id} className="report-list-item" onClick={() => setSelectedReport(report)}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }} className="reporter-info">
                 <div className={`status-dot ${report.status === 'reviewed' ? 'reviewed' : ''}`} />
-                <div style={{ width: 44, height: 44, borderRadius: '14px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', border: '1px solid #e2e8f0' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', border: '1px solid #e2e8f0' }}>
                   {report.reporter?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ minWidth: 0 }}>
@@ -193,7 +193,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
                 <span style={{ 
                   background: report.status === 'reviewed' ? '#f1f5f9' : '#fee2e2', 
                   color: report.status === 'reviewed' ? '#64748b' : '#ef4444', 
-                  padding: '6px 14px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' 
+                  padding: '6px 14px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' 
                 }}>
                   {report.reason}
                 </span>
@@ -202,13 +202,13 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
               <div className="item-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setSelectedReport(report); }}
-                  style={{ background: '#f8fafc', border: 'none', width: 36, height: 36, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}
+                  style={{ background: '#f8fafc', border: 'none', width: 36, height: 36, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer' }}
                 >
                   <Eye size={18} />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); deleteItem(report.id); }}
-                  style={{ background: 'transparent', border: 'none', width: 36, height: 36, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', width: 36, height: 36, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer' }}
                 >
                   <Trash2 size={18} />
                 </button>
@@ -230,7 +230,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
               <h2 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#134E39', margin: 0 }}>{selectedReport.reason}</h2>
               <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Dilaporkan pada {new Date(selectedReport.created_at).toLocaleString('id-ID')}</p>
               
-              <button onClick={() => setSelectedReport(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', border: 'none', width: 40, height: 40, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', cursor: 'pointer' }}>
+              <button onClick={() => setSelectedReport(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', border: 'none', width: 40, height: 40, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', cursor: 'pointer' }}>
                 <X size={24} />
               </button>
             </div>
@@ -239,7 +239,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
               <div className="modal-grid">
                 <div>
                   <div style={{ fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '10px' }}>Pelapor</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                     <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'white', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>{selectedReport.reporter?.name?.charAt(0)}</div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: '800', fontSize: '0.85rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedReport.reporter?.name}</div>
@@ -250,7 +250,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
 
                 <div>
                   <div style={{ fontSize: '0.65rem', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', marginBottom: '10px' }}>Terlapor</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '16px', border: '1px solid #fee2e2' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '12px', border: '1px solid #fee2e2' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                       <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'white', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#ef4444', flexShrink: 0 }}>{selectedReport.reported_cv?.alias?.charAt(0) || '?'}</div>
                       <div style={{ minWidth: 0 }}>
@@ -260,7 +260,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
                     </div>
                     <button 
                       onClick={() => handleViewUser(selectedReport.reported_user_id)}
-                      style={{ background: '#134E39', color: 'white', border: 'none', width: 32, height: 32, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                      style={{ background: '#134E39', color: 'white', border: 'none', width: 32, height: 32, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
                       title="Lihat Profil"
                     >
                       <Eye size={16} />
@@ -269,7 +269,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', marginBottom: '2rem' }}>
+              <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: '#134E39' }}>
                   <MessageSquare size={16} />
                   <span style={{ fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase' }}>Isi Laporan</span>
@@ -281,13 +281,13 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
                 <button 
                   onClick={() => markAsReviewed(selectedReport.id)}
                   disabled={selectedReport.status === 'reviewed'}
-                  style={{ flex: 2, background: selectedReport.status === 'reviewed' ? '#f1f5f9' : '#134E39', color: selectedReport.status === 'reviewed' ? '#94a3b8' : 'white', border: 'none', padding: '1rem', borderRadius: '16px', fontWeight: '900', fontSize: '0.95rem', cursor: selectedReport.status === 'reviewed' ? 'default' : 'pointer', transition: 'all 0.2s', boxShadow: selectedReport.status === 'reviewed' ? 'none' : '0 10px 20px rgba(19, 78, 57, 0.2)' }}
+                  style={{ flex: 2, background: selectedReport.status === 'reviewed' ? '#f1f5f9' : '#134E39', color: selectedReport.status === 'reviewed' ? '#94a3b8' : 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: selectedReport.status === 'reviewed' ? 'default' : 'pointer', transition: 'all 0.2s', boxShadow: selectedReport.status === 'reviewed' ? 'none' : '0 10px 20px rgba(19, 78, 57, 0.2)' }}
                 >
                   {selectedReport.status === 'reviewed' ? 'Laporan Telah Ditinjau' : 'Tandai Selesai'}
                 </button>
                 <button 
                   onClick={() => deleteItem(selectedReport.id)}
-                  style={{ flex: 1, background: '#fef2f2', color: '#ef4444', border: 'none', padding: '1rem', borderRadius: '16px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer' }}
+                  style={{ flex: 1, background: '#fef2f2', color: '#ef4444', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer' }}
                 >
                   Hapus
                 </button>

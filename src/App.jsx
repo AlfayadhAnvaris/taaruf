@@ -36,8 +36,8 @@ const AccessDenied = () => {
   const navigate = useNavigate();
   return (
     <div style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
-      <div style={{ background: '#fee2e2', padding: '2rem', borderRadius: '30px', border: '2px solid #fecaca', maxWidth: '500px', boxShadow: '0 20px 50px rgba(220, 38, 38, 0.1)' }}>
-        <div style={{ background: '#dc2626', width: '80px', height: '80px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 10px 20px rgba(220, 38, 38, 0.3)' }}>
+      <div style={{ background: '#fee2e2', padding: '2rem', borderRadius: '9px', border: '2px solid #fecaca', maxWidth: '500px', boxShadow: '0 20px 50px rgba(220, 38, 38, 0.1)' }}>
+        <div style={{ background: '#dc2626', width: '80px', height: '80px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 10px 20px rgba(220, 38, 38, 0.3)' }}>
           <Shield size={40} color="white" />
         </div>
         <h1 style={{ fontSize: '2rem', fontWeight: '900', color: '#991b1b', margin: '0 0 1rem' }}>Akses Dibatasi</h1>
@@ -47,7 +47,7 @@ const AccessDenied = () => {
         <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ef4444', textTransform: 'uppercase', marginBottom: '2rem', opacity: 0.6 }}>Error Code: 403 Forbidden</div>
         <button 
           onClick={() => navigate('/app/home')}
-          style={{ width: '100%', padding: '1rem', borderRadius: '14px', background: '#dc2626', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 15px rgba(220, 38, 38, 0.2)', transition: 'all 0.2s' }}
+          style={{ width: '100%', padding: '1rem', borderRadius: '7px', background: '#dc2626', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 15px rgba(220, 38, 38, 0.2)', transition: 'all 0.2s' }}
         >
           Kembali ke Beranda
         </button>
@@ -141,16 +141,16 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
               <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {!isAdmin ? (
                   <>
-                    <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '4px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <Activity size={18} /> {!isMobile && <span className="btn-text">DASHBOARD</span>}
                     </button>
-                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '6px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                       <BookOpen size={18} /> {!isMobile && <span className="btn-text">DAFTAR KELAS</span>}
                     </button>
                   </>
                 ) : (
                   isAdminAcademy && (
-                    <div style={{ display: 'flex', gap: '6px', background: '#f8fafc', padding: '5px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', gap: '6px', background: '#f8fafc', padding: '5px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       {[
                         { id: 'curriculum', label: 'Kurikulum', icon: <BookOpen size={17} /> },
                         { id: 'enrollment', label: 'Pendaftaran', icon: <Users size={17} /> },
@@ -167,7 +167,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                             style={{
                               display: 'flex', alignItems: 'center', gap: '8px',
                               padding: window.innerWidth < 768 ? '0.75rem' : '0.6rem 1.25rem', 
-                              borderRadius: '12px',
+                              borderRadius: '8px',
                               background: isActive ? '#134E39' : 'transparent',
                               color: isActive ? 'white' : '#64748b',
                               border: 'none', fontSize: '0.8rem', fontWeight: '800',
@@ -188,7 +188,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
 
                 {!isMobile && <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 4px' }}></div>}
 
-                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: isMobile ? '0.75rem' : '0.6rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
+                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: isMobile ? '0.75rem' : '0.6rem', borderRadius: '8px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
                   <LayoutDashboard size={18} /> {!isMobile && <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>}
                 </button>
               </div>
@@ -211,7 +211,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
               </div>
              <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div className="notification-wrapper">
-                      <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'white', border: '1px solid #f1f5f9', width: 44, height: 44, borderRadius: '12px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
+                      <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'white', border: '1px solid #f1f5f9', width: 44, height: 44, borderRadius: '10px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
                         <Bell size={20} />
                         {unreadCount > 0 && <span className="notification-badge" style={{ border: '2px solid white' }}>{unreadCount}</span>}
                       </button>
@@ -271,13 +271,13 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                       )}
                     </div>
 
-                   <div className="profile-menu-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
-                    <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ padding: isMobile ? '4px' : '4px 8px', borderRadius: '12px', border: '1px solid #f1f5f9', background: 'white' }}>
+                   <div className="profile-menu-wrapper" style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                    <button id="profile-trigger-academy" className="profile-card-btn" onClick={(e) => { e.stopPropagation(); setShowProfileMenu(!showProfileMenu); }} style={{ padding: isMobile ? '4px' : '4px 8px', borderRadius: '10px', border: '1px solid #f1f5f9', background: 'white' }}>
                       <div className="profile-card-avatar" style={{ width: 34, height: 34 }}><span>{user?.name.charAt(0).toUpperCase()}</span></div>
                       <ChevronDown size={14} className={`profile-chevron hide-on-mobile ${showProfileMenu ? 'open' : ''}`} style={{ marginLeft: '4px', display: isMobile ? 'none' : 'block' }} />
                     </button>
                     {showProfileMenu && (
-                      <div className="profile-dropdown" style={{ right: 0 }}>
+                      <div className="profile-dropdown profile-dropdown-academy" style={{ right: 0, top: '55px' }}>
                         <div className="profile-dropdown-header">
                             <div>
                               <div className="profile-dropdown-name">{user?.name}</div>
@@ -392,7 +392,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
          <div className="sidebar-header" style={{ padding: '2.5rem 1.5rem' }}>
             <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
              <div style={{ 
-               width: 50, height: 50, borderRadius: '16px', 
+               width: 50, height: 50, borderRadius: '6px', 
                background: 'rgba(255, 255, 255, 0.03)', 
                border: '1px solid rgba(255, 255, 255, 0.1)',
                display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -438,11 +438,11 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
             className="academy-promo-btn"
             style={{ 
               width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', 
-              borderRadius: '20px', padding: '1.25rem', color: 'white', cursor: 'pointer',
+              borderRadius: '8px', padding: '1.25rem', color: 'white', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s'
             }}
           >
-            <div style={{ width: 40, height: 40, borderRadius: '12px', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '5px', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
                <GraduationCap size={22} />
             </div>
             <div style={{ textAlign: 'left' }}>
@@ -457,19 +457,22 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
         <style>{`
           ${(!isAdmin && (window.location.pathname.includes('/app/'))) ? `
             .main-content { padding: 0 !important; }
+            @media (max-width: 1024px) {
+              .main-content { padding: 1rem !important; }
+            }
             .dashboard-root { padding: 0 !important; max-width: none !important; margin: 0 !important; width: 100% !important; }
           ` : ''}
         `}</style>
         {renderAlertBanner()}
         <header className="top-header" style={{ background: 'rgba(248,250,252,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #f1f5f9' }}>
           <div className="header-left">
-            <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: '#f8fafc', width: 42, height: 42, borderRadius: '12px' }}>
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: '#f8fafc', width: 42, height: 42, borderRadius: '10px' }}>
+              <Menu size={20} />
             </button>
           </div>
           <div className="header-right">
              <div className="notification-wrapper">
-               <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: '#f8fafc', borderRadius: '12px', position: 'relative' }}>
+               <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: '#f8fafc', borderRadius: '10px', position: 'relative' }}>
                  <Bell size={20} />
                  {unreadCount > 0 && <span className="notification-badge" style={{ border: '2px solid white' }}>{unreadCount}</span>}
                </button>
@@ -534,7 +537,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
              </div>
              
              <div className="profile-menu-wrapper">
-               <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '14px', padding: '6px 12px' }}>
+               <button id="profile-trigger-main" className="profile-card-btn" onClick={(e) => { e.stopPropagation(); setShowProfileMenu(!showProfileMenu); }} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '5px', padding: '6px 12px' }}>
                  <div className="profile-card-avatar" style={{ background: '#134E39', color: 'white' }}><span>{user?.name.charAt(0).toUpperCase()}</span></div>
                  <div className="profile-card-info">
                    <span className="profile-card-name" style={{ fontWeight: '800' }}>{user?.name}</span>
@@ -543,7 +546,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
                  <ChevronDown size={14} color="#94a3b8" />
                </button>
                {showProfileMenu && (
-                 <div className="profile-dropdown" style={{ borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9', top: '75px' }}>
+                 <div className="profile-dropdown" style={{ borderRadius: '5px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9', top: '75px' }}>
                     <div style={{ padding: '15px 20px', borderBottom: '1px solid #f1f5f9' }}>
                       <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#1e293b' }}>{user?.name}</div>
                       <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user?.email}</div>
@@ -562,7 +565,7 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
           </div>
         </header>
 
-        <main className="main-content" style={{ padding: '2rem' }}>
+        <main className="main-content" style={{ padding: 'clamp(1rem, 5vw, 2.5rem)' }}>
           {isRestricted ? (
             <div style={{ height: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                <Shield size={64} color="#ef4444" style={{ marginBottom: '1.5rem', opacity: 0.2 }} />
@@ -581,7 +584,7 @@ const SidebarLink = ({ icon, label, active, onClick }) => (
     className={`nav-link ${active ? 'active' : ''}`} 
     onClick={onClick}
     style={{
-      padding: '0.85rem 1.25rem', borderRadius: '14px', border: 'none',
+      padding: '0.85rem 1.25rem', borderRadius: '5px', border: 'none',
       display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
       cursor: 'pointer', transition: 'all 0.2s',
       background: active ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
@@ -621,6 +624,37 @@ function App() {
     const saved = localStorage.getItem('Separuh Agama_claimed_badges');
     return saved ? JSON.parse(saved) : {};
   });
+
+  // Handle Click Outside for Dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Profile Dropdown logic
+      if (showProfileMenu) {
+        const triggerMain = document.getElementById('profile-trigger-main');
+        const triggerAcademy = document.getElementById('profile-trigger-academy');
+        const dropdowns = document.querySelectorAll('.profile-dropdown');
+        
+        let isClickInside = false;
+        if (triggerMain?.contains(event.target)) isClickInside = true;
+        if (triggerAcademy?.contains(event.target)) isClickInside = true;
+        dropdowns.forEach(d => { if (d.contains(event.target)) isClickInside = true; });
+
+        if (!isClickInside) setShowProfileMenu(false);
+      }
+      
+      // Notifications logic
+      if (showNotifications) {
+        const trigger = document.querySelector('.notification-wrapper .icon-btn');
+        const dropdown = document.querySelector('.notification-dropdown');
+        if (trigger && !trigger.contains(event.target) && dropdown && !dropdown.contains(event.target)) {
+          setShowNotifications(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu, showNotifications]);
 
   const getAcademyBadge = (completedCount, userId = null) => {
     const count = Number(completedCount) || 0;

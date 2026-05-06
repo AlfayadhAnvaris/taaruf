@@ -50,7 +50,7 @@ export default function LandingPage() {
             <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '40px', height: '40px' }} />
             Separuh Agama
           </div>
-          <Link to="/login" className="btn btn-primary" style={{ padding: '0.7rem 1.8rem', borderRadius: '14px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none', boxShadow: '0 8px 20px rgba(44,95,77,0.2)' }}>Masuk / Daftar</Link>
+          <Link to="/login" className="btn btn-primary" style={{ padding: '0.7rem 1.8rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none', boxShadow: '0 8px 20px rgba(44,95,77,0.2)' }}>Masuk / Daftar</Link>
         </div>
       </nav>
 
@@ -66,7 +66,7 @@ export default function LandingPage() {
               Platform mediasi taaruf online yang mengutamakan privasi, menjaga izzah dan iffah, serta didampingi penuh oleh Asatidzah berpengalaman.
             </p>
             <div className="landing-cta" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-              <Link to="/daftar" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '14px', fontSize: '1.05rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+              <Link to="/daftar" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '10px', fontSize: '1.05rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                 Mulai Ikhtiar <ArrowRight size={20} />
               </Link>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.9rem', fontWeight: '600' }}>
@@ -76,9 +76,9 @@ export default function LandingPage() {
           </div>
           
           <div className="landing-hero-visual">
-            <div className="glass-card mockup-card" style={{ background: 'rgba(255,255,255,0.9)', border: '1px solid white', boxShadow: '0 30px 60px rgba(0,0,0,0.12)', borderRadius: '24px', padding: '1.5rem' }}>
+            <div className="glass-card mockup-card" style={{ background: 'rgba(255,255,255,0.9)', border: '1px solid white', boxShadow: '0 30px 60px rgba(0,0,0,0.12)', borderRadius: '16px', padding: '1.5rem' }}>
               <div className="mockup-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(44,95,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '8px', background: 'rgba(44,95,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ShieldCheck color="var(--primary)" size={24} />
                 </div>
                 <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Mediasi Sedang Berlangsung</h4>
@@ -86,7 +86,7 @@ export default function LandingPage() {
               <div className="mockup-body">
                 <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}><strong>Ustadz Pembimbing</strong> telah membuka ruang diskusi. Silakan sampaikan pertanyaan Anda kepada kandidat sesuai koridor syariat.</p>
                 <div style={{ marginTop: '1.25rem', height: '1px', background: '#f1f5f9', width: '100%' }}></div>
-                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.8rem', borderRadius: '12px' }} onClick={() => navigate('/login')}>Masuk Ruang Mediasi</button>
+                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.8rem', borderRadius: '8px' }} onClick={() => navigate('/login')}>Masuk Ruang Mediasi</button>
               </div>
             </div>
             <div className="glass-card stat-bubble stat-1" style={{ right: '-20px', top: '15%' }}>
@@ -124,19 +124,19 @@ export default function LandingPage() {
 
             <div className="landing-academy-grid auto-grid">
               {/* Card 1: Academy */}
-              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '40px', background: 'linear-gradient(145deg, var(--primary), #1A2E25)', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 30px 60px rgba(44,95,77,0.25)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '3.5rem 2.5rem', borderRadius: '16px', background: 'linear-gradient(145deg, var(--primary), #1A2E25)', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 30px 60px rgba(44,95,77,0.25)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.15 }}><BookOpen size={160} /></div>
                 <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
-                  <div style={{ display: 'inline-block', padding: '0.4rem 1.2rem', background: 'var(--secondary)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', color: '#1A2E25', marginBottom: '2rem' }}>PROGRAM AKADEMI</div>
+                  <div style={{ display: 'inline-block', padding: '0.4rem 1.2rem', background: 'var(--secondary)', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '900', color: '#1A2E25', marginBottom: '2rem' }}>PROGRAM AKADEMI</div>
                   <h3 style={{ fontSize: '2rem', marginBottom: '1.2rem', color: 'white', fontWeight: '800' }}>Separuh Agama Academy</h3>
                   <p style={{ opacity: 0.9, lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1.05rem' }}>Bekali diri Anda lewat kurikulum video eksklusif, kuis pemahaman, dan raih E-Sertifikat Kelulusan Resmi sebelum melangkah ke jenjang pernikahan.</p>
                 </div>
-                <button className="btn btn-secondary" style={{ width: '100%', padding: '1rem', borderRadius: '16px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
+                <button className="btn btn-secondary" style={{ width: '100%', padding: '1rem', borderRadius: '10px', fontWeight: '900', color: '#1A2E25' }} onClick={() => navigate('/login')}>Mulai Belajar Sekarang</button>
               </div>
 
               {/* Card 2: Security */}
-                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
+                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '16px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
                   <ShieldCheck size={36} color="var(--primary)" />
                 </div>
                 <h3 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', color: '#1A2E25', fontWeight: '800' }}>Proteksi Izzah & Iffah</h3>
@@ -144,8 +144,8 @@ export default function LandingPage() {
               </div>
 
               {/* Card 3: Guidance */}
-                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '40px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
+                <div style={{ padding: 'clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2.5rem)', borderRadius: '16px', background: '#FDFBF7', border: '1px solid #F3EDE2', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
                   <UserCheck size={36} color="var(--primary)" />
                 </div>
                 <h3 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', color: '#1A2E25', fontWeight: '800' }}>Didampingi Asatidzah</h3>
@@ -235,7 +235,7 @@ export default function LandingPage() {
               min-height: 380px;
               background: white;
               border: 1px solid #f1f5f9;
-              border-radius: 28px;
+              border-radius: 18px;
               padding: 2.5rem;
               display: flex;
               flex-direction: column;
@@ -352,10 +352,10 @@ export default function LandingPage() {
 
         {/* CTA BANNER */}
         <section className="landing-section-full reveal" style={{ background: '#fdfdfd' }}>
-          <div className="landing-cta-banner" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center', borderRadius: '40px', margin: '0 5%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '90%' }}>
+          <div className="landing-cta-banner" style={{ background: 'var(--primary)', color: 'white', padding: '6rem 2rem', textAlign: 'center', borderRadius: '16px', margin: '0 5%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '90%' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1.2rem', color: 'white' }}>Siap Menjemput Jodoh Anda?</h2>
           <p style={{ opacity: 0.9, marginBottom: '2.5rem', fontSize: '1.1rem' }}>Daftarkan diri secara gratis dan mulai perjalanan ibadah Anda sekarang.</p>
-          <button className="btn btn-secondary btn-large" onClick={() => navigate('/daftar')} style={{ color: '#1A2E25', fontWeight: '900', padding: '1.2rem 3rem', borderRadius: '16px', boxShadow: '0 15px 30px rgba(0,0,0,0.2)' }}>
+          <button className="btn btn-secondary btn-large" onClick={() => navigate('/daftar')} style={{ color: '#1A2E25', fontWeight: '900', padding: '1.2rem 3rem', borderRadius: '10px', boxShadow: '0 15px 30px rgba(0,0,0,0.2)' }}>
             Mulai Sekarang
           </button>
           </div>

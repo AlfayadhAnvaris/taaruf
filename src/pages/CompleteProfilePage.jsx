@@ -212,7 +212,7 @@ export default function CompleteProfilePage({ onComplete }) {
         width: '100%',
         maxWidth: '560px',
         background: 'var(--surface)',
-        borderRadius: '24px',
+        borderRadius: '16px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
         overflow: 'hidden',
         border: '1px solid var(--border)',
@@ -314,7 +314,7 @@ export default function CompleteProfilePage({ onComplete }) {
                         alignItems: 'center',
                         gap: '1rem',
                         padding: '1.25rem 1.5rem',
-                        borderRadius: '16px',
+                        borderRadius: '12px',
                         border: selected ? `2px solid ${opt.color}` : '2px solid var(--border)',
                         background: selected ? opt.bg : 'var(--surface)',
                         cursor: 'pointer',
@@ -326,7 +326,7 @@ export default function CompleteProfilePage({ onComplete }) {
                       <div style={{
                         fontSize: '2.2rem',
                         width: '56px', height: '56px',
-                        borderRadius: '14px',
+                        borderRadius: '10px',
                         background: opt.bg,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
@@ -432,7 +432,7 @@ export default function CompleteProfilePage({ onComplete }) {
                   padding: '1.5rem',
                   background: 'rgba(236,72,153,0.04)',
                   border: '1px solid rgba(236,72,153,0.15)',
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   animation: 'fadeIn 0.3s ease',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -567,7 +567,7 @@ export default function CompleteProfilePage({ onComplete }) {
               </p>
               <button
                 className="btn btn-primary"
-                style={{ width: '100%', padding: '1.1rem', fontSize: '1.05rem', borderRadius: '14px' }}
+                style={{ width: '100%', padding: '1.1rem', fontSize: '1.05rem', borderRadius: '10px' }}
                 onClick={onComplete}
               >
                 <Home size={18} style={{ marginRight: '0.5rem' }} />
@@ -607,7 +607,7 @@ export default function CompleteProfilePage({ onComplete }) {
                   className="btn btn-primary"
                   onClick={handleSubmit}
                   disabled={isLoading}
-                  style={{ flex: 2, padding: '0.9rem', borderRadius: '12px' }}
+                  style={{ flex: 2, padding: '0.9rem', borderRadius: '10px' }}
                 >
                   {isLoading ? (
                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>

@@ -20,7 +20,7 @@ export default function HomeTab({
       {/* ✨ HERO SECTION LIGHT (GRAY) ✨ */}
       <div className="animate-up" style={{
         background: 'white',
-        borderRadius: '32px', padding: '2.5rem', marginBottom: '2.5rem',
+        borderRadius: '16px', padding: '2.5rem', marginBottom: '2.5rem',
         position: 'relative', overflow: 'hidden', color: '#1e293b',
         border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.01)'
       }}>
@@ -37,7 +37,7 @@ export default function HomeTab({
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
              <button 
                onClick={() => setActiveTab('my_cv')}
-               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 2.5rem', borderRadius: '20px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
+               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 2.5rem', borderRadius: '10px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 15px 35px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
              >
@@ -45,7 +45,7 @@ export default function HomeTab({
              </button>
              <button 
                onClick={() => navigate('/app/materi')}
-               style={{ background: 'white', color: '#134E39', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
+               style={{ background: 'white', color: '#134E39', border: '1.5px solid #E2E8F0', borderRadius: '10px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
                onMouseEnter={e => { e.currentTarget.style.borderColor = '#134E39'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.transform = 'translateY(0)'; }}
              >
@@ -70,12 +70,12 @@ export default function HomeTab({
           },
         ].map((stat, i) => (
           <div key={i} onClick={() => setActiveTab(stat.tab)} style={{ 
-            background: 'white', borderRadius: '30px', padding: '2rem', 
+            background: 'white', borderRadius: '15px', padding: '2rem', 
             cursor: 'pointer', border: '1px solid rgba(0,0,0,0.03)',
             boxShadow: '0 15px 35px rgba(0,0,0,0.02)', display: 'flex', 
             alignItems: 'center', gap: '1.5rem', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
           }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 25px 45px rgba(0,0,0,0.05)'; e.currentTarget.style.borderColor = 'rgba(19,78,57,0.1)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.03)'; }}>
-            <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: `${stat.color}08`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0, transition: 'all 0.3s' }}>{stat.icon}</div>
+            <div style={{ width: '70px', height: '70px', borderRadius: '11px', background: `${stat.color}08`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0, transition: 'all 0.3s' }}>{stat.icon}</div>
             <div>
               <div style={{ fontSize: '1.85rem', fontWeight: '800', color: '#0f172a', lineHeight: 1, marginBottom: '0.4rem' }}>{stat.value}</div>
               <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', marginBottom: '0.2rem' }}>{stat.label}</div>
@@ -86,7 +86,7 @@ export default function HomeTab({
       </div>
 
       {/* 📈 ACTIVITY CHART 📈 */}
-      <div className="chart-card animate-up stagger-2" style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
+      <div className="chart-card animate-up stagger-2" style={{ background: 'white', borderRadius: '16px', padding: '2.5rem', border: '1px solid #f1f5f9', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
         <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -131,7 +131,7 @@ export default function HomeTab({
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', fontWeight: 700 }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', fontWeight: 700 }}
                   itemStyle={{ color: '#134E39' }}
                 />
                 <Area type="monotone" dataKey="aktivitas" stroke="#134E39" strokeWidth={3} fillOpacity={1} fill="url(#colorAktivitas)" />
@@ -142,7 +142,7 @@ export default function HomeTab({
       </div>
 
       <div className="dashboard-main-grid animate-up stagger-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-        <div style={{ background: 'white', borderRadius: '24px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
+        <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                <CheckCircle size={18} /> Checklist Persiapan Taaruf
             </h3>
@@ -157,7 +157,7 @@ export default function HomeTab({
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                {checks.map((check, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '12px', background: check.done ? '#f0fdf4' : '#f8fafc', border: check.done ? '1px solid #bbf7d0' : '1px solid #f1f5f9', transition: 'all 0.3s' }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '8px', background: check.done ? '#f0fdf4' : '#f8fafc', border: check.done ? '1px solid #bbf7d0' : '1px solid #f1f5f9', transition: 'all 0.3s' }}>
                      <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: check.done ? '#166534' : '#e2e8f0', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {check.done ? <CheckCircle size={14} /> : check.icon}
                      </div>
@@ -173,7 +173,7 @@ export default function HomeTab({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-           <div style={{ background: 'white', borderRadius: '32px', padding: '2rem', color: '#1e293b', position: 'relative', overflow: 'hidden', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
+           <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', color: '#1e293b', position: 'relative', overflow: 'hidden', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
               <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.05 }}><Compass size={100} color="#134E39" /></div>
               <h4 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Alur Taaruf Syar'i</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -191,7 +191,7 @@ export default function HomeTab({
               </div>
            </div>
 
-           <div style={{ background: 'white', borderRadius: '32px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
+           <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', border: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                  <ShieldCheck size={18} color="#134E39" />
                  <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#134E39' }}>Keamanan & Adab</h4>

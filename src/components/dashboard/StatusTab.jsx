@@ -59,7 +59,7 @@ export default function StatusTab({
           </div>
 
           {taarufRequests.filter(req => req.senderEmail === user.email || (myExistingCv && req.targetCvId === myExistingCv.id)).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9' }}>
+            <div style={{ textAlign: 'center', padding: '6rem 2rem', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
               <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
                 <Compass size={48} color="#134E39" />
               </div>
@@ -71,7 +71,7 @@ export default function StatusTab({
             const stages = ['pending_target', 'pending_admin', 'qna', 'wali_process', 'meet', 'completed'];
             const currentIndex = stages.indexOf(req.status);
             return (
-              <div key={req.id} style={{ background: 'white', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', marginBottom: '2rem' }}>
+              <div key={req.id} style={{ background: 'white', borderRadius: '16px', padding: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: 50, height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
@@ -143,7 +143,7 @@ export default function StatusTab({
                   <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Progres Mediasi</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.8 }}>ID Permintaan: #{req.id}</p>
                 </div>
-                <button onClick={() => setViewingStatusId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white', cursor: 'pointer' }}><X size={20} /></button>
+                <button onClick={() => setViewingStatusId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><X size={20} /></button>
               </div>
 
               <div style={{ padding: '1.75rem' }}>
@@ -190,8 +190,8 @@ export default function StatusTab({
                 )}
 
                 {/* 👤 Partner Summary Section 👤 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
-                  <div style={{ width: 54, height: 54, borderRadius: '14px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                  <div style={{ width: 54, height: 54, borderRadius: '8px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}>
                     {(req.senderEmail === user.email ? req.targetAlias : req.senderAlias).charAt(0)}
                   </div>
                   <div style={{ flex: 1 }}>
@@ -217,7 +217,7 @@ export default function StatusTab({
                     <Activity size={16} color="#134E39" />
                     <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#134E39' }}>Deskripsi Tahapan</h4>
                   </div>
-                  <div style={{ padding: '1.25rem', background: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}>
+                  <div style={{ padding: '1.25rem', background: 'white', borderRadius: '10px', border: '1px solid #f1f5f9', fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}>
                     {req.status === 'pending_target' && 'Bismillah, permohonan taaruf sudah terkirim. Saat ini sedang menunggu persetujuan dari calon pasangan Anda.'}
                     {req.status === 'pending_admin' && 'Maasyaa Allah, calon pasangan telah setuju! Mohon tunggu Admin/Ustadz untuk memverifikasi dan membuka ruang Q&A.'}
                     {req.status === 'qna' && 'Silakan masuk ke Ruang Mediasi untuk sesi tanya jawab visi-misi yang didampingi oleh Admin Separuh Agama.'}

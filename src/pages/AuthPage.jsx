@@ -65,7 +65,7 @@ function OTPInput({ value, onChange, disabled }) {
               fontSize: '1.6rem',
               fontWeight: '700',
               border: isFilled ? '2px solid var(--primary)' : '2px solid var(--border)',
-              borderRadius: '12px',
+              borderRadius: '8px',
               background: isFilled ? 'rgba(44,95,77,0.06)' : 'var(--bg-color)',
               color: 'var(--text-main)',
               outline: 'none',
@@ -280,7 +280,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
                     <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8' }}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '12px' }} disabled={isLoading}>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '10px' }} disabled={isLoading}>
                   {isLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Daftar Sekarang')}
                 </button>
               </form>
@@ -298,7 +298,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
                <h2 style={{ marginBottom: '1rem' }}>Cek Email Anda</h2>
                <p style={{ marginBottom: '2rem' }}>Kode OTP dikirim ke <strong>{email}</strong></p>
                <OTPInput value={otpCode} onChange={setOtpCode} disabled={isLoading} />
-               <button onClick={handleVerifyOtp} className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '12px' }} disabled={isLoading || otpCode.length < 6}>
+               <button onClick={handleVerifyOtp} className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '10px' }} disabled={isLoading || otpCode.length < 6}>
                  {isLoading ? 'Verifikasi...' : 'Verifikasi & Buat Akun'}
                </button>
             </div>

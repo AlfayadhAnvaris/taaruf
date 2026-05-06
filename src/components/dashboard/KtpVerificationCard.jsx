@@ -63,7 +63,7 @@ export default function KtpVerificationCard({ user, showAlert }) {
     <div className="card" style={{ padding: '1.75rem', marginBottom: '1.25rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(44,95,77,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+          <div style={{ width: 36, height: 36, borderRadius: '5px', background: 'rgba(44,95,77,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
             <BadgeCheck size={18} />
           </div>
           <div>
@@ -76,15 +76,15 @@ export default function KtpVerificationCard({ user, showAlert }) {
         </span>
       </div>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.6', marginBottom: '1.25rem', padding: '0.875rem', background: 'rgba(44,95,77,0.03)', borderRadius: '12px', border: '1px solid rgba(44,95,77,0.08)' }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.6', marginBottom: '1.25rem', padding: '0.875rem', background: 'rgba(44,95,77,0.03)', borderRadius: '6px', border: '1px solid rgba(44,95,77,0.08)' }}>
         🪪 Unggah foto KTP Anda (tampak depan, jelas) untuk memverifikasi identitas. Data KTP hanya digunakan untuk keperluan verifikasi dan tidak dibagikan kepada siapapun.
       </p>
 
       {(preview || (ktpUrl && ktpStatus !== 'rejected')) && (
-        <div style={{ marginBottom: '1.25rem', position: 'relative', borderRadius: '14px', overflow: 'hidden', border: '2px solid var(--border)' }}>
+        <div style={{ marginBottom: '1.25rem', position: 'relative', borderRadius: '7px', overflow: 'hidden', border: '2px solid var(--border)' }}>
           <img src={preview || ktpUrl} alt="Foto KTP" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
           {ktpStatus === 'verified' && (
-            <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: '#22c55e', color: 'white', borderRadius: '8px', padding: '0.3rem 0.75rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: '#22c55e', color: 'white', borderRadius: '4px', padding: '0.3rem 0.75rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <BadgeCheck size={13} /> TERVERIFIKASI
             </div>
           )}
@@ -95,7 +95,7 @@ export default function KtpVerificationCard({ user, showAlert }) {
         <div>
           {!preview ? (
             <button type="button" onClick={() => fileInputRef.current?.click()}
-              style={{ width: '100%', padding: '1.5rem', border: '2px dashed var(--border)', borderRadius: '14px', background: 'var(--bg-color)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', transition: 'border-color 0.2s' }}
+              style={{ width: '100%', padding: '1.5rem', border: '2px dashed var(--border)', borderRadius: '7px', background: 'var(--bg-color)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', transition: 'border-color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
             >
@@ -121,7 +121,7 @@ export default function KtpVerificationCard({ user, showAlert }) {
       )}
 
       {ktpStatus === 'pending' && !preview && (
-        <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(245,158,11,0.06)', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.2)' }}>
+        <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(245,158,11,0.06)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.2)' }}>
           <p style={{ color: '#f59e0b', fontSize: '0.875rem', margin: 0, fontWeight: '600' }}>
             ⏳ Foto KTP sedang ditinjau oleh Admin. Proses biasanya memakan waktu 1×24 jam.
           </p>

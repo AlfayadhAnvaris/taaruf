@@ -67,7 +67,7 @@ export default function ChangePasswordCard({ showAlert }) {
               padding: '1rem', 
               width: '100%',
               maxWidth: '240px',
-              borderRadius: '18px', 
+              borderRadius: '9px', 
               fontWeight: '900', 
               cursor: 'pointer', 
               transition: 'all 0.2s',
@@ -91,7 +91,7 @@ export default function ChangePasswordCard({ showAlert }) {
           animation: 'fadeIn 0.3s ease' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>
-            <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
+            <div style={{ width: 44, height: 44, borderRadius: '6px', background: 'rgba(19,78,57,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
               <KeyRound size={20} />
             </div>
             <div>
@@ -106,7 +106,7 @@ export default function ChangePasswordCard({ showAlert }) {
               <p style={{ fontWeight: '900', color: '#134E39', fontSize: '1.1rem', marginBottom: '0.5rem' }}>Berhasil Diperbarui!</p>
               <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '2rem' }}>Gunakan password baru saat login berikutnya.</p>
               <button 
-                style={{ background: '#134E39', color: 'white', border: 'none', padding: '1rem 3rem', borderRadius: '16px', fontWeight: '900', cursor: 'pointer' }}
+                style={{ background: '#134E39', color: 'white', border: 'none', padding: '1rem 3rem', borderRadius: '8px', fontWeight: '900', cursor: 'pointer' }}
                 onClick={() => { setIsOpen(false); setDone(false); }}
               >
                 Selesai
@@ -136,7 +136,7 @@ export default function ChangePasswordCard({ showAlert }) {
                 )}
               </div>
 
-              <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1.5rem', padding: '1rem', background: '#F8FAF9', borderRadius: '12px', border: '1px solid #E4EDE8' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1.5rem', padding: '1rem', background: '#F8FAF9', borderRadius: '6px', border: '1px solid #E4EDE8' }}>
                 💡 Tips: Gunakan kombinasi huruf besar, angka, dan simbol untuk keamanan maksimal.
               </div>
 
@@ -147,8 +147,8 @@ export default function ChangePasswordCard({ showAlert }) {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="button" style={{ flex: 1, background: 'transparent', color: '#64748B', border: '1px solid #E2E8F0', padding: '1.1rem', borderRadius: '18px', fontWeight: '800', cursor: 'pointer' }} onClick={() => setIsOpen(false)}>Batal</button>
-                <button type="submit" style={{ flex: 2, background: '#134E39', color: 'white', border: 'none', padding: '1.1rem', borderRadius: '18px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }} disabled={saving || (confirm && confirm !== newPw)}>
+                <button type="button" style={{ flex: 1, background: 'transparent', color: '#64748B', border: '1px solid #E2E8F0', padding: '1.1rem', borderRadius: '9px', fontWeight: '800', cursor: 'pointer' }} onClick={() => setIsOpen(false)}>Batal</button>
+                <button type="submit" style={{ flex: 2, background: '#134E39', color: 'white', border: 'none', padding: '1.1rem', borderRadius: '9px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }} disabled={saving || (confirm && confirm !== newPw)}>
                   {saving
                     ? <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
                     : <KeyRound size={18} />

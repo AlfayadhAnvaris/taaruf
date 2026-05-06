@@ -184,7 +184,7 @@ export default function LearningTab({
                onClick={() => setActiveTab('home')} 
                style={{ 
                  background: 'white', border: '1px solid #E2E8F0', 
-                 borderRadius: '12px', padding: '0.6rem 1.25rem', 
+                 borderRadius: '8px', padding: '0.6rem 1.25rem', 
                  fontWeight: '800', color: '#134E39', cursor: 'pointer',
                  display: 'inline-flex', alignItems: 'center', gap: '8px',
                  marginBottom: '2rem', fontSize: '0.8rem', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
@@ -203,7 +203,7 @@ export default function LearningTab({
                 </p>
               </div>
               <div style={{ 
-                background: 'white', padding: '1.25rem 2rem', borderRadius: '24px', 
+                background: 'white', padding: '1.25rem 2rem', borderRadius: '10px', 
                 border: '1px solid #E2E8F0', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
                 flex: '0 0 auto', minWidth: '160px'
               }}>
@@ -225,8 +225,8 @@ export default function LearningTab({
                     { label: 'Materi Selesai', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <CheckCircle /> },
                     { label: 'Total Progres', value: `${totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%`, total: '100%', color: '#0ea5e9', icon: <BarChart2 /> }
                   ].map((stat, i) => (
-                    <div key={i} style={{ background: 'white', padding: '1.5rem', borderRadius: '28px', border: '1px solid #E4EDE8', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${stat.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '1.25rem' }}>
+                    <div key={i} style={{ background: 'white', padding: '1.5rem', borderRadius: '10px', border: '1px solid #E4EDE8', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: `${stat.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '1.25rem' }}>
                         {React.cloneElement(stat.icon, { size: 20 })}
                       </div>
                       <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39', marginBottom: '0.2rem' }}>{stat.value}</div>
@@ -236,7 +236,7 @@ export default function LearningTab({
                </div>
 
                <div style={{ 
-                 background: 'white', padding: 'clamp(1.5rem, 5vw, 2.5rem)', borderRadius: '32px', 
+                 background: 'white', padding: 'clamp(1.5rem, 5vw, 2.5rem)', borderRadius: '12px', 
                  border: '1px solid #E4EDE8', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem' 
                }}>
                   <div style={{ width: '110px', height: '110px', flexShrink: 0, margin: '0 auto' }}>
@@ -268,7 +268,7 @@ export default function LearningTab({
             </div>
 
             <div style={{ 
-              background: 'white', borderRadius: '32px', padding: 'clamp(1.5rem, 5vw, 3rem)', 
+              background: 'white', borderRadius: '12px', padding: 'clamp(1.5rem, 5vw, 3rem)', 
               border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem' }}>
@@ -299,11 +299,11 @@ export default function LearningTab({
                     return (
                       <div key={cls.id} style={{ 
                         display: 'flex', alignItems: 'center', gap: 'clamp(1rem, 3vw, 2rem)', 
-                        padding: '1.25rem', borderRadius: '24px', background: '#F8FAF9', 
+                        padding: '1.25rem', borderRadius: '10px', background: '#F8FAF9', 
                         border: '1px solid #E4EDE8', transition: 'all 0.3s ease',
                         flexWrap: 'wrap'
                       }}>
-                        <div style={{ width: 'clamp(60px, 15vw, 90px)', height: 'clamp(60px, 15vw, 90px)', borderRadius: '18px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8' }}>
+                        <div style={{ width: 'clamp(60px, 15vw, 90px)', height: 'clamp(60px, 15vw, 90px)', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8' }}>
                           <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                         <div style={{ flex: '1 1 200px' }}>
@@ -341,11 +341,11 @@ export default function LearningTab({
                     );
                   })
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#F8FAF9', borderRadius: '32px', border: '2px dashed #E2E8F0' }}>
+                  <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#F8FAF9', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
                      <BookOpen size={64} color="#CBD5E1" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
                      <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#134E39', marginBottom: '1rem' }}>Belum Ada Kelas</h3>
                      <p style={{ color: '#64748B', fontWeight: '600', maxWidth: '400px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>Anda belum terdaftar di kelas manapun. Silakan pilih kelas dari daftar kelas kami untuk memulai.</p>
-                     <button onClick={() => setLmsView('catalog')} style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 3rem', borderRadius: '18px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>LIHAT DAFTAR KELAS</button>
+                     <button onClick={() => setLmsView('catalog')} style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 3rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>LIHAT DAFTAR KELAS</button>
                   </div>
                 )}
               </div>
@@ -584,7 +584,7 @@ export default function LearningTab({
                       key={item.id} 
                       onClick={() => goToLesson(item)}
                       style={{ 
-                        padding: '1rem 1.75rem', margin: '0.25rem 1rem', borderRadius: '16px',
+                        padding: '1rem 1.75rem', margin: '0.25rem 1rem', borderRadius: '10px',
                         display: 'flex', alignItems: 'center', gap: '1rem', cursor: isLocked ? 'not-allowed' : 'pointer',
                         background: isActive ? '#134E39' : 'transparent',
                         color: isActive ? 'white' : (isLocked ? '#CBD5E1' : '#475569'),
@@ -673,7 +673,7 @@ export default function LearningTab({
                       {activeLesson.type === 'video' && (
                         <div className="lms-video-container" style={{ 
                           background: '#000', aspectRatio: '16/9', width: '100%', 
-                          borderRadius: '24px', boxShadow: '0 30px 60px rgba(0,0,0,0.1)',
+                          borderRadius: '12px', boxShadow: '0 30px 60px rgba(0,0,0,0.1)',
                           position: 'relative', overflow: 'hidden', marginBottom: '2.5rem',
                           border: '4px solid white'
                         }}>
@@ -684,8 +684,8 @@ export default function LearningTab({
                           />
                         </div>
                       )}
-                      <div style={{ padding: '0 1rem', marginBottom: '5rem', textAlign: 'left' }}>
-                        <div className="prose-modern" dangerouslySetInnerHTML={{ __html: activeLesson.content }} style={{ fontSize: '1.15rem', lineHeight: 1.9, color: '#2D3748' }} />
+                      <div style={{ padding: isMobile ? '0' : '0 1rem', marginBottom: '5rem', textAlign: 'left' }}>
+                        <div className="prose-modern" dangerouslySetInnerHTML={{ __html: activeLesson.content }} style={{ fontSize: '1.1rem', lineHeight: 1.8, color: '#2D3748' }} />
                       </div>
                     </>
                   )}
@@ -693,8 +693,8 @@ export default function LearningTab({
                   {activeLesson.type === 'quiz' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '800px', margin: '0 auto' }}>
                       {quizSubmitted ? (
-                        <div style={{ textAlign: 'center', padding: '5rem 3rem', background: 'white', borderRadius: '40px', border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
-                           <div style={{ width: 100, height: 100, borderRadius: '32px', background: quizPassed ? '#F0FDF4' : '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem', color: quizPassed ? '#10B981' : '#EF4444', boxShadow: '0 15px 30px rgba(0,0,0,0.05)' }}>
+                        <div style={{ textAlign: 'center', padding: '5rem 3rem', background: 'white', borderRadius: '18px', border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+                           <div style={{ width: 100, height: 100, borderRadius: '16px', background: quizPassed ? '#F0FDF4' : '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem', color: quizPassed ? '#10B981' : '#EF4444', boxShadow: '0 15px 30px rgba(0,0,0,0.05)' }}>
                              {quizPassed ? <Award size={54} strokeWidth={1.5} /> : <AlertCircle size={54} strokeWidth={1.5} />}
                            </div>
                            <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#134E39', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{quizPassed ? 'Mabruk! Anda Lulus' : 'Coba Lagi Yuk!'}</h2>
@@ -706,7 +706,7 @@ export default function LearningTab({
                            </div>
                         </div>
                       ) : !quizStarted ? (
-                        <div style={{ padding: '5rem 3rem', background: 'white', borderRadius: '40px', textAlign: 'center', border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+                        <div style={{ padding: '5rem 3rem', background: 'white', borderRadius: '18px', textAlign: 'center', border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
                            <div style={{ width: 90, height: 90, background: 'rgba(212,175,55,0.1)', color: '#D4AF37', borderRadius: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem' }}>
                              <Clock size={48} />
                            </div>
@@ -721,7 +721,7 @@ export default function LearningTab({
                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: '900', color: '#D4AF37' }}><Clock size={18} /> {formatTime(timeLeft)}</div>
                           </div>
                           {currentQuiz.map((q, i) => (
-                            <div key={i} style={{ background: 'white', padding: '2.5rem', borderRadius: '32px', border: '1px solid #E4EDE8', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                            <div key={i} style={{ background: 'white', padding: '2.5rem', borderRadius: '14px', border: '1px solid #E4EDE8', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                               <div style={{ fontWeight: '900', fontSize: '1.2rem', color: '#134E39', marginBottom: '2rem', lineHeight: 1.5 }}>{i + 1}. {q.q}</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {q.options.map((opt, oi) => (
@@ -889,6 +889,26 @@ export default function LearningTab({
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #E4EDE8; borderRadius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+        .prose-modern {
+          text-align: justify;
+          hyphens: auto;
+        }
+        .prose-modern p {
+          margin-bottom: 1.5rem;
+        }
+        .prose-modern h1, .prose-modern h2, .prose-modern h3 {
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          color: #134E39;
+          font-weight: 900;
+        }
+        .prose-modern ul, .prose-modern ol {
+          margin-bottom: 1.5rem;
+          padding-left: 1.5rem;
+        }
+        .prose-modern li {
+          margin-bottom: 0.5rem;
+        }
       `}</style>
     </div>
   );

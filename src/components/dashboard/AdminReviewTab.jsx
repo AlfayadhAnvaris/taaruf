@@ -51,7 +51,7 @@ export default function AdminReviewTab() {
       <style>{`
         .review-item {
           background: white;
-          border-radius: 24px;
+          border-radius: 12px;
           padding: 1.25rem 1.5rem;
           border: 1px solid #f1f5f9;
           display: flex;
@@ -87,7 +87,7 @@ export default function AdminReviewTab() {
         }
       `}</style>
 
-      <div className="card" style={{ padding: '1.5rem', borderRadius: '32px' }}>
+      <div className="card" style={{ padding: '1.5rem', borderRadius: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h3 style={{ margin: 0, fontWeight: '950', color: '#134E39', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25rem' }}>
@@ -102,7 +102,7 @@ export default function AdminReviewTab() {
             pendingCvs.map(cv => (
               <div key={cv.id} className="review-item" onClick={() => setReviewingCv(cv)} style={{ cursor: 'pointer' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', fontSize: '1.2rem', flexShrink: 0 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '10px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', fontSize: '1.2rem', flexShrink: 0 }}>
                     {cv.alias?.charAt(0).toUpperCase()}
                   </div>
                   <div style={{ minWidth: 0 }}>
@@ -121,7 +121,7 @@ export default function AdminReviewTab() {
                   <button 
                     className="btn-review" 
                     onClick={(e) => { e.stopPropagation(); setReviewingCv(cv); }}
-                    style={{ background: '#134E39', color: 'white', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '12px', fontWeight: '800', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
+                    style={{ background: '#134E39', color: 'white', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '8px', fontWeight: '800', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
                   >
                     <Eye size={16} /> Review Detail
                   </button>
@@ -129,7 +129,7 @@ export default function AdminReviewTab() {
               </div>
             ))
           ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f8fafc', borderRadius: '24px', border: '1.5px dashed #e2e8f0' }}>
+            <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f8fafc', borderRadius: '12px', border: '1.5px dashed #e2e8f0' }}>
               <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 10px 20px rgba(0,0,0,0.02)' }}>
                 <CheckCircle size={40} color="#16a34a" />
               </div>
@@ -141,14 +141,14 @@ export default function AdminReviewTab() {
 
         {reviewingCv && (
           <div className="modal-overlay" onClick={() => setReviewingCv(null)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px', width: '95%', borderRadius: '32px', overflow: 'hidden' }}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px', width: '95%', borderRadius: '16px', overflow: 'hidden' }}>
               <div style={{ padding: '2rem', background: '#134E39', color: 'white', position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
                   <ShieldCheck size={20} color="#D4AF37" />
                   <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Verifikasi CV Kandidat</span>
                 </div>
                 <h2 style={{ fontSize: '1.75rem', fontWeight: '950', margin: 0 }}>Review Data: {reviewingCv.alias}</h2>
-                <button onClick={() => setReviewingCv(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.1)', border: 'none', width: 40, height: 40, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
+                <button onClick={() => setReviewingCv(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.1)', border: 'none', width: 40, height: 40, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
                   <XCircle size={24} />
                 </button>
               </div>
@@ -160,19 +160,19 @@ export default function AdminReviewTab() {
                 
                 <div className="modal-grid-2" style={{ marginBottom: '2.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><User size={20} /></div>
+                    <div style={{ width: 40, height: 40, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><User size={20} /></div>
                     <div><div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>ALIAS</div><div style={{ fontWeight: '800' }}>{reviewingCv.alias}</div></div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><Clock size={20} /></div>
+                    <div style={{ width: 40, height: 40, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><Clock size={20} /></div>
                     <div><div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>USIA</div><div style={{ fontWeight: '800' }}>{reviewingCv.age} Tahun</div></div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><MapPin size={20} /></div>
+                    <div style={{ width: 40, height: 40, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><MapPin size={20} /></div>
                     <div><div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>LOKASI</div><div style={{ fontWeight: '800' }}>{reviewingCv.location}</div></div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><GraduationCap size={20} /></div>
+                    <div style={{ width: 40, height: 40, borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}><GraduationCap size={20} /></div>
                     <div><div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#94a3b8' }}>PENDIDIKAN</div><div style={{ fontWeight: '800' }}>{reviewingCv.education}</div></div>
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function AdminReviewTab() {
                   <h4 style={{ fontSize: '0.85rem', fontWeight: '900', color: '#134E39', textTransform: 'uppercase', margin: 0 }}>Deskripsi Profil</h4>
                 </div>
                 
-                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '20px', border: '1px solid #f1f5f9', marginBottom: '1.5rem' }}>
+                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '10px', border: '1px solid #f1f5f9', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: '#134E39' }}>
                     <MessageSquare size={16} />
                     <span style={{ fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase' }}>Tentang Saya</span>
@@ -189,7 +189,7 @@ export default function AdminReviewTab() {
                   <p style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', lineHeight: 1.6, fontWeight: '500' }}>{reviewingCv.about || 'Tidak ada deskripsi'}</p>
                 </div>
 
-                <div style={{ background: '#fffcf0', padding: '1.5rem', borderRadius: '20px', border: '1px solid #fde047', marginBottom: '1.5rem' }}>
+                <div style={{ background: '#fffcf0', padding: '1.5rem', borderRadius: '10px', border: '1px solid #fde047', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: '#a16207' }}>
                     <AlertCircle size={16} />
                     <span style={{ fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase' }}>Kriteria Pasangan</span>
@@ -201,13 +201,13 @@ export default function AdminReviewTab() {
               <div style={{ padding: '2rem', display: 'flex', gap: '1rem', background: 'white', borderTop: '1px solid #f1f5f9' }}>
                 <button 
                   onClick={() => handleReject(reviewingCv.id, reviewingCv.alias, reviewingCv.user_id)}
-                  style={{ flex: 1, background: '#fef2f2', color: '#ef4444', border: 'none', padding: '1rem', borderRadius: '16px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  style={{ flex: 1, background: '#fef2f2', color: '#ef4444', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
                   <XCircle size={20} /> Tolak CV
                 </button>
                 <button 
                   onClick={() => handleApprove(reviewingCv.id, reviewingCv.alias, reviewingCv.user_id)}
-                  style={{ flex: 2, background: '#134E39', color: 'white', border: 'none', padding: '1rem', borderRadius: '16px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(19, 78, 57, 0.2)' }}
+                  style={{ flex: 2, background: '#134E39', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(19, 78, 57, 0.2)' }}
                 >
                   <CheckCircle size={20} /> Setujui & Publish
                 </button>
