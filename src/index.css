@@ -981,7 +981,7 @@ button {
 }
 
 /* On Large Screens, Sidebar pushes content */
-@media (min-width: 1025px) {
+@media (min-width: 1200px) {
   .sidebar.open + .main-wrapper {
     margin-left: 280px;
     width: calc(100% - 280px);
@@ -1913,15 +1913,19 @@ select.form-control {
 .landing-split-hero {
   display: flex;
   align-items: center;
-  gap: 4rem;
-  max-width: 1280px;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 1350px;
   margin: 0 auto;
+  padding: 0 5%;
 }
 
 .landing-hero-text {
-  flex: 1;
+  flex: 0 0 550px;
+  max-width: 550px;
   text-align: left;
   animation: slideUp 0.8s ease;
+  z-index: 5;
 }
 
 .landing-hero-text .landing-title {
@@ -1977,9 +1981,10 @@ select.form-control {
 
 .geometric-bg {
   position: absolute;
-  width: 450px;
-  height: 450px;
-  background: rgba(44, 95, 77, 0.05);
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: rgba(44, 95, 77, 0.04);
   border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
   z-index: 0;
   animation: morphing 10s ease-in-out infinite alternate;
@@ -2003,11 +2008,12 @@ select.form-control {
 
 .mockup-card {
   padding: 1.5rem;
-  width: 320px;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 340px;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   animation: float 6s ease-in-out infinite;
+  z-index: 10;
 }
 
 .mockup-header {
@@ -3223,18 +3229,41 @@ h3 { font-size: var(--h3-size) !important; }
 }
 
 /* 6. Landing Page Mobile Polish */
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
   .landing-split-hero {
     flex-direction: column !important;
     text-align: center !important;
-    padding-top: 100px !important;
+    padding-top: 120px !important;
+    gap: 3rem !important;
   }
   .landing-hero-text {
+    flex: 1 !important;
+    max-width: 100% !important;
     align-items: center !important;
+    text-align: center !important;
+  }
+  .landing-hero-text .landing-title {
+    font-size: clamp(3rem, 8vw, 4.5rem) !important;
+    margin-bottom: 2rem !important;
+  }
+  .landing-hero-text .landing-subtitle {
+    font-size: 1.3rem !important;
+    max-width: 700px !important;
+    margin: 0 auto 3rem !important;
   }
   .landing-hero-visual {
-    min-height: 300px !important;
+    min-height: 400px !important;
     width: 100% !important;
+    margin-top: 3rem !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  .mockup-card {
+    position: relative !important;
+    top: 0 !important;
+    right: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
   }
 }
 

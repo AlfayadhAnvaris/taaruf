@@ -283,28 +283,33 @@ export default function MyCvTab({
       <div key="cv-view-root" className="cv-root-view">
         <style key="cv-style">{`
           .cv-root-view {
-            background: #f8fafc; width: 100%; height: calc(100vh - 100px); 
-            display: flex; alignItems: center; justifyContent: center; padding: 0 1rem;
+            background: #f8fafc; width: 100%; height: calc(100vh - 140px); 
+            display: flex; justifyContent: center; padding: 1rem 0;
             overflow: hidden;
           }
           
           .cv-full-container {
-            display: flex; width: 100%; max-width: 1300px; 
-            height: 100%; gap: 1.5rem;
+            display: flex; width: 100%; max-width: 1450px; 
+            height: 100%; gap: 2rem;
           }
           .cv-side-id {
             width: 280px; flex-shrink: 0; background: white; 
-            padding: 2rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center;
-            height: fit-content; max-height: 100%; overflow-y: auto;
-            border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 10px 40px rgba(0,0,0,0.02);
+            padding: 3rem 1.75rem; display: flex; flex-direction: column; align-items: center; text-align: center;
+            height: fit-content; max-height: 100%; overflow-y: auto; align-self: flex-start;
+            border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 20px 50px rgba(0,0,0,0.04);
           }
-          .cv-side-id::-webkit-scrollbar { width: 5px; }
-          .cv-side-id::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+          .cv-side-id::-webkit-scrollbar { width: 4px; }
+          .cv-side-id::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
           
           .cv-main-body {
-            flex: 1; padding: 2.5rem; overflow-y: auto; height: 100%;
-            background: #F8FAFC; border-radius: 16px; border: 1px solid #f1f5f9;
+            flex: 1; padding: 0 1rem 2rem 1rem; overflow-y: auto; height: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: #e2e8f0 transparent;
           }
+          .cv-main-body::-webkit-scrollbar { width: 6px; }
+          .cv-main-body::-webkit-scrollbar-track { background: transparent; }
+          .cv-main-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+          .cv-main-body::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
           
           .cv-hero-badge {
             background: #134E39; color: white; padding: 6px 16px; border-radius: 99px;
@@ -325,12 +330,12 @@ export default function MyCvTab({
           }
           
           .cv-grid-layout {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 2rem;
           }
           
           .cv-card-premium {
-            background: white; border-radius: 14px; padding: 1.75rem;
-            border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.75rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.06);
             position: relative; overflow: hidden;
             display: flex; flex-direction: column; height: 100%;
           }
@@ -456,19 +461,21 @@ export default function MyCvTab({
                  <div className="cv-stat-card-small"><i><Heart size={16} /></i> {displayCv.marital_status}</div>
               </div>
 
-                <div className="cv-vision-box" style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', textAlign: 'left', width: '100%', position: 'relative', boxShadow: '0 10px 20px rgba(0,0,0,0.03)', height: '140px', overflow: 'hidden' }}>
-                  <Quote size={30} style={{ position: 'absolute', top: '10px', right: '10px', opacity: 0.05, color: '#134E39' }} />
-                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.1em' }}>Visi Pernikahan</label>
-                  <p style={{ fontStyle: 'italic', fontSize: '0.95rem', lineHeight: 1.6, color: '#134E39', fontWeight: '600', margin: 0, position: 'relative', zIndex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>"{displayCv.about}"</p>
-                  {displayCv.about?.length > 80 && (
-                    <button 
-                      onClick={() => setFullViewItem({ l: 'Visi Pernikahan', v: displayCv.about })}
-                      style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(212,175,55,0.1)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.gold, zIndex: 2 }}
-                    >
-                      <Eye size={14} />
-                    </button>
-                  )}
-                </div>
+               {!isViewingOther && (
+                 <button 
+                   onClick={() => setIsEditingCv(true)}
+                   style={{ 
+                     width: '100%', padding: '1rem', borderRadius: '12px', background: '#134E39', 
+                     color: 'white', border: 'none', fontWeight: '900', fontSize: '0.8rem', 
+                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                     marginBottom: '1.25rem', boxShadow: '0 10px 20px rgba(19,78,57,0.15)', transition: 'all 0.3s'
+                   }}
+                   onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                   onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                 >
+                   <Settings size={16} /> EDIT PROFIL CV
+                 </button>
+               )}
            </div>
 
            {/* 📄 RIGHT PANEL (CONTENT) 📄 */}
@@ -480,10 +487,12 @@ export default function MyCvTab({
                  borderBottom: '2px solid #f1f5f9', 
                  marginBottom: '2rem', 
                  position: 'sticky', 
-                 top: '-3.5rem', 
-                 background: 'white', 
+                 top: '0', 
+                 background: 'rgba(248, 250, 252, 0.9)', 
+                 backdropFilter: 'blur(10px)',
                  zIndex: 10,
-                 padding: '0 0.5rem'
+                 padding: '1.5rem 0.5rem',
+                 boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)'
                }}>
                   {[
                     { id: 'cv', label: 'PROFIL LENGKAP' },
@@ -532,7 +541,7 @@ export default function MyCvTab({
                </div>
 
               {activeViewTab === 'cv' ? (
-                <div className="cv-grid-layout" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', alignItems: 'stretch', animation: 'fadeIn 0.4s ease' }}>
+                <div className="cv-grid-layout" style={{ alignItems: 'stretch', animation: 'fadeIn 0.4s ease' }}>
                  
                  {/* Card: Education & Job */}
                  <div className="cv-card-premium">
@@ -601,8 +610,8 @@ export default function MyCvTab({
                         </div>
                     </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                        {[
+                    <div className="cv-grid-layout">
+                          {[
                           { l: '3 Landasan Utama', v: displayCv.screening_data?.aqidah1 || (isViewingOther ? null : user.aqidah1) },
                           { l: 'Makna Syahadat', v: displayCv.screening_data?.aqidah2 || (isViewingOther ? null : user.aqidah2) },
                           { l: 'Tujuan Penciptaan', v: displayCv.screening_data?.aqidah3 || (isViewingOther ? null : user.aqidah3) },
@@ -804,22 +813,205 @@ export default function MyCvTab({
 
   // Wizard view
   return (
-    <div key="cv-edit-root" className="cv-root" style={{ overflowY: 'auto' }}>
-       <div style={{ padding: '4rem 5%', maxWidth: '800px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
-             <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: C.primary }}>
-               {cvStep < 7 ? `Langkah ${cvStep}: ${[
+    <div key="cv-edit-root" className="cv-root" style={{ height: 'calc(100vh - 140px)', overflowY: 'auto', background: '#F8FAFC' }}>
+       <div style={{ padding: '4rem 5%', maxWidth: '900px', margin: '0 auto' }}>
+          
+          {/* Progress Bar */}
+          {cvStep < 7 && (
+            <div style={{ marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.85rem' }}>LANGKAH {cvStep} DARI 6</span>
+                <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.85rem' }}>{Math.round(((cvStep-1)/6)*100)}% SELESAI</span>
+              </div>
+              <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${((cvStep-1)/6)*100}%`, background: '#134E39', transition: 'width 0.5s ease-out' }}></div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+             <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: C.primary, letterSpacing: '-0.02em' }}>
+               {cvStep < 7 ? [
                   "Biodata Dasar", "Pendidikan & Pekerjaan", "Domisili & Status", 
                   "Fisik & Kesehatan", "Visi & Ibadah", "Kriteria Pasangan"
-                ][cvStep-1]}` : 'Alhamdulillah'}
+                ][cvStep-1] : 'Alhamdulillah'}
              </h2>
+             <p style={{ color: C.muted, fontWeight: '500', marginTop: '0.5rem' }}>
+               {cvStep < 7 ? 'Silakan lengkapi informasi berikut dengan sejujur-jujurnya.' : 'CV Anda telah berhasil diperbarui.'}
+             </p>
           </div>
-          <div style={{ background: 'white', borderRadius: '40px', border: '1px solid #E2E8F0', padding: '4rem', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
-             <p style={{ textAlign: 'center', color: C.muted }}>Lengkapi data CV Anda untuk melanjutkan.</p>
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4rem' }}>
-                <button className="cv-btn-side cv-btn-side-outline" onClick={() => setIsEditingCv(false)}>BATAL</button>
-                <button className="cv-btn-side cv-btn-side-primary" onClick={handleCvSubmit}>SIMPAN DATA</button>
-             </div>
+
+          <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', padding: '3.5rem', boxShadow: '0 20px 50px rgba(0,0,0,0.03)' }}>
+             
+             {/* STEP 1: BIODATA */}
+             {cvStep === 1 && (
+               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Nama Alias <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Ahmad" value={myCv.alias} onChange={e => set('alias', e.target.value)} />
+                   <small style={{ color: '#94a3b8' }}>Nama yang akan ditampilkan ke kandidat lain.</small>
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Jenis Kelamin <span style={{ color: '#ef4444' }}>*</span></label>
+                   <select className="form-control" value={myCv.gender} onChange={e => set('gender', e.target.value)}>
+                     <option value="ikhwan">Ikhwan (Pria)</option>
+                     <option value="akhwat">Akhwat (Wanita)</option>
+                   </select>
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Usia <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="number" className="form-control" placeholder="Contoh: 25" value={myCv.age} onChange={e => set('age', e.target.value)} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Suku Bangsa <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Jawa / Sunda" value={myCv.suku} onChange={e => set('suku', e.target.value)} />
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 2: PENDIDIKAN & KARIR */}
+             {cvStep === 2 && (
+               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Pendidikan Terakhir <span style={{ color: '#ef4444' }}>*</span></label>
+                   <select className="form-control" value={myCv.education} onChange={e => set('education', e.target.value)}>
+                     <option value="">Pilih Pendidikan</option>
+                     {['SMA/SMK', 'D3', 'S1', 'S2', 'S3', 'Lainnya'].map(edu => <option key={edu} value={edu}>{edu}</option>)}
+                   </select>
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Pekerjaan Saat Ini <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Software Engineer" value={myCv.job} onChange={e => set('job', e.target.value)} />
+                 </div>
+                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                   <label className="form-label">Estimasi Gaji Bulanan</label>
+                   <select className="form-control" value={myCv.salary} onChange={e => set('salary', e.target.value)}>
+                     <option value="">Pilih Rentang Gaji</option>
+                     {['< 3 Juta', '3 - 5 Juta', '5 - 10 Juta', '> 10 Juta', 'Tidak Berpenghasilan'].map(sal => <option key={sal} value={sal}>{sal}</option>)}
+                   </select>
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 3: DOMISILI & STATUS */}
+             {cvStep === 3 && (
+               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Domisili Provinsi <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Jawa Barat" value={myCv.domisili_provinsi} onChange={e => {
+                     const val = e.target.value;
+                     setMyCv(p => ({ ...p, domisili_provinsi: val, location: `${p.domisili_kota}, ${val}` }));
+                   }} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Domisili Kota <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Bandung" value={myCv.domisili_kota} onChange={e => {
+                     const val = e.target.value;
+                     setMyCv(p => ({ ...p, domisili_kota: val, location: `${val}, ${p.domisili_provinsi}` }));
+                   }} />
+                 </div>
+                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                   <label className="form-label">Status Pernikahan <span style={{ color: '#ef4444' }}>*</span></label>
+                   <select className="form-control" value={myCv.marital_status} onChange={e => set('marital_status', e.target.value)}>
+                     <option value="Lajang">Lajang (Belum Pernah Menikah)</option>
+                     <option value="Duda">Duda</option>
+                     <option value="Janda">Janda</option>
+                   </select>
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 4: FISIK & KESEHATAN */}
+             {cvStep === 4 && (
+               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Tinggi / Berat Badan <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: 170 / 65" value={myCv.tinggi_berat} onChange={e => set('tinggi_berat', e.target.value)} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Kondisi Kesehatan <span style={{ color: '#ef4444' }}>*</span></label>
+                   <input type="text" className="form-control" placeholder="Contoh: Sehat, Tidak ada penyakit kronis" value={myCv.kesehatan} onChange={e => set('kesehatan', e.target.value)} />
+                 </div>
+                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                   <label className="form-label">Gambaran Karakter Diri <span style={{ color: '#ef4444' }}>*</span></label>
+                   <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Ceritakan karakter positif dan negatif Anda secara jujur..." value={myCv.karakter} onChange={e => set('karakter', e.target.value)} />
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 5: VISI & IBADAH */}
+             {cvStep === 5 && (
+               <div className="animate-up" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Visi Pernikahan <span style={{ color: '#ef4444' }}>*</span></label>
+                   <textarea className="form-control" style={{ minHeight: '100px' }} placeholder="Apa visi Anda dalam membangun rumah tangga?" value={myCv.marriage_vision} onChange={e => set('marriage_vision', e.target.value)} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Ketaatan Ibadah <span style={{ color: '#ef4444' }}>*</span></label>
+                   <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Bagaimana rutinitas ibadah wajib dan sunnah Anda?" value={myCv.worship} onChange={e => set('worship', e.target.value)} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Kajian yang Sering Diikuti</label>
+                   <input type="text" className="form-control" placeholder="Contoh: Kajian Ustadz Adi Hidayat, dsb" value={myCv.kajian} onChange={e => set('kajian', e.target.value)} />
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 6: KRITERIA */}
+             {cvStep === 6 && (
+               <div className="animate-up" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                 <div className="form-group">
+                   <label className="form-label">Kriteria Pasangan Impian <span style={{ color: '#ef4444' }}>*</span></label>
+                   <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Sebutkan kriteria fisik, karakter, dan agama yang Anda cari..." value={myCv.criteria} onChange={e => set('criteria', e.target.value)} />
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Pandangan Terhadap Poligami <span style={{ color: '#ef4444' }}>*</span></label>
+                   <select className="form-control" value={myCv.poligami} onChange={e => set('poligami', e.target.value)}>
+                     <option value="Tidak Bersedia">Tidak Bersedia</option>
+                     <option value="Bersedia">Bersedia</option>
+                     <option value="Mungkin">Mungkin / Diskusi</option>
+                   </select>
+                 </div>
+                 <div className="form-group">
+                   <label className="form-label">Hobi & Kegemaran</label>
+                   <input type="text" className="form-control" placeholder="Contoh: Membaca, Bersepeda" value={myCv.hobi} onChange={e => set('hobi', e.target.value)} />
+                 </div>
+               </div>
+             )}
+
+             {/* STEP 7: SELESAI */}
+             {cvStep === 7 && (
+                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', margin: '0 auto 2rem' }}>
+                    <CheckCircle size={60} />
+                  </div>
+                  <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Selesai!</h3>
+                  <p style={{ color: '#64748b', marginBottom: '2.5rem' }}>Data Anda telah berhasil diproses. Silakan kembali ke dashboard.</p>
+                  <button className="cv-btn-side cv-btn-side-primary" onClick={() => setIsEditingCv(false)}>KEMBALI KE DASHBOARD</button>
+                </div>
+             )}
+
+             {cvStep < 7 && (
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4rem', gap: '1.5rem' }}>
+                  <button 
+                    className="cv-btn-side cv-btn-side-outline" 
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      if (cvStep === 1) setIsEditingCv(false);
+                      else back();
+                    }}
+                  >
+                    {cvStep === 1 ? 'BATAL' : 'KEMBALI'}
+                  </button>
+                  <button 
+                    className="cv-btn-side cv-btn-side-primary" 
+                    style={{ flex: 2 }}
+                    onClick={handleCvSubmit}
+                  >
+                    {isSubmittingCv ? 'MEMPROSES...' : (cvStep === 6 ? 'SIMPAN PERUBAHAN' : 'SELANJUTNYA')}
+                  </button>
+               </div>
+             )}
           </div>
        </div>
     </div>

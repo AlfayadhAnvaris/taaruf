@@ -90,10 +90,10 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="glass-card stat-bubble stat-1" style={{ right: '-20px', top: '15%' }}>
-              <Users size={20} color="var(--primary)" />
+              <ShieldCheck size={20} color="var(--primary)" />
               <div>
-                <strong style={{ display: 'block' }}>1,200+</strong>
-                <span style={{ fontSize: '0.7rem' }}>Ikhwan & Akhwat</span>
+                <strong style={{ display: 'block' }}>Proses Syar'i</strong>
+                <span style={{ fontSize: '0.7rem' }}>Dibimbing Asatidzah</span>
               </div>
             </div>
             <div className="geometric-bg"></div>

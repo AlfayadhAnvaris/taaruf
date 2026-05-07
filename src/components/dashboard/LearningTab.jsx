@@ -535,12 +535,21 @@ export default function LearningTab({
   // VIEW: PLAYER (FULLSCREEN STYLE)
   // ============================
   return (
-    <div className="lms-player" style={{ height: '100%', display: 'flex', background: '#fff', position: 'relative' }}>
+    <div className="lms-player" style={{ 
+      height: isMobile ? 'auto' : 'calc(100vh - 100px)', 
+      display: 'flex', 
+      background: '#fff', 
+      position: 'relative',
+      overflow: 'hidden',
+      borderRadius: '16px',
+      border: '1px solid #F1F5F9'
+    }}>
         {/* Sidebar Overlay */}
         {isLmsSidebarOpen && <div className="lms-overlay" onClick={() => setIsLmsSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(19,78,57,0.3)', backdropFilter: 'blur(4px)', zIndex: 190 }}></div>}
         
         <div className={`lms-sidebar ${isLmsSidebarOpen ? 'open' : ''}`} style={{ 
-          width: isSidebarHidden ? '0' : '340px', 
+          width: isSidebarHidden ? '0' : (isMobile ? '85%' : '340px'), 
+          maxWidth: isMobile ? '340px' : 'none',
           display: isSidebarHidden ? 'none' : 'flex',
           flexDirection: 'column',
           borderRight: '1px solid #F1F5F9',
@@ -570,7 +579,7 @@ export default function LearningTab({
             </div>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 0' }} className="custom-scrollbar">
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 0 5rem', WebkitOverflowScrolling: 'touch' }} className="custom-scrollbar">
             {curriculum.map((mod, mi) => (
               <div key={mod.id} style={{ marginBottom: '1rem' }}>
                 <div style={{ padding: '1rem 1.75rem 0.75rem', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -624,26 +633,31 @@ export default function LearningTab({
               <button 
                 onClick={() => setIsLmsSidebarOpen(true)} 
                 style={{ 
-                  background: '#f8fafc', border: '1px solid #e2e8f0', padding: '8px', 
-                  borderRadius: '10px', cursor: 'pointer', display: isMobile ? 'flex' : 'none',
-                  alignItems: 'center', justifyContent: 'center'
+                  background: '#f8fafc', border: '1px solid #e2e8f0', padding: '10px', 
+                  borderRadius: '12px', cursor: 'pointer', display: isMobile ? 'flex' : 'none',
+                  alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
                 }}
               >
-                <Menu size={20} color="#134E39" />
+                <Menu size={22} color="#134E39" />
               </button>
               <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#D4AF37', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeClass?.title}</div>
                 <div className="lms-lesson-title" style={{ fontSize: '1.1rem', fontWeight: '900', color: '#134E39', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeLesson?.title}</div>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '150px' }}>
+              </div>
+              
+
+
               {activeLesson?.done && (
                 <div className="hide-on-tiny" style={{ 
                   display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', 
                   background: '#F0FDF4', color: '#10B981', border: '1px solid #DCFCE7', 
                   borderRadius: '10px', fontSize: '0.7rem', fontWeight: '900'
                 }}>
-                  <CheckCircle size={14} /> SELESAI
+                  <CheckCircle size={14} /> <span className="hide-on-mobile">SELESAI</span>
                 </div>
               )}
               <button onClick={() => setIsSidebarHidden(!isSidebarHidden)} className="hide-on-mobile" style={{ background: 'white', border: '1px solid #F1F5F9', color: '#94A3B8', cursor: 'pointer', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -653,14 +667,11 @@ export default function LearningTab({
           </div>
 
           <div className="lms-player-content custom-scrollbar" style={{ 
-            flex: '1 1 auto', 
-            height: isMobile ? 'calc(100dvh - 160px)' : 'calc(100vh - 150px)',
-            maxHeight: isMobile ? 'calc(100dvh - 160px)' : 'calc(100vh - 150px)',
-            overflowY: 'scroll', 
-            overflowX: 'hidden',
+            flex: 1, 
+            overflowY: 'auto', 
             WebkitOverflowScrolling: 'touch',
             touchAction: 'pan-y',
-            padding: isMobile ? '1.5rem 1rem 120px' : '2.5rem 1.5rem', 
+            padding: isMobile ? '1.5rem 1rem 100px' : '2rem 1.5rem', 
             background: '#FBFDFA',
             position: 'relative',
             zIndex: 1
@@ -745,96 +756,54 @@ export default function LearningTab({
                    <p style={{ fontSize: '1.2rem', fontWeight: '700' }}>Mohon pilih materi di sidebar untuk memulai.</p>
                 </div>
               )}
+
+              {/* Navigation Buttons at the bottom of content */}
+              {activeLesson && activeLesson.type !== 'quiz' && (
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: isMobile ? 'column-reverse' : 'row',
+                  justifyContent: 'space-between', 
+                  alignItems: isMobile ? 'stretch' : 'center', 
+                  marginTop: '4rem', 
+                  padding: '2.5rem 0',
+                  borderTop: '1px solid #F1F5F9',
+                  gap: '1.25rem'
+                }}>
+                  <div style={{ display: 'flex', flex: isMobile ? 1 : 'none' }}>
+                    {currentLessonIdx > 0 && (
+                      <button 
+                        onClick={() => goToLesson(allItems[currentLessonIdx - 1], true)}
+                        style={{ 
+                          flex: isMobile ? 1 : 'none',
+                          background: 'white', border: '1.5px solid #E2E8F0', color: '#64748B', 
+                          padding: isMobile ? '1.2rem' : '0.8rem 1.5rem', borderRadius: '12px', fontWeight: '800', 
+                          fontSize: isMobile ? '0.8rem' : '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <ChevronLeft size={isMobile ? 18 : 20} /> MATERI SEBELUMNYA
+                      </button>
+                    )}
+                  </div>
+
+                  <button 
+                    onClick={activeLesson.done ? goNext : handleMarkDone}
+                    disabled={activeLesson.done && currentLessonIdx === allItems.length - 1}
+                    style={{ 
+                      background: activeLesson.done ? '#F0FDF4' : '#134E39', 
+                      color: activeLesson.done ? '#10B981' : 'white', 
+                      padding: isMobile ? '1.2rem' : '1rem 2.5rem', borderRadius: '14px', 
+                      fontWeight: '900', fontSize: isMobile ? '0.85rem' : '0.9rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', border: 'none',
+                      boxShadow: activeLesson.done ? 'none' : '0 10px 20px rgba(19,78,57,0.15)',
+                      transition: 'all 0.3s'
+                    }}
+                  >
+                    {activeLesson.done ? 'SUDAH SELESAI' : 'TANDAI SELESAI & LANJUT'} <ArrowRight size={isMobile ? 18 : 20} />
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* 🏁 STICKY FOOTER 🏁 */}
-          <div className="lms-footer" style={{ 
-            height: isMobile ? '90px' : '80px', 
-            background: 'white', 
-            borderTop: '1px solid #F1F5F9', 
-            display: 'flex', 
-            alignItems: 'center', 
-            padding: '0 1.5rem', 
-            justifyContent: 'space-between', 
-            flexShrink: 0, 
-            zIndex: 150,
-            position: isMobile ? 'fixed' : 'relative',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            boxShadow: isMobile ? '0 -10px 25px rgba(0,0,0,0.05)' : 'none'
-          }}>
-            {!isMobile && (
-              <div className="lms-progress-info" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39', whiteSpace: 'nowrap' }}>{progressPercent}% <span className="hide-on-mobile">PROGRES</span></div>
-                <div style={{ flex: 1, maxWidth: '200px', height: '6px', background: '#F1F5F9', borderRadius: '99px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', background: '#134E39', width: `${progressPercent}%`, transition: 'width 1s ease' }} />
-                </div>
-              </div>
-            )}
-            {activeLesson && activeLesson.type !== 'quiz' && (
-              <div style={{ 
-                display: 'flex', gap: '0.75rem', flex: 1, 
-                justifyContent: isMobile ? 'center' : 'flex-end', 
-                alignItems: 'center',
-                width: '100%'
-              }}>
-                <div style={{ display: 'flex', gap: '0.75rem', flex: isMobile ? 1 : 'none' }}>
-                  {currentLessonIdx > 0 && (
-                    <button 
-                      onClick={() => goToLesson(allItems[currentLessonIdx - 1], true)}
-                      className="lms-nav-btn"
-                      style={{ 
-                        flex: isMobile ? 1 : 'none',
-                        background: 'white', border: '1.5px solid #E2E8F0', color: '#64748B', 
-                        padding: isMobile ? '0.85rem 0.5rem' : '0.9rem 1.5rem', borderRadius: '14px', fontWeight: '800', 
-                        fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <ChevronLeft size={16} /> {isMobile ? 'BACK' : 'MATERI SEBELUMNYA'}
-                    </button>
-                  )}
-                  
-                  {(activeLesson.done || isMobile) && (
-                    <button 
-                      onClick={() => isMobile ? setIsLmsSidebarOpen(true) : setLmsView('dashboard')}
-                      className="lms-nav-btn"
-                      style={{ 
-                        background: 'white', border: '1.5px solid #134E39', color: '#134E39', 
-                        padding: '0.85rem 1rem', borderRadius: '14px', fontWeight: '800', 
-                        fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <Menu size={16} /> {isMobile ? '' : 'DAFTAR'}
-                    </button>
-                  )}
-                </div>
-
-                <button 
-                  onClick={activeLesson.done ? goNext : handleMarkDone}
-                  disabled={activeLesson.done && currentLessonIdx === allItems.length - 1}
-                  className="lms-done-btn"
-                  style={{ 
-                    background: activeLesson.done ? '#F0FDF4' : '#134E39', 
-                    color: activeLesson.done ? '#10B981' : 'white', 
-                    padding: isMobile ? '0.85rem 1.5rem' : '0.9rem 2rem', borderRadius: '14px', 
-                    fontWeight: '900', fontSize: '0.8rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '8px', border: 'none',
-                    boxShadow: activeLesson.done ? 'none' : '0 10px 25px rgba(19,78,57,0.2)',
-                    transition: 'all 0.3s',
-                    flex: isMobile ? 1.5 : '0 0 auto',
-                    justifyContent: 'center',
-                    pointerEvents: 'auto',
-                    zIndex: 110
-                  }}
-                >
-                  <span className="btn-text">{activeLesson.done ? 'SELESAI' : 'LANJUTKAN'}</span> <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -855,21 +824,19 @@ export default function LearningTab({
       )}
 
       <style>{`
-        .lms-sidebar.open { transform: translateX(0) !important; display: flex !important; width: 340px !important; }
+        .lms-sidebar.open { transform: translateX(0) !important; display: flex !important; }
         @media (max-width: 1024px) {
-          .lms-sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+          .lms-sidebar { position: fixed; top: 0; left: 0; height: 100dvh !important; transform: translateX(-100%); box-shadow: 20px 0 50px rgba(0,0,0,0.15); }
           .lms-player-content { padding: 2rem 1rem !important; }
           .mobile-only-btn { display: flex !important; }
           .hide-on-mobile { display: none !important; }
           .lms-lesson-title { font-size: 1rem !important; }
           .lms-top-bar { height: 64px !important; padding: 0 1rem !important; }
-          .lms-footer { min-height: 70px !important; padding: 0.75rem 1rem !important; }
           .lms-done-btn { padding: 0.75rem 1.25rem !important; }
           .lms-progress-info { gap: 0.5rem !important; }
         }
         @media (max-width: 480px) {
           .hide-on-tiny { display: none !important; }
-          .lms-footer { flex-direction: column; align-items: stretch !important; height: auto !important; padding: 1rem !important; }
           .lms-done-btn { width: 100% !important; justify-content: center; }
           .lms-progress-info { width: 100%; margin-bottom: 0.5rem; }
         }

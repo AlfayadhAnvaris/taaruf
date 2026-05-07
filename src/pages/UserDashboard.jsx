@@ -53,19 +53,21 @@ export default function UserDashboard() {
   const myExistingCv = cvs.find(cv => cv.user_id === user?.id);
   const hasSubmittedCv = !!myExistingCv;
 
-  // Split and sync location fields when editing
+  // 🔄 Sync CV State when Editing
   useEffect(() => {
-    if (isEditingCv && myExistingCv?.location) {
-      const parts = myExistingCv.location.split(', ');
-      if (parts.length === 2) {
-        setMyCv(prev => ({ 
-          ...prev, 
-          domisili_kota: parts[0], 
-          domisili_provinsi: parts[1] 
-        }));
-      }
+    if (isEditingCv && myExistingCv) {
+      const parts = myExistingCv.location?.split(', ') || ['', ''];
+      setMyCv({
+        ...myCv, // Keep current context
+        ...myExistingCv, // Overwrite with actual CV data
+        domisili_kota: parts[0] || '',
+        domisili_provinsi: parts[1] || '',
+        // Ensure numeric fields are strings for input
+        age: String(myExistingCv.age || ''),
+      });
+      setCvStep(1); // Start from first step when editing
     }
-  }, [isEditingCv, myExistingCv?.location]);
+  }, [isEditingCv, myExistingCv]);
   
   // ── LMS State ──
   const [curriculum, setCurriculum] = useState([]);

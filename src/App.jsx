@@ -138,78 +138,80 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
           {!isPlayer && (
             <header className="top-header academy-top-header" style={{ left: 0, width: '100%', borderBottom: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', zIndex: 1000, padding: 0, display: 'flex', alignItems: 'center', height: '70px' }}>
               <div style={{ width: '100%', margin: '0 auto', padding: isMobile ? '0 1rem' : '0 4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-              <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                {!isAdmin ? (
-                  <>
-                    <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '4px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <Activity size={18} /> {!isMobile && <span className="btn-text">DASHBOARD</span>}
-                    </button>
-                    <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '6px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      <BookOpen size={18} /> {!isMobile && <span className="btn-text">DAFTAR KELAS</span>}
-                    </button>
-                  </>
-                ) : (
-                  isAdminAcademy && (
-                    <div style={{ display: 'flex', gap: '6px', background: '#f8fafc', padding: '5px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                      {[
-                        { id: 'curriculum', label: 'Kurikulum', icon: <BookOpen size={17} /> },
-                        { id: 'enrollment', label: 'Pendaftaran', icon: <Users size={17} /> },
-                        { id: 'progress', label: 'Progres', icon: <Activity size={17} /> }
-                      ].map(st => {
-                        const searchParams = new URLSearchParams(window.location.search);
-                        const currentSub = searchParams.get('sub') || 'curriculum';
-                        const isActive = currentSub === st.id;
-                        return (
-                          <button 
-                            key={st.id}
-                            onClick={() => navigate(`/app/courses?sub=${st.id}`)}
-                            title={st.label}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: '8px',
-                              padding: window.innerWidth < 768 ? '0.75rem' : '0.6rem 1.25rem', 
-                              borderRadius: '8px',
-                              background: isActive ? '#134E39' : 'transparent',
-                              color: isActive ? 'white' : '#64748b',
-                              border: 'none', fontSize: '0.8rem', fontWeight: '800',
-                              cursor: 'pointer', 
-                              boxShadow: isActive ? '0 4px 12px rgba(19,78,57,0.2)' : 'none',
-                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                              letterSpacing: '0.02em'
-                            }}
-                          >
-                            {st.icon} 
-                            {window.innerWidth >= 768 && <span>{st.label.toUpperCase()}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )
-                )}
+                {/* --- Left Navigation --- */}
+                <div className="header-left academy-header-left academy-nav-btns" style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+                  {!isAdmin ? (
+                    <>
+                      <button key="btn-progress" title="Dashboard" onClick={() => navigate('/app/materi/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'dashboard' ? '#134E39' : 'transparent', color: id === 'dashboard' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '4px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <Activity size={18} /> {!isMobile && <span className="btn-text">DASHBOARD</span>}
+                      </button>
+                      <button key="btn-catalog" title="Daftar Kelas" onClick={() => navigate('/app/materi/catalog')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: id === 'catalog' ? '#134E39' : 'transparent', color: id === 'catalog' ? 'white' : '#64748b', border: 'none', padding: '0.6rem', borderRadius: '6px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <BookOpen size={18} /> {!isMobile && <span className="btn-text">DAFTAR KELAS</span>}
+                      </button>
+                    </>
+                  ) : (
+                    isAdminAcademy && (
+                      <div style={{ display: 'flex', gap: '6px', background: '#f8fafc', padding: '5px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                        {[
+                          { id: 'curriculum', label: 'Kurikulum', icon: <BookOpen size={17} /> },
+                          { id: 'enrollment', label: 'Pendaftaran', icon: <Users size={17} /> },
+                          { id: 'progress', label: 'Progres', icon: <Activity size={17} /> }
+                        ].map(st => {
+                          const searchParams = new URLSearchParams(window.location.search);
+                          const currentSub = searchParams.get('sub') || 'curriculum';
+                          const isActive = currentSub === st.id;
+                          return (
+                            <button 
+                              key={st.id}
+                              onClick={() => navigate(`/app/courses?sub=${st.id}`)}
+                              title={st.label}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                padding: window.innerWidth < 768 ? '0.75rem' : '0.6rem 1.25rem', 
+                                borderRadius: '8px',
+                                background: isActive ? '#134E39' : 'transparent',
+                                color: isActive ? 'white' : '#64748b',
+                                border: 'none', fontSize: '0.8rem', fontWeight: '800',
+                                cursor: 'pointer', 
+                                boxShadow: isActive ? '0 4px 12px rgba(19,78,57,0.2)' : 'none',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                letterSpacing: '0.02em',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {st.icon} 
+                              {window.innerWidth >= 768 && <span>{st.label.toUpperCase()}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )
+                  )}
 
-                {!isMobile && <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 4px' }}></div>}
+                  {!isMobile && <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 4px', flexShrink: 0 }}></div>}
 
-                <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: isMobile ? '0.75rem' : '0.6rem', borderRadius: '8px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  <LayoutDashboard size={18} /> {!isMobile && <span className="btn-text">{isAdmin ? 'MANAGEMENT PORTAL' : 'PORTAL TAARUF'}</span>}
-                </button>
-              </div>
-
-              <div className="header-brand academy-header-brand" style={{ 
-                position: isMobile ? 'static' : 'absolute', 
-                left: '50%', 
-                transform: isMobile ? 'none' : 'translateX(-50%)', 
-                display: isMobile && window.innerWidth < 400 ? 'none' : 'flex', 
-                alignItems: 'center', 
-                gap: '8px' 
-              }}>
-                <div className="academy-brand-icon" style={{ background: '#134E39', padding: '5px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {headerBrand.icon}
+                  <button title="Portal Taaruf" onClick={() => navigate('/app/home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', border: '1px solid rgba(19,78,57,0.1)', padding: isMobile ? '0.75rem' : '0.6rem', borderRadius: '8px', fontWeight: '800', fontSize: '0.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    <LayoutDashboard size={18} /> {!isMobile && <span className="btn-text">{isAdmin ? 'PORTAL ADMIN' : 'PORTAL TAARUF'}</span>}
+                  </button>
                 </div>
-                <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: isMobile ? '0.9rem' : '1.05rem' }}>
-                  {!isMobile && 'Separuh Agama '}
-                  <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span>
-                </span>
-              </div>
-             <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+
+                {/* --- Center Brand --- */}
+                <div className="header-brand academy-header-brand" style={{ 
+                  display: isMobile && window.innerWidth < 600 ? 'none' : 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '0 1rem',
+                  whiteSpace: 'nowrap'
+                }}>
+                  <span className="academy-brand-text" style={{ fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em', fontSize: isMobile ? '0.9rem' : '1.05rem' }}>
+                    {!isMobile && 'Separuh Agama '}
+                    <span style={{ color: '#D4AF37' }}>{headerBrand.sub}</span>
+                  </span>
+                </div>
+
+                {/* --- Right Actions --- */}
+                <div className="header-right academy-header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, justifyContent: 'flex-end' }}>
                     <div className="notification-wrapper">
                       <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} style={{ background: 'white', border: '1px solid #f1f5f9', width: 44, height: 44, borderRadius: '10px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>
                         <Bell size={20} />
@@ -456,11 +458,27 @@ const DashboardLayout = ({ isMobileMenuOpen, setIsMobileMenuOpen, handleLogout, 
       <div className="main-wrapper">
         <style>{`
           ${(!isAdmin && (window.location.pathname.includes('/app/'))) ? `
-            .main-content { padding: 0 !important; }
-            @media (max-width: 1024px) {
-              .main-content { padding: 1rem !important; }
+            .main-content { 
+              padding: clamp(1.5rem, 5vw, 3rem) !important; 
+              display: flex;
+              flex-direction: column;
+              align-items: center;
             }
-            .dashboard-root { padding: 0 !important; max-width: none !important; margin: 0 !important; width: 100% !important; }
+            @media (max-width: 1200px) {
+              .main-content { padding: 1.5rem !important; }
+            }
+            @media (max-width: 768px) {
+              .main-content { padding: 1.25rem 1rem !important; }
+            }
+            .dashboard-root { 
+              padding: 0 !important; 
+              max-width: 1300px !important; 
+              margin: 0 auto !important; 
+              width: 100% !important; 
+              display: flex;
+              flex-direction: column;
+              gap: 2rem;
+            }
           ` : ''}
         `}</style>
         {renderAlertBanner()}
@@ -609,7 +627,7 @@ function App() {
   const [userReviews, setUserReviews] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(window.innerWidth > 1024);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(window.innerWidth > 1200);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', type: 'info' });
@@ -624,6 +642,18 @@ function App() {
     const saved = localStorage.getItem('Separuh Agama_claimed_badges');
     return saved ? JSON.parse(saved) : {};
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1200 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      } else if (window.innerWidth >= 1200 && !isMobileMenuOpen) {
+        setIsMobileMenuOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen]);
 
   // Handle Click Outside for Dropdowns
   useEffect(() => {
