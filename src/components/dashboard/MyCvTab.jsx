@@ -551,6 +551,7 @@ export default function MyCvTab({
                          <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.ciri_fisik || '—'}</span>
                        </div>
                     </div>
+                    
                   </div>
 
                   {/* Card: 4. Gambaran Diri (Full Width) */}
