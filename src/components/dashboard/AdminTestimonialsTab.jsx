@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabase';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { 
   Star, Plus, Trash2, Edit3, Save, X, 
   CheckCircle, AlertCircle, Loader, Quote, 
@@ -15,7 +16,8 @@ const CARD_STYLE = {
   transition: 'all 0.3s'
 };
 
-export default function AdminTestimonialsTab({ showAlert }) {
+export default function AdminTestimonialsTab() {
+  const { showAlert, setConfirmState } = useAppContext();
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,7 +25,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
   const [selectedTesti, setSelectedTesti] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   const [form, setForm] = useState({
     id: null,
     name: '',
@@ -35,9 +37,11 @@ export default function AdminTestimonialsTab({ showAlert }) {
 
   useEffect(() => {
     fetchTestimonials();
+    setIsMobile(window.innerWidth < 768);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTestimonials = async () => {
@@ -104,15 +108,23 @@ export default function AdminTestimonialsTab({ showAlert }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus testimoni ini?')) return;
-    try {
-      const { error } = await supabase.from('testimonials').delete().eq('id', id);
-      if (error) throw error;
-      showAlert('Testimoni berhasil dihapus', 'success');
-      fetchTestimonials();
-    } catch (err) {
-      showAlert('Gagal menghapus testimoni', 'error');
-    }
+    setConfirmState({
+      isOpen: true,
+      title: 'Hapus Testimoni?',
+      message: 'Apakah Anda yakin ingin menghapus testimoni ini secara permanen?',
+      onConfirm: async () => {
+        try {
+          const { error } = await supabase.from('testimonials').delete().eq('id', id);
+          if (error) throw error;
+          showAlert('Testimoni berhasil dihapus', 'success');
+          fetchTestimonials();
+        } catch {
+          showAlert('Gagal menghapus testimoni', 'error');
+        } finally {
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const togglePublish = async (id, currentStatus) => {
@@ -123,7 +135,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
         .eq('id', id);
       if (error) throw error;
       fetchTestimonials();
-    } catch (err) {
+    } catch {
       showAlert('Gagal merubah status publikasi', 'error');
     }
   };
@@ -410,7 +422,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                 <input 
                   type="text" 
                   className="form-control" 
-                  value={form.name} 
+                  value={form.name || ''} 
                   onChange={e => setForm({...form, name: e.target.value})} 
                   placeholder="Contoh: Hamba Allah"
                   required
@@ -422,7 +434,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                 <input 
                   type="text" 
                   className="form-control" 
-                  value={form.role} 
+                  value={form.role || ''} 
                   onChange={e => setForm({...form, role: e.target.value})} 
                   placeholder="Contoh: Akhwat, Menikah 2025"
                   style={{ borderRadius: '8px', padding: '0.8rem' }}
@@ -433,7 +445,7 @@ export default function AdminTestimonialsTab({ showAlert }) {
                 <textarea 
                   className="form-control" 
                   rows={4} 
-                  value={form.content} 
+                  value={form.content || ''} 
                   onChange={e => setForm({...form, content: e.target.value})} 
                   placeholder="Ceritakan pengalaman sukses..."
                   required

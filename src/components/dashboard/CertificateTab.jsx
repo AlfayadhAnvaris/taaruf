@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import { useAppContext } from '@/context/AppContext';
 import { Award, Download, Share2, ShieldCheck, CheckCircle, GraduationCap, Star, ChevronLeft, Loader2, Settings, Sparkles } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-export default function CertificateTab({ user, activeClass, allClasses = [] }) {
+export default function CertificateTab({ activeClass, allClasses = [] }) {
+  const { user } = useAppContext();
   const certRef = useRef();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleDownloadPDF = async () => {
@@ -56,14 +58,14 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
 
   if (!displayClass) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'white', animation: 'fadeIn 0.5s ease' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
         {/* ⚪️ HERO HEADER (LIGHT) ⚪️ */}
         <div style={{ 
-          background: 'white', 
-          padding: '5rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
+          background: 'transparent', 
+          padding: '2rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
         }}>
           <div style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1rem' }}>
               <Award size={14} /> PENCAPAIAN AKADEMIK
             </div>
             <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#134E39' }}>
@@ -72,17 +74,17 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
           </div>
         </div>
 
-        <div style={{ padding: '5rem 5%', flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', padding: '5rem 3rem', background: 'white', borderRadius: '20px', border: '1px solid #E2E8F0', maxWidth: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2.5rem' }}>
+        <div style={{ padding: '2rem 5%', flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', padding: '2.5rem 1.5rem', background: 'white', borderRadius: '20px', border: '1px solid #E2E8F0', maxWidth: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+            <div style={{ width: '100px', height: '100px', borderRadius: '16px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
               <Award size={54} color="#134E39" strokeWidth={1.5} />
             </div>
             <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Sertifikat Belum Siap</h3>
-            <p style={{ color: '#64748B', maxWidth: '450px', margin: '0 auto 3rem', lineHeight: '1.7', fontSize: '1.1rem', fontWeight: 500 }}>
+            <p style={{ color: '#64748B', maxWidth: '450px', margin: '0 auto 1.5rem', lineHeight: '1.7', fontSize: '1.1rem', fontWeight: 500 }}>
               Afwan, sepertinya Anda belum menyelesaikan seluruh materi di kelas pilihan. Selesaikan kurikulum Anda untuk mendapatkan sertifikat resmi.
             </p>
             <button 
-              onClick={() => navigate('/app/materi/daftar-kelas')} 
+              onClick={() => router.push('/dashboard/materi/daftar-kelas')} 
               style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '10px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
             >
               JELAJAHI DAFTAR KELAS
@@ -94,16 +96,16 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'white', animation: 'fadeIn 0.5s ease' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
       
       {/* ⚪️ HERO HEADER (LIGHT) ⚪️ */}
       <div style={{ 
-        background: 'white', 
-        padding: '5rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
+        background: 'transparent', 
+        padding: '2rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
       }}>
         
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1rem' }}>
             <Award size={14} /> PENCAPAIAN AKADEMIK
           </div>
 
@@ -112,14 +114,14 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
               <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#134E39' }}>
                 Sertifikat <span style={{ color: '#D4AF37' }}>Kelulusan</span>
               </h1>
-              <p style={{ fontSize: '1.25rem', color: '#64748b', marginTop: '1.25rem', maxWidth: '700px', lineHeight: 1.7, fontWeight: 500 }}>
+              <p style={{ fontSize: '1.25rem', color: '#64748b', marginTop: '0.75rem', maxWidth: '700px', lineHeight: 1.7, fontWeight: 500 }}>
                 Alhamdulillah, selamat atas pencapaian Anda dalam menyelesaikan kelas <strong>{displayClass.title}</strong>.
               </p>
             </div>
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button 
-                onClick={() => navigate('/app/materi/dashboard')}
+                onClick={() => router.push('/dashboard/materi/dashboard')}
                 style={{ background: 'white', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '10px', color: '#134E39', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
               >
                 <ChevronLeft size={20} /> KEMBALI
@@ -138,7 +140,7 @@ export default function CertificateTab({ user, activeClass, allClasses = [] }) {
       </div>
 
       {/* ⚪️ CONTENT AREA ⚪️ */}
-      <div style={{ padding: '5rem 5%', flex: 1 }}>
+      <div style={{ padding: '2rem 5%', flex: 1 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
           
           <div 

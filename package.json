@@ -4,21 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "dev:vite": "vite",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-react": "^7.29.7",
     "@supabase/supabase-js": "^2.103.0",
     "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^17.4.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.8.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.14.0",
+    "next": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "recharts": "^3.8.1"
   },
   "devDependencies": {

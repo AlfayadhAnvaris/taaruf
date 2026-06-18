@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { AppContext } from '../../App';
+import React, { useState, useEffect } from 'react';
+import { useAppContext } from '@/context/AppContext';
 import { 
   Users, BookOpen, Calendar, Trash2, Search, 
   Filter, Download, ChevronLeft, AlertCircle, RefreshCw, X, CheckCircle2, Loader
 } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
 
-export default function AdminEnrollmentTab({ showAlert }) {
-  const { setConfirmState } = useContext(AppContext);
+export default function AdminEnrollmentTab() {
+  const { setConfirmState, showAlert } = useAppContext();
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,8 +17,9 @@ export default function AdminEnrollmentTab({ showAlert }) {
   const [detailLoading, setDetailLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -48,6 +49,7 @@ export default function AdminEnrollmentTab({ showAlert }) {
 
   useEffect(() => {
     fetchEnrollments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = (id) => {

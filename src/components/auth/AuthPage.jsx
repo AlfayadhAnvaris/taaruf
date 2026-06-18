@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+"use client";
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ShieldCheck, HeartHandshake, Mail, ArrowLeft, CheckCircle, Loader, Eye, EyeOff, RefreshCw } from 'lucide-react';
-import { supabase } from '../supabase';
-import { AppContext } from '../App';
+import { supabase } from '@/lib/supabase';
+import { useAppContext } from '@/context/AppContext';
 
 // ============================================================
 // Komponen Input OTP (6 digit)
@@ -82,9 +84,9 @@ function OTPInput({ value, onChange, disabled }) {
 // ============================================================
 // Komponen Utama AuthPage
 // ============================================================
-export default function AuthPage({ initialIsLogin = true, showAlert }) {
-  const { user, isInitializing } = useContext(AppContext);
-  const navigate = useNavigate();
+export default function AuthPage({ initialIsLogin = true }) {
+  const { user, isInitializing, showAlert } = useAppContext();
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [step, setStep] = useState('form');
 
@@ -95,7 +97,6 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
   const [name, setName] = useState('');
 
   // OTP state
-  const [otpCode, setOtpCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
@@ -106,8 +107,8 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
 
   // Redirect if user is already logged in
   useEffect(() => {
-    if (user) navigate('/app');
-  }, [user, navigate]);
+    if (user) router.push('/dashboard');
+  }, [user, router]);
 
   // Countdown resend OTP
   useEffect(() => {
@@ -125,8 +126,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
     }
     setIsLoading(true);
     try {
-      // 1. Cek apakah email sudah terdaftar di tabel profiles
-      const { data: existingUser, error: checkError } = await supabase
+      const { data: existingUser } = await supabase
         .from('profiles')
         .select('email')
         .eq('email', email)
@@ -138,7 +138,6 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
         return;
       }
 
-      // 2. Registrasi langsung (OTP Dinonaktifkan untuk testing)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -152,7 +151,6 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
       } else {
         const userId = data.user?.id;
         if (userId) {
-          // Buat profil di tabel profiles
           await supabase.from('profiles').upsert({ 
             id: userId, 
             name, 
@@ -166,45 +164,6 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
       }
     } catch (err) {
       showAlert('Error Sistem', err.message, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    const code = otpCode.replace(/\s/g, '');
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
-      if (error) {
-        showAlert('Kode Salah', error.message, 'error');
-        setOtpCode('');
-      } else {
-        const userId = data.user?.id;
-        await supabase.auth.updateUser({ password, data: { name } });
-        if (userId) {
-          await supabase.from('profiles').upsert({ id: userId, name, email, role: 'user', profile_complete: false }, { onConflict: 'id' });
-        }
-        setStep('success');
-      }
-    } catch (err) {
-      showAlert('Error Sistem', err.message, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (countdown > 0) return;
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-      if (!error) { 
-        setCountdown(60); 
-        setOtpCode(''); 
-        showAlert('OTP Dikirim', 'Kode OTP baru telah dikirim.', 'info'); 
-      }
     } finally {
       setIsLoading(false);
     }
@@ -234,19 +193,9 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
     <div className="auth-split-container">
       <div className="auth-sidebar">
         <div className="auth-sidebar-content">
-          <Link to="/" className="auth-logo"><img src="/assets/logo.svg" alt="Separuh Agama" style={{ width: '80px' }} /></Link>
+          <Link href="/" className="auth-logo"><img src="/assets/logo.svg" alt="Separuh Agama" style={{ width: '80px' }} /></Link>
           <h1>Separuh Agama</h1>
           <p>Langkah awal ikhtiar menjemput jodoh idaman sesuai sunnah.</p>
-          {!isLogin && (
-            <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {['Daftar Akun', 'Lengkapi Profil', 'Siap Berikhtiar'].map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>{i + 1}</div>
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{s}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -254,7 +203,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
         <div className="auth-form-wrapper">
           {(isLogin || step === 'form') && (
             <>
-              <Link to="/" className="btn-back" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+              <Link href="/" className="btn-back" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
                 <ArrowLeft size={16} /> Kembali ke Beranda
               </Link>
               <div className="auth-form-header">
@@ -266,17 +215,17 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
                 {!isLogin && (
                   <div className="form-group">
                     <label className="form-label">Nama Lengkap</label>
-                    <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required />
+                    <input type="text" className="form-control" value={name || ''} onChange={e => setName(e.target.value)} required />
                   </div>
                 )}
                 <div className="form-group">
                   <label className="form-label">Email</label>
-                  <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <input type="email" className="form-control" value={email || ''} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Password</label>
                   <div style={{ position: 'relative' }}>
-                    <input type={showPassword ? 'text' : 'password'} className="form-control" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <input type={showPassword ? 'text' : 'password'} className="form-control" value={password || ''} onChange={e => setPassword(e.target.value)} required />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8' }}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                   </div>
                 </div>
@@ -286,22 +235,11 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
               </form>
               <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b' }}>
                 {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-                <button onClick={() => { setIsLogin(!isLogin); navigate(isLogin ? '/daftar' : '/login'); }} style={{ color: 'var(--secondary)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}>
+                <Link href={isLogin ? '/daftar' : '/login'} style={{ color: 'var(--secondary)', fontWeight: 700, textDecoration: 'none' }}>
                   {isLogin ? 'Daftar di sini' : 'Login di sini'}
-                </button>
+                </Link>
               </p>
             </>
-          )}
-
-          {!isLogin && step === 'otp' && (
-            <div style={{ textAlign: 'center' }}>
-               <h2 style={{ marginBottom: '1rem' }}>Cek Email Anda</h2>
-               <p style={{ marginBottom: '2rem' }}>Kode OTP dikirim ke <strong>{email}</strong></p>
-               <OTPInput value={otpCode} onChange={setOtpCode} disabled={isLoading} />
-               <button onClick={handleVerifyOtp} className="btn btn-primary" style={{ width: '100%', padding: '1.2rem', borderRadius: '10px' }} disabled={isLoading || otpCode.length < 6}>
-                 {isLoading ? 'Verifikasi...' : 'Verifikasi & Buat Akun'}
-               </button>
-            </div>
           )}
 
           {!isLogin && step === 'success' && (
@@ -309,7 +247,7 @@ export default function AuthPage({ initialIsLogin = true, showAlert }) {
                <div style={{ width: 80, height: 80, background: 'rgba(44,95,77,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}><CheckCircle size={40} color="var(--primary)" /></div>
                <h2>Alhamdulillah! 🎉</h2>
                <p>Registrasi berhasil. Silakan login ke akun Anda.</p>
-               <button onClick={() => { setIsLogin(true); setStep('form'); navigate('/login'); }} className="btn btn-primary" style={{ width: '100%', marginTop: '2rem' }}>Login Sekarang</button>
+               <button onClick={() => router.push('/login')} className="btn btn-primary" style={{ width: '100%', marginTop: '2rem' }}>Login Sekarang</button>
             </div>
           )}
         </div>

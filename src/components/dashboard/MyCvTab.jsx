@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  ChevronLeft, User, Settings, Eye, Clock, MapPin, Heart, Compass, 
+  ChevronLeft, ChevronDown, User, Settings, Eye, Clock, MapPin, Heart, Compass, 
   ShieldCheck, ShieldAlert, ArrowRight, Target, GraduationCap, Briefcase, CheckCircle, 
-  X, Users, Sparkles, Award, Quote, BookOpen, Star, BadgeCheck, Bookmark, Plus
+  X, Users, Sparkles, Award, Quote, BookOpen, Star, BadgeCheck, Bookmark, Plus, FileText,
+  Camera, HeartHandshake, Smile, Users2, Shield, EyeOff, Info
 } from 'lucide-react';
-import { supabase } from '../../supabase';
-import { AppContext } from '../../App';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 
 // ─── Shared design tokens ────────────────────────────────────────────────────
 const C = {
@@ -20,233 +21,57 @@ const C = {
   white:   '#FFFFFF',
 };
 
-const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-  .cv-root * { box-sizing: border-box; }
-
-  .cv-root {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: ${C.text};
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    background: white;
-  }
-
-  .cv-split-container {
-    display: flex;
-    width: 100%;
-    min-height: 100%;
-  }
-
-  /* ── LEFT PANEL ── */
-  .cv-left-panel {
-    flex: 0 0 320px;
-    background: #F8FAFC;
-    border-right: 1px solid ${C.border};
-    padding: 2.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-height: 100%;
-  }
-
-  .cv-avatar-container {
-    width: 130px; height: 130px;
-    margin-bottom: 2rem;
-  }
-  .cv-avatar {
-    width: 100%; height: 100%;
-    border-radius: 24px;
-    background: white;
-    border: 1px solid rgba(19, 78, 57, 0.1);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
-  }
-
-  .cv-name {
-    font-size: 2.2rem;
-    font-weight: 900; margin: 0; line-height: 1.1;
-    color: ${C.primary};
-    letter-spacing: -0.02em;
-  }
-
-  .cv-meta-v {
-    display: flex; flex-direction: column; gap: 10px; margin: 2rem 0; width: 100%;
-  }
-  .cv-meta-v span { 
-    display: flex; align-items: center; gap: 12px; 
-    padding: 12px 18px; background: white; border-radius: 8px;
-    border: 1px solid ${C.border}; font-weight: 700; color: ${C.primary}; font-size: 0.9rem;
-  }
-
-  .cv-vision-side {
-    background: white; border-radius: 14px; padding: 2rem; 
-    border: 1px solid ${C.border}; text-align: left; width: 100%;
-    margin-top: auto;
-  }
-  .cv-vision-side label {
-    display: block; font-size: 0.7rem; font-weight: 900; color: ${C.gold}; 
-    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
-  }
-  .cv-vision-side p {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 1.1rem; line-height: 1.6; color: ${C.text};
-    font-weight: 700; font-style: italic; margin: 0;
-  }
-
-  /* ── RIGHT PANEL ── */
-  .cv-right-panel {
-    flex: 1;
-    padding: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    background: white;
-    min-height: 100%;
-  }
-
-  .cv-grid-full {
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 1.5rem;
-  }
-
-  .cv-card-compact {
-    background: white; padding: 1.25rem; border-radius: 12px;
-    border: 1px solid ${C.border}; display: flex; flex-direction: column;
-    height: 100%;
-  }
-  
-  .cv-card-header-compact {
-    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.25rem;
-  }
-  .cv-card-header-compact i {
-    width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0;
-    background: rgba(19,78,57,0.05); color: ${C.primary};
-    display: flex; align-items: center; justify-content: center;
-  }
-  .cv-card-header-compact h4 { margin: 0; font-size: 0.95rem; line-height: 1.4; font-weight: 800; color: ${C.primary}; margin-top: 6px; }
-
-  .cv-info-item-compact { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed ${C.border}; }
-  .cv-info-item-compact:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .cv-info-item-compact label { font-size: 0.65rem; font-weight: 800; color: ${C.muted}; text-transform: uppercase; letter-spacing: 0.05em; }
-  .cv-info-item-compact span { font-size: 0.9rem; line-height: 1.4; font-weight: 800; color: ${C.text}; text-align: left; word-break: break-word; }
-
-  .cv-screening-full {
-    background: #F8FAFC; border-radius: 16px; padding: 2rem;
-    border: 1px solid ${C.border};
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .cv-screening-full h3 { font-size: 1.25rem; font-weight: 900; color: ${C.primary}; margin-bottom: 1.5rem; display: flex; alignItems: center; gap: 12px; }
-
-  .cv-q-grid-full {
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 1.25rem;
-    overflow-y: auto;
-    padding-right: 8px;
-  }
-  .cv-q-grid-full::-webkit-scrollbar { width: 4px; }
-  .cv-q-grid-full::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 10px; }
-
-  .cv-q-item-compact {
-    background: white; padding: 1.25rem; border-radius: 10px; border: 1px solid ${C.border};
-  }
-  .cv-q-item-compact label { display: block; font-size: 0.65rem; font-weight: 800; color: ${C.gold}; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em; }
-  .cv-q-item-compact p { margin: 0; font-size: 0.9rem; line-height: 1.5; font-weight: 600; color: ${C.primary}; }
-
-  .cv-btn-side {
-    width: 100%; padding: 1rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem;
-    display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s;
-    margin-bottom: 10px;
-  }
-  .cv-btn-side-primary { background: ${C.primary}; color: white; border: none; }
-  .cv-btn-side-outline { background: white; color: ${C.primary}; border: 2px solid ${C.border}; }
-  
-  @media (max-width: 1200px) {
-    .cv-root { height: auto; overflow: visible; display: block; }
-    .cv-split-container { flex-direction: column; height: auto; overflow: visible; }
-    .cv-left-panel { flex: none; width: 100%; border-right: none; border-bottom: 1px solid ${C.border}; height: auto; padding: 2rem 1.5rem; overflow: visible; }
-    .cv-vision-side { margin-top: 1.5rem; }
-    .cv-right-panel { flex: none; width: 100%; height: auto; overflow: visible; padding: 1.5rem; gap: 1.5rem; }
-    .cv-grid-full { grid-template-columns: repeat(2, 1fr); }
-    .cv-q-grid-full { grid-template-columns: repeat(2, 1fr); overflow: visible; }
-    .cv-screening-full { height: auto; overflow: visible; }
-  }
-
-  @media (max-width: 768px) {
-    .cv-left-panel { padding: 1.5rem 1rem; }
-    .cv-avatar-container { width: 90px; height: 90px; margin-bottom: 1rem; }
-    .cv-avatar { border-radius: 30px; }
-    .cv-name { font-size: 1.75rem; }
-    .cv-meta-v { margin: 1.25rem 0; gap: 8px; }
-    .cv-meta-v span { padding: 10px 14px; font-size: 0.8rem; border-radius: 14px; }
-    .cv-vision-side { padding: 1.5rem; margin-top: 1rem; border-radius: 12px; }
-    .cv-vision-side p { font-size: 1rem; }
-    .cv-btn-side { padding: 0.8rem; font-size: 0.85rem; margin-bottom: 8px; border-radius: 6px; }
-    
-    .cv-right-panel { padding: 1rem; gap: 1rem; }
-    .cv-card-compact { padding: 1.25rem; border-radius: 10px; }
-    .cv-screening-full { padding: 1.5rem; border-radius: 12px; }
-    .cv-q-item-compact { padding: 1rem; border-radius: 8px; }
-
-    .cv-grid-full { grid-template-columns: 1fr; }
-    .cv-q-grid-full { grid-template-columns: 1fr; }
-  }
-
-  .cv-info-block {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .cv-info-block label {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .cv-info-block span {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #134E39;
-    line-height: 1.4;
-  }
-`;
+const EMPTY_ARRAY = [];
 
 export default function MyCvTab({ 
   user, myExistingCv, isEditingCv, setIsEditingCv, hasSubmittedCv, 
   cvStep, setCvStep, myCv, setMyCv, isSubmittingCv, handleCvSubmit, 
-  isPreviewingCv, setIsPreviewingCv, totalSteps, setPreviewDetail, setActiveTab,
-  screeningAnswers, setScreeningAnswers,
-  // New props for viewing other CVs
   targetCv = null,
-  onAjukanTaaruf = null,
-  onBack = null
+  onBack = null,
+  provinces = EMPTY_ARRAY
 }) {
-  const { userReviews, setUserReviews, showAlert, bookmarks, setBookmarks, setReportModalState } = React.useContext(AppContext);
+  const { userReviews, setUserReviews, showAlert, bookmarks, setBookmarks, setReportModalState } = useAppContext();
   const [fullViewItem, setFullViewItem] = useState(null);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [activeViewTab, setActiveViewTab] = useState('cv'); // 'cv', 'aqidah' or 'reviews'
+  const [activeViewTab, setActiveViewTab] = useState('profil_fisik'); // 'profil_fisik', 'latar_belakang', 'agama_nikah', 'kriteria', 'reviews'
   const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  
+  // Section-based editing
+  const [activeEditSection, setActiveEditSection] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [isFetchingCities, setIsFetchingCities] = useState(false);
 
   const isViewingOther = !!targetCv;
   const displayCv = targetCv || myExistingCv;
 
-  const set = (k, v) => setMyCv(p => ({ ...p, [k]: v }));
-  const next = () => setCvStep(s => Math.min(s + 1, 7));
-  const back = () => setCvStep(s => Math.max(s - 1, 1));
+  // Sync cities list for Province select
+  React.useEffect(() => {
+    if (myCv?.domisili_provinsi && provinces?.length > 0) {
+       const provId = provinces.find(p => p.name === myCv.domisili_provinsi)?.id;
+       if (provId) {
+          setIsFetchingCities(true);
+          fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`)
+             .then(r => r.json())
+             .then(data => setCities(data || []))
+             .catch(e => {
+                 console.error("Gagal mengambil data kota", e);
+                 setCities([]);
+              })
+             .finally(() => setIsFetchingCities(false));
+       } else {
+          setCities([]);
+       }
+    } else {
+       setCities([]);
+    }
+  }, [myCv?.domisili_provinsi, provinces]);
 
-  const isBookmarked = bookmarks?.some(b => b.target_id === displayCv.user_id);
+  const set = (k, v) => setMyCv(p => ({ ...p, [k]: v }));
+
+  const isBookmarked = bookmarks?.some(b => b.target_id === displayCv?.user_id);
 
   const toggleBookmark = async () => {
     if (isTogglingBookmark) return;
@@ -268,41 +93,81 @@ export default function MyCvTab({
     }
   };
 
-  React.useEffect(() => {
-    const styleId = 'cv-premium-styles';
-    if (!document.getElementById(styleId)) {
-      const styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      styleEl.innerHTML = styles;
-      document.head.appendChild(styleEl);
-    }
-  }, []);
+  // Sections definitions
+  const sections = [
+    { id: 1, name: 'PROFIL', fields: ['alias', 'gender', 'age', 'domisili_provinsi', 'domisili_kota', 'address', 'marital_status', 'suku'] },
+    { id: 2, name: 'FOTO', fields: ['foto_url'] },
+    { id: 3, name: 'GAMBARAN FISIK', fields: ['tinggi_badan', 'berat_badan', 'ciri_fisik', 'kesehatan'] },
+    { id: 4, name: 'GAMBARAN DIRI', fields: ['karakter_positif', 'karakter_negatif', 'hobi', 'hal_disukai', 'hal_benci'] },
+    { id: 5, name: 'GAMBARAN KELUARGA', fields: ['kondisi_keluarga', 'pekerjaan_ortu', 'anak_ke_dari'] },
+    { id: 6, name: 'PENDIDIKAN', fields: ['education', 'riwayat_pendidikan'] },
+    { id: 7, name: 'PENGALAMAN', fields: ['job', 'salary', 'pengalaman_kerja'] },
+    { id: 8, name: 'IBADAH', fields: ['worship_wajib', 'worship_sunnah', 'baca_quran', 'kajian'] },
+    { id: 9, name: 'PERSIAPAN PERNIKAHAN', fields: ['marriage_vision', 'role_view', 'target_menikah', 'rencana_nafkah', 'poligami'] },
+    { id: 10, name: 'HARAPAN', fields: ['harapan_pasangan'] },
+    { id: 11, name: 'KRITERIA FISIK', fields: ['kriteria_fisik'] },
+    { id: 12, name: 'KRITERIA NON FISIK', fields: ['kriteria_non_fisik'] }
+  ];
 
+  // Helper to check if a specific section is filled
+  const getSectionStatus = (secId) => {
+    const sec = sections.find(s => s.id === secId);
+    if (!sec) return false;
+    
+    // Alias must be set, gender must be set, age must be set
+    // For general fields, they must be truthy strings/numbers
+    return sec.fields.every(field => {
+      const val = myCv[field];
+      if (val === undefined || val === null || val === '') return false;
+      return true;
+    });
+  };
+
+  const handleSectionSave = async () => {
+    try {
+      // Validate Profil first
+      if (activeEditSection === 1) {
+        if (!myCv.alias || !myCv.gender || !myCv.age || !myCv.domisili_provinsi || !myCv.domisili_kota || !myCv.marital_status || !myCv.suku) {
+          showAlert('Formulir Belum Lengkap', 'Harap isi semua kolom bertanda bintang (*).', 'error');
+          return;
+        }
+      }
+      
+      // Auto save to DB silently
+      await handleCvSubmit(true);
+      showAlert('Berhasil', `Data bagian ${sections.find(s => s.id === activeEditSection).name} berhasil disimpan.`, 'success');
+      setActiveEditSection(null);
+    } catch (err) {
+      showAlert('Gagal', 'Gagal menyimpan data bagian: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    }
+  };
+
+  // Read-only profile view rendering
   if ((hasSubmittedCv || isViewingOther) && !isEditingCv) {
     return (
       <div key="cv-view-root" className="cv-root-view">
         <style key="cv-style">{`
           .cv-root-view {
-            background: #f8fafc; width: 100%; height: calc(100vh - 140px); 
-            display: flex; justifyContent: center; padding: 1rem 0;
-            overflow: hidden;
+            background: #f8fafc; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; align-items: stretch; padding: 0;
+            overflow-x: hidden; overflow-y: hidden;
           }
           
           .cv-full-container {
-            display: flex; width: 100%; max-width: 1450px; 
-            height: 100%; gap: 2rem;
+            display: flex; width: 100%; 
+            flex: 1; min-height: 0; gap: 1.25rem;
           }
           .cv-side-id {
             width: 280px; flex-shrink: 0; background: white; 
-            padding: 3rem 1.75rem; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center;
             height: fit-content; max-height: 100%; overflow-y: auto; align-self: flex-start;
-            border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+            border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: none;
           }
           .cv-side-id::-webkit-scrollbar { width: 4px; }
           .cv-side-id::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
           
           .cv-main-body {
-            flex: 1; padding: 0 1rem 2rem 1rem; overflow-y: auto; height: 100%;
+            flex: 1; padding: 0 0.5rem 1rem 0.5rem; overflow-y: auto; height: 100%;
             scrollbar-width: thin;
             scrollbar-color: #e2e8f0 transparent;
           }
@@ -313,15 +178,15 @@ export default function MyCvTab({
           
           .cv-hero-badge {
             background: #134E39; color: white; padding: 6px 16px; border-radius: 99px;
-            font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 2rem;
-            display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(19,78,57,0.2);
+            font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 1rem;
+            display: inline-flex; align-items: center; gap: 6px; box-shadow: none;
           }
           
           .cv-stat-card-small {
             width: 100%; min-height: 48px; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #f1f5f9;
             background: white; margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
             font-weight: 800; color: #134E39; font-size: 0.85rem; transition: all 0.2s;
-            text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            text-align: left; box-shadow: none;
           }
           .cv-stat-card-small i {
             width: 32px; height: 32px; border-radius: 6px; background: rgba(19,78,57,0.05);
@@ -330,18 +195,57 @@ export default function MyCvTab({
           }
           
           .cv-grid-layout {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1rem;
           }
           
           .cv-card-premium {
-            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.75rem;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.25rem;
+            box-shadow: none;
             position: relative; overflow: hidden;
             display: flex; flex-direction: column; height: 100%;
           }
           
+          .cv-card-title {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 1rem;
+          }
+          
+          .cv-card-icon {
+            width: 48px; height: 48px; border-radius: 12px; background: rgba(19,78,57,0.05);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          }
+          
+          .cv-card-title h3 {
+            font-size: 1.25rem; font-weight: 900; color: #134E39; margin: 0;
+          }
+          
+          .cv-info-grid {
+            display: flex; flex-direction: column; gap: 0.75rem;
+          }
+          
+          .cv-info-field {
+            display: flex; flex-direction: column; gap: 4px;
+          }
+          
+          .cv-info-field label {
+            font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
+          }
+          
+          .cv-info-field span {
+            font-size: 0.95rem; font-weight: 600; color: #1e293b;
+          }
+          
           .cv-q-box {
-            background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #f1f5f9;
+            background: white; padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;
+            box-shadow: none; transition: all 0.2s;
+            text-align: left;
+          }
+          .cv-q-box:hover {
+            box-shadow: none;
+            transform: translateY(-2px);
+          }
+          
+          .cv-tabs-dropdown-wrapper {
+            display: none;
           }
           
           @media (max-width: 1200px) {
@@ -357,42 +261,145 @@ export default function MyCvTab({
           }
           
           @media (max-width: 992px) {
-            .cv-root-view { height: auto; padding: 1rem 0; overflow-y: auto; display: block; }
+            .cv-root-view { height: auto; padding: 0; overflow-y: auto; display: block; }
             .cv-full-container { height: auto; border-radius: 0; margin: 0; border: none; }
           }
 
           @media (max-width: 768px) {
             .cv-hero-badge { margin-bottom: 1rem; padding: 4px 12px; font-size: 0.6rem; }
             .cv-side-id h1 { font-size: 1.75rem !important; margin-bottom: 0.75rem !important; }
-            .cv-side-id { padding: 1.5rem 1.25rem !important; }
+            .cv-side-id { 
+              padding: 1rem 0.75rem !important; 
+              max-width: none !important;
+              border: none !important;
+              box-shadow: none !important;
+              border-radius: 0 !important;
+              background: transparent !important;
+            }
             .cv-side-id .avatar-wrapper { width: 100px !important; height: 100px !important; margin-bottom: 1.5rem !important; }
             .cv-side-id .avatar-wrapper svg { width: 40px !important; }
             
             .cv-tab-btn { font-size: 0.8rem !important; gap: 6px !important; }
             
-            .cv-tabs-scroll {
-              gap: 1.5rem !important;
-              padding: 0 1rem !important;
-              top: 0 !important;
-              background: #F8FAFC !important;
-              margin-bottom: 1.5rem !important;
-              overflow-x: auto !important;
-              white-space: nowrap !important;
-              -webkit-overflow-scrolling: touch !important;
+            .cv-tabs-dropdown-wrapper {
+              display: block !important;
+              width: 100%; 
+              padding: 0.5rem 1rem; 
+              margin-bottom: 1rem;
+              flex-shrink: 0;
             }
-            .cv-tabs-scroll::-webkit-scrollbar { display: none; }
+            .cv-tabs-scroll {
+              display: none !important;
+            }
             
             .cv-side-id .cv-vision-box { height: auto !important; max-height: 200px; }
-            .cv-card-premium { padding: 1.25rem !important; }
+            .cv-main-body { padding: 1rem 0.75rem !important; }
+            .cv-card-premium { padding: 1.25rem 0.75rem !important; }
           }
           
           @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
         
+        {/* Dropdown Tab Navigation for Mobile */}
+        <div className="cv-tabs-dropdown-wrapper">
+          <div style={{ position: 'relative', width: '100%' }}>
+            <select 
+              value={activeViewTab || ''} 
+              onChange={(e) => setActiveViewTab(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.8rem 2.5rem 0.8rem 1rem',
+                border: '2px solid #E2E8F0',
+                borderRadius: '12px',
+                fontSize: '0.85rem',
+                fontWeight: '900',
+                color: '#134E39',
+                background: 'white',
+                outline: 'none',
+                appearance: 'none',
+                cursor: 'pointer',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+              }}
+            >
+              <option value="profil_fisik">PROFIL & FISIK</option>
+              <option value="latar_belakang">LATAR BELAKANG</option>
+              <option value="agama_nikah">AGAMA & PERNIKAHAN</option>
+              <option value="kriteria">KRITERIA PASANGAN</option>
+              <option value="reviews">
+                REVIEW & KESAN ({userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length})
+              </option>
+            </select>
+            <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#134E39', display: 'flex', alignItems: 'center' }}>
+              <ChevronDown size={18} />
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll Tab Navigation for Desktop */}
+        <div className="cv-tabs-scroll" style={{ 
+          display: 'flex', 
+          gap: '1.5rem', 
+          borderBottom: '2px solid rgba(226, 232, 240, 0.6)', 
+          marginBottom: '1rem', 
+          width: '100%',
+          padding: '0.5rem 1rem 0 1rem',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+           {[
+             { id: 'profil_fisik', label: 'PROFIL & FISIK' },
+             { id: 'latar_belakang', label: 'LATAR BELAKANG' },
+             { id: 'agama_nikah', label: 'AGAMA & PERNIKAHAN' },
+             { id: 'kriteria', label: 'KRITERIA PASANGAN' },
+             { id: 'reviews', label: 'REVIEW & KESAN', badge: userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length }
+           ].map((tab) => (
+             <button 
+               key={tab.id}
+               onClick={() => setActiveViewTab(tab.id)}
+               style={{ 
+                 background: 'none', 
+                 border: 'none', 
+                 borderBottom: activeViewTab === tab.id ? `3px solid #134E39` : '3px solid transparent',
+                 color: activeViewTab === tab.id ? '#134E39' : '#94a3b8', 
+                 padding: '0.8rem 0', 
+                 fontWeight: '900', 
+                 cursor: 'pointer', 
+                 fontSize: '0.8rem', 
+                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                 letterSpacing: '0.08em',
+                 marginBottom: '-2px',
+                 display: 'flex',
+                 alignItems: 'center',
+                 height: '100%',
+                 gap: '10px'
+               }}
+             >
+               {tab.label}
+               {tab.id === 'reviews' && tab.badge > 0 && (
+                 <span style={{ 
+                   background: activeViewTab === 'reviews' ? '#134E39' : '#f1f5f9', 
+                   color: activeViewTab === 'reviews' ? 'white' : '#64748b', 
+                   width: '20px',
+                   height: '20px',
+                   borderRadius: '50%', 
+                   fontSize: '0.65rem', 
+                   fontWeight: '900',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center'
+                 }}>
+                     {tab.badge}
+                 </span>
+               )}
+             </button>
+           ))}
+        </div>
+
         <div className="cv-full-container">
-           {/* 🏆 LEFT PANEL (IDENTITY) 🏆 */}
-           <div className="cv-side-id">
+            {/* 🏆 LEFT PANEL (IDENTITY CARD) 🏆 */}
+            <div className="cv-side-id">
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '1.5rem' }}>
                 {onBack ? (
                   <button 
@@ -447,18 +454,26 @@ export default function MyCvTab({
                 )}
               </div>
               
-              <div className="avatar-wrapper" style={{ position: 'relative', marginBottom: '1rem', width: '120px', height: '120px', flexShrink: 0 }}>
-                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #f8fafc 0%, #fff 100%)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
-                    <User size={50} strokeWidth={1.5} />
-                 </div>
+              <div className="avatar-wrapper" style={{ position: 'relative', marginBottom: '1.5rem', width: '120px', height: '120px', flexShrink: 0 }}>
+                 {displayCv?.foto_url ? (
+                   <img 
+                     src={displayCv.foto_url} 
+                     alt={displayCv.alias} 
+                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${C.primary}`, boxShadow: '0 10px 20px rgba(19,78,57,0.15)' }} 
+                   />
+                 ) : (
+                   <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #f8fafc 0%, #fff 100%)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
+                      <User size={50} strokeWidth={1.5} />
+                   </div>
+                 )}
               </div>
               
-              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: '900', color: '#134E39', margin: '0 0 1rem', lineHeight: 1.1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{displayCv.alias}</h1>
+              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: '900', color: '#134E39', margin: '0 0 1rem', lineHeight: 1.1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{displayCv?.alias}</h1>
               
               <div style={{ width: '100%', marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                 <div className="cv-stat-card-small"><i><MapPin size={16} /></i> {displayCv.location}</div>
-                 <div className="cv-stat-card-small"><i><Clock size={16} /></i> {displayCv.age} Tahun</div>
-                 <div className="cv-stat-card-small"><i><Heart size={16} /></i> {displayCv.marital_status}</div>
+                 <div className="cv-stat-card-small"><i><MapPin size={16} /></i> {displayCv?.location}</div>
+                 <div className="cv-stat-card-small"><i><Clock size={16} /></i> {displayCv?.age} Tahun</div>
+                 <div className="cv-stat-card-small"><i><Heart size={16} /></i> {displayCv?.marital_status}</div>
               </div>
 
                {!isViewingOther && (
@@ -476,243 +491,336 @@ export default function MyCvTab({
                    <Settings size={16} /> EDIT PROFIL CV
                  </button>
                )}
-           </div>
+            </div>
 
-           {/* 📄 RIGHT PANEL (CONTENT) 📄 */}
-           <div className="cv-main-body">
-               {/* 🧭 NAVIGATION TABS 🧭 */}
-               <div className="cv-tabs-scroll" style={{ 
-                 display: 'flex', 
-                 gap: '2.5rem', 
-                 borderBottom: '2px solid #f1f5f9', 
-                 marginBottom: '2rem', 
-                 position: 'sticky', 
-                 top: '0', 
-                 background: 'rgba(248, 250, 252, 0.9)', 
-                 backdropFilter: 'blur(10px)',
-                 zIndex: 10,
-                 padding: '1.5rem 0.5rem',
-                 boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)'
-               }}>
-                  {[
-                    { id: 'cv', label: 'PROFIL LENGKAP' },
-                    { id: 'aqidah', label: 'PEMAHAMAN AGAMA', show: displayCv.screening_data || (!isViewingOther && user.aqidah1) },
-                    { id: 'reviews', label: 'REVIEW & KESAN', badge: userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length }
-                  ].map((tab) => (tab.show !== false && (
-                    <button 
-                      key={tab.id}
-                      onClick={() => setActiveViewTab(tab.id)}
-                      style={{ 
-                        background: 'none', 
-                        border: 'none', 
-                        borderBottom: activeViewTab === tab.id ? `3px solid #134E39` : '3px solid transparent',
-                        color: activeViewTab === tab.id ? '#134E39' : '#94a3b8', 
-                        padding: '0.8rem 0', 
-                        fontWeight: '900', 
-                        cursor: 'pointer', 
-                        fontSize: '0.8rem', 
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                        letterSpacing: '0.08em',
-                        marginBottom: '-2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                      }}
-                    >
-                      {tab.label}
-                      {tab.id === 'reviews' && tab.badge > 0 && (
-                        <span style={{ 
-                          background: activeViewTab === 'reviews' ? '#134E39' : '#f1f5f9', 
-                          color: activeViewTab === 'reviews' ? 'white' : '#64748b', 
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%', 
-                          fontSize: '0.65rem', 
-                          fontWeight: '900',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                            {tab.badge}
-                        </span>
-                      )}
-                    </button>
-                  )))}
-               </div>
-
-              {activeViewTab === 'cv' ? (
-                <div className="cv-grid-layout" style={{ alignItems: 'stretch', animation: 'fadeIn 0.4s ease' }}>
-                 
-                 {/* Card: Education & Job */}
-                 <div className="cv-card-premium">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem', color: '#134E39' }}>
-                       <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <GraduationCap size={24} />
+            {/* 📄 RIGHT PANEL (DETAILED CONTENTS BY TABS) 📄 */}
+            <div className="cv-main-body">
+              {activeViewTab === 'profil_fisik' && (
+                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
+                  {/* Card: 1. Profil */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><User size={22} color="#134E39" /></div>
+                       <h3>Profil Dasar</h3>
+                    </div>
+                    <div className="cv-info-grid">
+                       <div className="cv-info-field">
+                         <label>Jenis Kelamin</label>
+                         <span style={{ textTransform: 'capitalize' }}>{displayCv?.gender || '—'}</span>
                        </div>
-                       <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Pendidikan & Karir</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                       <div className="cv-info-block"><label>Pendidikan Terakhir</label><span>{displayCv.education}</span></div>
-                       <div className="cv-info-block"><label>Profesi Saat Ini</label><span>{displayCv.job}</span></div>
-                       <div className="cv-info-block"><label>Estimasi Gaji</label><span>{displayCv.salary || '—'}</span></div>
-                       <div className="cv-info-block"><label>Suku Bangsa</label><span>{displayCv.suku}</span></div>
-                    </div>
-                 </div>
-
-                 {/* Card: Physical & Health */}
-                 <div className="cv-card-premium">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2.5rem', color: '#134E39' }}>
-                       <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Target size={24} />
+                       <div className="cv-info-field">
+                         <label>Suku Bangsa</label>
+                         <span>{displayCv?.suku || '—'}</span>
                        </div>
-                       <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900' }}>Fisik & Karakter</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                       <div className="cv-info-block"><label>Tinggi / Berat</label><span>{displayCv.tinggi_berat}</span></div>
-                       <div className="cv-info-block"><label>Kondisi Kesehatan</label><span>{displayCv.kesehatan || 'Normal'}</span></div>
-                       <div className="cv-info-block"><label>Ketaatan Ibadah</label><span>{displayCv.worship}</span></div>
-                       <div className="cv-info-block"><label>Pandangan Poligami</label><span>{displayCv.poligami || 'Tidak Bersedia'}</span></div>
-                    </div>
-                 </div>
-
-                 {/* Card: Criteria (Full Width) */}
-                 <div className="cv-card-premium" style={{ gridColumn: '1 / -1', height: '180px', position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1.5rem' }}>
-                       <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: 'rgba(212,175,55,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37' }}>
-                          <Compass size={20} />
+                       <div className="cv-info-field">
+                         <label>Provinsi Domisili</label>
+                         <span>{displayCv?.domisili_provinsi || '—'}</span>
                        </div>
-                       <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#134E39' }}>Kriteria Pasangan Impian</h3>
+                       <div className="cv-info-field">
+                         <label>Kota Domisili</label>
+                         <span>{displayCv?.domisili_kota || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Alamat Lengkap</label>
+                         <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.address || '—'}</span>
+                       </div>
                     </div>
-                    <p style={{ 
-                      fontSize: '1.05rem', lineHeight: 1.7, color: '#475569', fontWeight: '500', margin: 0, padding: '0 1rem',
-                      display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
-                    }}>{displayCv.criteria}</p>
-                    {displayCv.criteria?.length > 150 && (
-                      <button 
-                        onClick={() => setFullViewItem({ l: 'Kriteria Pasangan Impian', v: displayCv.criteria })}
-                        style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', background: C.primary, color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}
-                      >
-                        <Eye size={14} /> LIHAT SELENGKAPNYA
-                      </button>
-                    )}
-                 </div>
-              </div>
-            ) : activeViewTab === 'aqidah' ? (
-              <div style={{ animation: 'fadeIn 0.5s ease' }}>
-                <div className="cv-card-premium" style={{ padding: '2.5rem', borderRadius: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '2.5rem' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '9px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <BookOpen size={28} color="#D4AF37" />
-                        </div>
-                        <div>
-                          <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#134E39' }}>Pemahaman Aqidah & Agama</h3>
-                          <p style={{ margin: 0, color: '#64748b', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '0.1em' }}>PRINSIP DASAR KANDIDAT</p>
-                        </div>
+                  </div>
+
+                  {/* Card: 3. Gambaran Fisik */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Target size={22} color="#134E39" /></div>
+                       <h3>Gambaran Fisik</h3>
                     </div>
-                    
-                    <div className="cv-grid-layout">
-                          {[
-                          { l: '3 Landasan Utama', v: displayCv.screening_data?.aqidah1 || (isViewingOther ? null : user.aqidah1) },
-                          { l: 'Makna Syahadat', v: displayCv.screening_data?.aqidah2 || (isViewingOther ? null : user.aqidah2) },
-                          { l: 'Tujuan Penciptaan', v: displayCv.screening_data?.aqidah3 || (isViewingOther ? null : user.aqidah3) },
-                          { l: 'Visi Pernikahan', v: displayCv.screening_data?.marriage_vision || (isViewingOther ? null : user.marriage_vision) },
-                          { l: 'Tanggung Jawab Suami/Istri', v: displayCv.screening_data?.role_view || (isViewingOther ? null : user.role_view) },
-                          { l: 'Pandangan Poligami', v: displayCv.screening_data?.polygamy_view || (isViewingOther ? null : user.polygamy_view) }
-                        ].filter(q => q && q.v).map((q, idx) => (
-                           <div key={idx} className="cv-q-box" style={{ background: '#f8fafc', border: '1px solid #f1f5f9', padding: '1.5rem', borderRadius: '12px', height: '160px', position: 'relative', overflow: 'hidden' }}>
-                               <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.1em' }}>{q.l}</label>
-                               <p style={{ 
-                                 margin: 0, fontSize: '0.95rem', lineHeight: 1.6, color: '#1e293b', fontWeight: '500',
-                                 display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden'
-                               }}>{q.v}</p>
-                               {q.v?.length > 100 && (
-                                 <button 
-                                   onClick={() => setFullViewItem({ l: q.l, v: q.v })}
-                                   style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'white', border: '1px solid #f1f5f9', width: '32px', height: '32px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.primary, boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}
-                                 >
-                                   <Eye size={14} />
-                                 </button>
-                               )}
-                           </div>
-                        ))}
+                    <div className="cv-info-grid">
+                       <div className="cv-info-field">
+                         <label>Tinggi Badan</label>
+                         <span>{displayCv?.tinggi_badan ? `${displayCv.tinggi_badan} cm` : displayCv?.tinggi_berat?.split('/')?.[0]?.trim() || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Berat Badan</label>
+                         <span>{displayCv?.berat_badan ? `${displayCv.berat_badan} kg` : displayCv?.tinggi_berat?.split('/')?.[1]?.trim() || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Kondisi Kesehatan</label>
+                         <span>{displayCv?.kesehatan || 'Sehat'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Bentuk Fisik & Ciri Khas</label>
+                         <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.ciri_fisik || '—'}</span>
+                       </div>
                     </div>
+                  </div>
+
+                  {/* Card: 4. Gambaran Diri (Full Width) */}
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Smile size={22} color="#134E39" /></div>
+                       <h3>Gambaran Diri & Karakter</h3>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Karakter Positif</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.karakter_positif || displayCv?.karakter || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Karakter Negatif</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.karakter_negatif || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hal-hal yang Disukai</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.hal_disukai || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hal-hal yang Tidak Disukai</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.hal_benci || '—'}</p>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '1.5rem' }} className="cv-info-field">
+                      <label>Hobi & Kegemaran</label>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#134E39' }}>{displayCv?.hobi || '—'}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div style={{ animation: 'fadeInUp 0.4s ease' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '3.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '11px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.gold, border: '1px solid rgba(212,175,55,0.1)' }}>
-                          <Star size={32} fill={C.gold} />
-                        </div>
-                        <div>
-                          <h3 style={{ fontSize: '1.85rem', fontWeight: '900', color: C.primary, margin: 0, letterSpacing: '-0.02em' }}>Review & Kesan</h3>
-                          <p style={{ margin: 0, color: C.muted, fontSize: '1rem', fontWeight: '500' }}>Pendapat jujur dari para kandidat lainnya</p>
-                        </div>
+              )}
+
+              {activeViewTab === 'latar_belakang' && (
+                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
+                  {/* Card: 5. Gambaran Keluarga */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Users2 size={22} color="#134E39" /></div>
+                       <h3>Gambaran Keluarga</h3>
                     </div>
-                    {isViewingOther && (
-                      <button 
-                        onClick={() => setShowReviewModal(true)}
-                        style={{ 
-                          background: C.primary, color: 'white', border: 'none', 
-                          padding: '0.85rem 1.5rem', borderRadius: '8px', 
-                          fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: '10px',
-                          boxShadow: '0 10px 20px rgba(19,78,57,0.15)',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                      >
-                        <Plus size={18} /> BERIKAN KESAN
-                      </button>
-                    )}
+                    <div className="cv-info-grid">
+                       <div className="cv-info-field">
+                         <label>Anak Ke / Bersaudara</label>
+                         <span>{displayCv?.anak_ke_dari || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Pekerjaan Orang Tua</label>
+                         <span>{displayCv?.pekerjaan_ortu || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Kondisi Agama / Sosial Keluarga</label>
+                         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.kondisi_keluarga || '—'}</p>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Card: 6. Pendidikan */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><GraduationCap size={22} color="#134E39" /></div>
+                       <h3>Pendidikan</h3>
+                    </div>
+                    <div className="cv-info-grid">
+                       <div className="cv-info-field">
+                         <label>Pendidikan Terakhir</label>
+                         <span>{displayCv?.education || '—'}</span>
+                       </div>
+                       <div className="cv-info-field">
+                         <label>Detail Riwayat Pendidikan</label>
+                         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.riwayat_pendidikan || '—'}</p>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Card: 7. Pengalaman (Full Width) */}
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Briefcase size={22} color="#134E39" /></div>
+                       <h3>Pekerjaan & Pengalaman</h3>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                      <div className="cv-info-field">
+                        <label>Pekerjaan Saat Ini</label>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.job || '—'}</span>
+                      </div>
+                      <div className="cv-info-field">
+                        <label>Estimasi Gaji Bulanan</label>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.salary || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="cv-q-box">
+                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Pengalaman Kerja / Organisasi</label>
+                      <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.pengalaman_kerja || '—'}</p>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <div style={{ display: 'block', width: '100%' }}>
-                   {/* Form Section */}
+              {activeViewTab === 'agama_nikah' && (
+                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
+                  {/* Card: 8. Ibadah */}
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><BookOpen size={22} color="#134E39" /></div>
+                       <h3>Ibadah & Pemahaman Agama</h3>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Ketaatan Ibadah Wajib</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.worship_wajib || displayCv?.worship || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Rutinitas Ibadah Sunnah</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.worship_sunnah || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Kemampuan Membaca Al-Qur'an</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.baca_quran || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Kajian yang Sering Diikuti</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.kajian || '—'}</p>
+                      </div>
+                    </div>
+                  </div>
 
-                   {/* List Section */}
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
-                      {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '6rem 3rem', background: 'white', borderRadius: '20px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
-                           <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                              <Quote size={40} color="#cbd5e1" />
-                           </div>
-                           <h4 style={{ color: C.primary, fontWeight: '900', fontSize: '1.2rem', marginBottom: '0.5rem' }}>Belum Ada Kesan</h4>
-                        </div>
-                      ) : (
-                        userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
-                          <div key={review.id} style={{ background: 'white', padding: '2.25rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 15px 35px rgba(0,0,0,0.02)', position: 'relative', transition: 'transform 0.3s ease' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: '900', color: 'white', boxShadow: '0 8px 15px rgba(19,78,57,0.15)' }}>
-                                    {review.reviewer?.name?.charAt(0)}
-                                 </div>
-                                 <div>
-                                    <span style={{ fontWeight: '900', color: C.primary, fontSize: '1.05rem', display: 'block' }}>{review.reviewer?.name}</span>
-                                    <span style={{ fontSize: '0.75rem', color: C.muted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                                 </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: '4px', background: 'rgba(212,175,55,0.05)', padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
-                                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} color={s <= review.rating ? C.gold : '#e2e8f0'} fill={s <= review.rating ? C.gold : 'transparent'} />)}
-                              </div>
-                            </div>
-                            <div style={{ position: 'relative', paddingLeft: '1.5rem', borderLeft: '3px solid rgba(19,78,57,0.1)' }}>
-                               <Quote size={24} style={{ position: 'absolute', top: '-15px', left: '-12px', opacity: 0.1, color: C.primary }} />
-                               <p style={{ margin: 0, fontSize: '1.05rem', color: '#334155', lineHeight: 1.8, fontWeight: '500', fontStyle: 'italic' }}>"{review.comment}"</p>
-                            </div>
+                  {/* Card: 9. Persiapan Pernikahan */}
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><HeartHandshake size={22} color="#134E39" /></div>
+                       <h3>Persiapan Pernikahan</h3>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                      <div className="cv-info-field">
+                        <label>Target Waktu Menikah</label>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.target_menikah || '—'}</span>
+                      </div>
+                      <div className="cv-info-field">
+                        <label>Pandangan Terhadap Poligami</label>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.poligami || 'Tidak Bersedia'}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Visi Pernikahan</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.marriage_vision || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hak & Tanggung Jawab Pasangan</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.role_view || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Rencana Nafkah & Pengelolaan Keuangan</label>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.rencana_nafkah || '—'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card: 10. Harapan */}
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Compass size={22} color="#134E39" /></div>
+                       <h3>Harapan Setelah Menikah</h3>
+                    </div>
+                    <div className="cv-q-box">
+                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Harapan Tempat Tinggal, Karir, Pendidikan Pasangan, dll.</label>
+                      <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.harapan_pasangan || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeViewTab === 'kriteria' && (
+                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
+                  {/* Card: 11. Kriteria Fisik */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Target size={22} color="#134E39" /></div>
+                       <h3>Kriteria Fisik</h3>
+                    </div>
+                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.25rem 1.5rem', border: '1px solid #f1f5f9', minHeight: '120px' }}>
+                      <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#475569', fontWeight: '500', margin: 0, whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_fisik || '—'}</p>
+                    </div>
+                  </div>
+
+                  {/* Card: 12. Kriteria Non Fisik */}
+                  <div className="cv-card-premium">
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Shield size={22} color="#134E39" /></div>
+                       <h3>Kriteria Non-Fisik</h3>
+                    </div>
+                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.25rem 1.5rem', border: '1px solid #f1f5f9', minHeight: '120px' }}>
+                      <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#475569', fontWeight: '500', margin: 0, whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_non_fisik || displayCv?.criteria || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeViewTab === 'reviews' && (
+                <div style={{ animation: 'fadeInUp 0.4s ease' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.12)' }}>
+                            <Star size={24} fill="#D4AF37" />
                           </div>
-                        ))
+                          <div>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#134E39', margin: 0 }}>Review & Kesan</h3>
+                            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem', fontWeight: '600' }}>Pendapat jujur dari kandidat lainnya</p>
+                          </div>
+                      </div>
+                      {isViewingOther && (
+                        <button 
+                          onClick={() => setShowReviewModal(true)}
+                          style={{ 
+                            background: '#134E39', color: 'white', border: 'none', 
+                            padding: '0.75rem 1.25rem', borderRadius: '10px', 
+                            fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            boxShadow: '0 8px 20px rgba(19,78,57,0.15)',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                        >
+                          <Plus size={16} /> BERIKAN KESAN
+                        </button>
                       )}
-                   </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+                     {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
+                       <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'white', borderRadius: '20px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
+                          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                             <Quote size={32} color="#cbd5e1" />
+                          </div>
+                          <h4 style={{ color: '#134E39', fontWeight: '900', fontSize: '1.1rem', margin: '0 0 0.4rem' }}>Belum Ada Kesan</h4>
+                          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', fontWeight: '500' }}>Jadilah yang pertama memberikan kesan</p>
+                       </div>
+                     ) : (
+                       userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
+                         <div key={review.id} style={{ background: 'white', padding: '1.75rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: '900', color: 'white' }}>
+                                   {review.reviewer?.name?.charAt(0)}
+                                </div>
+                                <div>
+                                   <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.95rem', display: 'block' }}>{review.reviewer?.name}</span>
+                                   <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '600' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                </div>
+                             </div>
+                             <div style={{ display: 'flex', gap: '3px', background: 'rgba(212,175,55,0.05)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
+                               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} color={s <= review.rating ? '#D4AF37' : '#e2e8f0'} fill={s <= review.rating ? '#D4AF37' : 'transparent'} />)}
+                             </div>
+                           </div>
+                           <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                              <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: 1.75, fontWeight: '500', fontStyle: 'italic' }}>"{review.comment}"</p>
+                           </div>
+                         </div>
+                       ))
+                     )}
+                  </div>
                 </div>
-              </div>
-            )}
-           </div>
+              )}
+            </div>
         </div>
 
-        {/* 🔍 FULL VIEW MODAL 🔍 */}
+        {/* Full Detail View Modal */}
         {fullViewItem && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={() => setFullViewItem(null)}>
             <div style={{ background: 'white', padding: '3.5rem', borderRadius: '24px', maxWidth: '700px', width: '100%', maxHeight: '85vh', overflowY: 'auto', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
@@ -763,18 +871,18 @@ export default function MyCvTab({
                </div>
 
                <div style={{ marginBottom: '2.5rem' }}>
-                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '900', color: C.muted, marginBottom: '12px', textTransform: 'uppercase' }}>Tuliskan Kesan Anda</label>
-                   <textarea 
-                     placeholder="Apa yang membuat Anda tertarik dengan profil ini? Berikan kesan yang membangun..."
-                     value={newComment}
-                     onChange={e => setNewComment(e.target.value)}
-                     style={{ 
-                       width: '100%', padding: '1.5rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', 
-                       minHeight: '150px', fontSize: '1rem', outline: 'none', resize: 'none', 
-                       background: '#F8FAFC', lineHeight: 1.7, color: C.text
-                     }}
-                   />
-                </div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '900', color: C.muted, marginBottom: '12px', textTransform: 'uppercase' }}>Tuliskan Kesan Anda</label>
+                    <textarea 
+                      placeholder="Apa yang membuat Anda tertarik dengan profil ini? Berikan kesan yang membangun..."
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
+                      style={{ 
+                        width: '100%', padding: '1.5rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', 
+                        minHeight: '150px', fontSize: '1rem', outline: 'none', resize: 'none', 
+                        background: '#F8FAFC', lineHeight: 1.7, color: C.text
+                      }}
+                    />
+                 </div>
 
                <button 
                  disabled={isSubmittingReview || !newComment.trim()}
@@ -794,7 +902,7 @@ export default function MyCvTab({
                      setNewRating(5);
                      setShowReviewModal(false);
                      showAlert('Alhamdulillah', 'Review Anda telah berhasil disimpan.', 'success');
-                   } catch (err) {
+                   } catch {
                      showAlert('Afwan', 'Terjadi kesalahan saat menyimpan review.', 'error');
                    } finally {
                      setIsSubmittingReview(false);
@@ -811,209 +919,527 @@ export default function MyCvTab({
     );
   }
 
-  // Wizard view
+  // 📝 WIZARD / EDIT CV DASHBOARD MODE 📝
   return (
-    <div key="cv-edit-root" className="cv-root" style={{ height: 'calc(100vh - 140px)', overflowY: 'auto', background: '#F8FAFC' }}>
-       <div style={{ padding: '4rem 5%', maxWidth: '900px', margin: '0 auto' }}>
-          
-          {/* Progress Bar */}
-          {cvStep < 7 && (
-            <div style={{ marginBottom: '3rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.85rem' }}>LANGKAH {cvStep} DARI 6</span>
-                <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.85rem' }}>{Math.round(((cvStep-1)/6)*100)}% SELESAI</span>
-              </div>
-              <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${((cvStep-1)/6)*100}%`, background: '#134E39', transition: 'width 0.5s ease-out' }}></div>
+    <div key="cv-edit-root" className="cv-root">
+      <style>{`
+        .cv-root {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          color: ${C.text};
+          width: 100%;
+          height: 100%;
+          overflow-y: auto;
+          background: transparent;
+          padding: 1rem 5%;
+        }
+        .edit-dashboard-card {
+          background: white;
+          border-radius: 24px;
+          border: 1px solid #f1f5f9;
+          padding: 1.5rem;
+          box-shadow: none;
+          max-width: 900px;
+          margin: 0 auto;
+        }
+        .edit-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 2rem 0;
+          background: white;
+        }
+        .edit-table th, .edit-table td {
+          padding: 1rem 1.25rem;
+          text-align: left;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .edit-table th {
+          font-weight: 800;
+          color: ${C.primary};
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background: #f8fafc;
+        }
+        .edit-table td {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: ${C.text};
+        }
+        .status-badge {
+          display: inline-flex;
+          padding: 4px 12px;
+          border-radius: 99px;
+          font-size: 0.72rem;
+          font-weight: 800;
+        }
+        .status-badge.filled {
+          background: #dcfce7;
+          color: #166534;
+        }
+        .status-badge.empty {
+          background: #f1f5f9;
+          color: #64748b;
+        }
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          text-align: left;
+        }
+        .form-group.full-width {
+          grid-column: span 2;
+        }
+        .form-label {
+          font-size: 0.8rem;
+          font-weight: 800;
+          color: ${C.primary};
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .form-control {
+          width: 100%;
+          padding: 0.85rem 1.25rem;
+          border-radius: 12px;
+          border: 1px solid #E2E8F0;
+          font-size: 0.95rem;
+          font-weight: 600;
+          outline: none;
+          background: #FFFFFF;
+          transition: all 0.2s;
+        }
+        .form-control:focus {
+          border-color: ${C.primary};
+          box-shadow: 0 0 0 3px rgba(19,78,57,0.08);
+        }
+        .action-edit-btn {
+          background: none;
+          border: none;
+          color: ${C.primary};
+          font-weight: 800;
+          font-size: 0.82rem;
+          cursor: pointer;
+          text-decoration: underline;
+          padding: 4px 8px;
+          border-radius: 6px;
+        }
+        .action-edit-btn:hover {
+          background: rgba(19,78,57,0.05);
+        }
+        @media (max-width: 768px) {
+          .cv-root {
+            padding: 1rem 0.5rem !important;
+          }
+          .edit-dashboard-card {
+            padding: 1.5rem 1rem !important;
+          }
+          .form-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .form-group.full-width {
+            grid-column: span 1 !important;
+          }
+          .edit-table th:nth-child(1), .edit-table td:nth-child(1) {
+            display: none; /* Hide No on mobile */
+          }
+        }
+      `}</style>
+
+      <div className="edit-dashboard-card">
+        {activeEditSection === null ? (
+          /* 📋 12-SECTIONS CHECKLIST TABLE DASHBOARD 📋 */
+          <div style={{ animation: 'fadeIn 0.35s ease' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '950', color: C.primary, margin: '0 0 0.5rem', textAlign: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Restrukturisasi CV Taaruf</h2>
+            <p style={{ color: C.muted, fontWeight: '600', fontSize: '0.9rem', textAlign: 'center', margin: '0 0 2rem' }}>Lengkapi 12 bagian di bawah ini sebelum menyimpan dan mempublikasikan CV Anda.</p>
+            
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '16px', marginBottom: '2rem', display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <Info size={20} color={C.primary} />
+              <p style={{ margin: 0, fontSize: '0.82rem', color: C.primaryLt, fontWeight: '600', lineHeight: 1.4, textAlign: 'left' }}>
+                Anda dapat mengisi data secara bertahap dengan mengklik <strong>Lengkapi / Edit</strong> di setiap baris. Klik tombol <strong>SIMPAN & KELUAR</strong> di bagian bawah jika sudah selesai.
+              </p>
+            </div>
+
+            <table className="edit-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px' }}>No</th>
+                  <th>Bagian</th>
+                  <th style={{ width: '120px' }}>Status</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sections.map((sec) => {
+                  const filled = getSectionStatus(sec.id);
+                  return (
+                    <tr key={sec.id}>
+                      <td style={{ fontWeight: '800', color: C.muted }}>{sec.id}</td>
+                      <td style={{ fontWeight: '800', color: C.primary }}>{sec.name}</td>
+                      <td>
+                        <span className={`status-badge ${filled ? 'filled' : 'empty'}`}>
+                          {filled ? 'terisi' : 'belum terisi'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button className="action-edit-btn" onClick={() => setActiveEditSection(sec.id)}>
+                          {filled ? 'Edit' : 'Lengkapi'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div style={{ display: 'flex', gap: '1.5rem', marginTop: '2.5rem' }}>
+              <button 
+                className="cv-btn-side cv-btn-side-outline" 
+                style={{ flex: 1, padding: '1.1rem', borderRadius: '12px', fontWeight: '800', background: 'white', border: `2px solid ${C.border}`, color: C.primary, cursor: 'pointer' }}
+                onClick={() => setIsEditingCv(false)}
+              >
+                KEMBALI KE PREVIEW
+              </button>
+              <button 
+                className="cv-btn-side cv-btn-side-primary" 
+                style={{ flex: 1.5, padding: '1.1rem', borderRadius: '12px', fontWeight: '900', background: C.primary, border: 'none', color: 'white', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.15)' }}
+                onClick={async () => {
+                  // Final check for Profil
+                  if (!getSectionStatus(1)) {
+                    showAlert('Formulir Belum Lengkap', 'Bagian PROFIL (Nomor 1) adalah bagian wajib yang harus diisi.', 'error');
+                    setActiveEditSection(1);
+                    return;
+                  }
+                  try {
+                    await handleCvSubmit(false); // Global save with Alert and Reload
+                    setIsEditingCv(false);
+                  } catch (err) {
+                    // Alert is handled inside handleCvSubmit
+                  }
+                }}
+              >
+                SIMPAN & KELUAR
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* 📝 DYNAMIC SUB-FORM FOR SPECIFIC SECTION 📝 */
+          <div style={{ animation: 'fadeIn 0.35s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem' }}>
+              <button 
+                onClick={() => setActiveEditSection(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.primary, display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '800', fontSize: '0.85rem' }}
+              >
+                <ChevronLeft size={20} /> KEMBALI
+              </button>
+              <div style={{ margin: '0 auto', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: C.gold, letterSpacing: '0.15em', display: 'block', textTransform: 'uppercase', marginBottom: '4px' }}>EDIT BAGIAN {activeEditSection}</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: C.primary, margin: 0 }}>{sections.find(s => s.id === activeEditSection).name}</h2>
               </div>
             </div>
-          )}
 
-          <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
-             <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: C.primary, letterSpacing: '-0.02em' }}>
-               {cvStep < 7 ? [
-                  "Biodata Dasar", "Pendidikan & Pekerjaan", "Domisili & Status", 
-                  "Fisik & Kesehatan", "Visi & Ibadah", "Kriteria Pasangan"
-                ][cvStep-1] : 'Alhamdulillah'}
-             </h2>
-             <p style={{ color: C.muted, fontWeight: '500', marginTop: '0.5rem' }}>
-               {cvStep < 7 ? 'Silakan lengkapi informasi berikut dengan sejujur-jujurnya.' : 'CV Anda telah berhasil diperbarui.'}
-             </p>
-          </div>
-
-          <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #f1f5f9', padding: '3.5rem', boxShadow: '0 20px 50px rgba(0,0,0,0.03)' }}>
-             
-             {/* STEP 1: BIODATA */}
-             {cvStep === 1 && (
-               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Nama Alias <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Ahmad" value={myCv.alias} onChange={e => set('alias', e.target.value)} />
-                   <small style={{ color: '#94a3b8' }}>Nama yang akan ditampilkan ke kandidat lain.</small>
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Jenis Kelamin <span style={{ color: '#ef4444' }}>*</span></label>
-                   <select className="form-control" value={myCv.gender} onChange={e => set('gender', e.target.value)}>
-                     <option value="ikhwan">Ikhwan (Pria)</option>
-                     <option value="akhwat">Akhwat (Wanita)</option>
-                   </select>
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Usia <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="number" className="form-control" placeholder="Contoh: 25" value={myCv.age} onChange={e => set('age', e.target.value)} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Suku Bangsa <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Jawa / Sunda" value={myCv.suku} onChange={e => set('suku', e.target.value)} />
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 2: PENDIDIKAN & KARIR */}
-             {cvStep === 2 && (
-               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Pendidikan Terakhir <span style={{ color: '#ef4444' }}>*</span></label>
-                   <select className="form-control" value={myCv.education} onChange={e => set('education', e.target.value)}>
-                     <option value="">Pilih Pendidikan</option>
-                     {['SMA/SMK', 'D3', 'S1', 'S2', 'S3', 'Lainnya'].map(edu => <option key={edu} value={edu}>{edu}</option>)}
-                   </select>
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Pekerjaan Saat Ini <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Software Engineer" value={myCv.job} onChange={e => set('job', e.target.value)} />
-                 </div>
-                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                   <label className="form-label">Estimasi Gaji Bulanan</label>
-                   <select className="form-control" value={myCv.salary} onChange={e => set('salary', e.target.value)}>
-                     <option value="">Pilih Rentang Gaji</option>
-                     {['< 3 Juta', '3 - 5 Juta', '5 - 10 Juta', '> 10 Juta', 'Tidak Berpenghasilan'].map(sal => <option key={sal} value={sal}>{sal}</option>)}
-                   </select>
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 3: DOMISILI & STATUS */}
-             {cvStep === 3 && (
-               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Domisili Provinsi <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Jawa Barat" value={myCv.domisili_provinsi} onChange={e => {
-                     const val = e.target.value;
-                     setMyCv(p => ({ ...p, domisili_provinsi: val, location: `${p.domisili_kota}, ${val}` }));
-                   }} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Domisili Kota <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Bandung" value={myCv.domisili_kota} onChange={e => {
-                     const val = e.target.value;
-                     setMyCv(p => ({ ...p, domisili_kota: val, location: `${val}, ${p.domisili_provinsi}` }));
-                   }} />
-                 </div>
-                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                   <label className="form-label">Status Pernikahan <span style={{ color: '#ef4444' }}>*</span></label>
-                   <select className="form-control" value={myCv.marital_status} onChange={e => set('marital_status', e.target.value)}>
-                     <option value="Lajang">Lajang (Belum Pernah Menikah)</option>
-                     <option value="Duda">Duda</option>
-                     <option value="Janda">Janda</option>
-                   </select>
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 4: FISIK & KESEHATAN */}
-             {cvStep === 4 && (
-               <div className="animate-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Tinggi / Berat Badan <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: 170 / 65" value={myCv.tinggi_berat} onChange={e => set('tinggi_berat', e.target.value)} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Kondisi Kesehatan <span style={{ color: '#ef4444' }}>*</span></label>
-                   <input type="text" className="form-control" placeholder="Contoh: Sehat, Tidak ada penyakit kronis" value={myCv.kesehatan} onChange={e => set('kesehatan', e.target.value)} />
-                 </div>
-                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                   <label className="form-label">Gambaran Karakter Diri <span style={{ color: '#ef4444' }}>*</span></label>
-                   <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Ceritakan karakter positif dan negatif Anda secara jujur..." value={myCv.karakter} onChange={e => set('karakter', e.target.value)} />
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 5: VISI & IBADAH */}
-             {cvStep === 5 && (
-               <div className="animate-up" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Visi Pernikahan <span style={{ color: '#ef4444' }}>*</span></label>
-                   <textarea className="form-control" style={{ minHeight: '100px' }} placeholder="Apa visi Anda dalam membangun rumah tangga?" value={myCv.marriage_vision} onChange={e => set('marriage_vision', e.target.value)} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Ketaatan Ibadah <span style={{ color: '#ef4444' }}>*</span></label>
-                   <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Bagaimana rutinitas ibadah wajib dan sunnah Anda?" value={myCv.worship} onChange={e => set('worship', e.target.value)} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Kajian yang Sering Diikuti</label>
-                   <input type="text" className="form-control" placeholder="Contoh: Kajian Ustadz Adi Hidayat, dsb" value={myCv.kajian} onChange={e => set('kajian', e.target.value)} />
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 6: KRITERIA */}
-             {cvStep === 6 && (
-               <div className="animate-up" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                 <div className="form-group">
-                   <label className="form-label">Kriteria Pasangan Impian <span style={{ color: '#ef4444' }}>*</span></label>
-                   <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Sebutkan kriteria fisik, karakter, dan agama yang Anda cari..." value={myCv.criteria} onChange={e => set('criteria', e.target.value)} />
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Pandangan Terhadap Poligami <span style={{ color: '#ef4444' }}>*</span></label>
-                   <select className="form-control" value={myCv.poligami} onChange={e => set('poligami', e.target.value)}>
-                     <option value="Tidak Bersedia">Tidak Bersedia</option>
-                     <option value="Bersedia">Bersedia</option>
-                     <option value="Mungkin">Mungkin / Diskusi</option>
-                   </select>
-                 </div>
-                 <div className="form-group">
-                   <label className="form-label">Hobi & Kegemaran</label>
-                   <input type="text" className="form-control" placeholder="Contoh: Membaca, Bersepeda" value={myCv.hobi} onChange={e => set('hobi', e.target.value)} />
-                 </div>
-               </div>
-             )}
-
-             {/* STEP 7: SELESAI */}
-             {cvStep === 7 && (
-                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39', margin: '0 auto 2rem' }}>
-                    <CheckCircle size={60} />
+            <div className="form-grid" style={{ marginBottom: '3rem' }}>
+              {/* SECTION 1: PROFIL */}
+              {activeEditSection === 1 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Nama Alias <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Ahmad" value={myCv.alias || ''} onChange={e => set('alias', e.target.value)} />
+                    <small style={{ color: C.muted }}>Nama samaran yang ditampilkan ke calon pasangan.</small>
                   </div>
-                  <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem' }}>Selesai!</h3>
-                  <p style={{ color: '#64748b', marginBottom: '2.5rem' }}>Data Anda telah berhasil diproses. Silakan kembali ke dashboard.</p>
-                  <button className="cv-btn-side cv-btn-side-primary" onClick={() => setIsEditingCv(false)}>KEMBALI KE DASHBOARD</button>
-                </div>
-             )}
+                  <div className="form-group">
+                    <label className="form-label">Jenis Kelamin <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.gender || ''} onChange={e => set('gender', e.target.value)}>
+                      <option value="ikhwan">Ikhwan (Pria)</option>
+                      <option value="akhwat">Akhwat (Wanita)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Usia <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="number" className="form-control" placeholder="Contoh: 25" value={myCv.age || ''} onChange={e => set('age', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Suku Bangsa <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Jawa / Sunda" value={myCv.suku || ''} onChange={e => set('suku', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Domisili Provinsi <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.domisili_provinsi || ''} onChange={e => {
+                      const val = e.target.value;
+                      setMyCv(p => ({ ...p, domisili_provinsi: val, domisili_kota: '', location: `, ${val}` }));
+                    }}>
+                      <option value="">-- Pilih Provinsi --</option>
+                      {provinces.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Domisili Kota <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.domisili_kota || ''} onChange={e => {
+                      const val = e.target.value;
+                      setMyCv(p => ({ ...p, domisili_kota: val, location: `${val}, ${p.domisili_provinsi}` }));
+                    }} disabled={!myCv.domisili_provinsi || isFetchingCities}>
+                      <option value="">{isFetchingCities ? 'Memuat...' : '-- Pilih Kota --'}</option>
+                      {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Pernikahan <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.marital_status || ''} onChange={e => set('marital_status', e.target.value)}>
+                      <option value="Lajang">Lajang (Belum Pernah Menikah)</option>
+                      {myCv.gender === 'ikhwan' ? (
+                        <>
+                          <option value="Duda">Duda</option>
+                          <option value="Sudah Menikah">Sudah Menikah</option>
+                        </>
+                      ) : myCv.gender === 'akhwat' ? (
+                        <option value="Janda">Janda</option>
+                      ) : (
+                        <>
+                          <option value="Duda">Duda</option>
+                          <option value="Janda">Janda</option>
+                          <option value="Sudah Menikah">Sudah Menikah</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Alamat Lengkap <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Tulis alamat lengkap tinggal saat ini..." value={myCv.address || ''} onChange={e => set('address', e.target.value)} />
+                  </div>
+                </>
+              )}
 
-             {cvStep < 7 && (
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4rem', gap: '1.5rem' }}>
-                  <button 
-                    className="cv-btn-side cv-btn-side-outline" 
-                    style={{ flex: 1 }}
-                    onClick={() => {
-                      if (cvStep === 1) setIsEditingCv(false);
-                      else back();
-                    }}
-                  >
-                    {cvStep === 1 ? 'BATAL' : 'KEMBALI'}
-                  </button>
-                  <button 
-                    className="cv-btn-side cv-btn-side-primary" 
-                    style={{ flex: 2 }}
-                    onClick={handleCvSubmit}
-                  >
-                    {isSubmittingCv ? 'MEMPROSES...' : (cvStep === 6 ? 'SIMPAN PERUBAHAN' : 'SELANJUTNYA')}
-                  </button>
-               </div>
-             )}
+              {/* SECTION 2: FOTO */}
+              {activeEditSection === 2 && (
+                <div className="form-group full-width" style={{ textAlign: 'center' }}>
+                  <label className="form-label" style={{ display: 'block', textAlign: 'center', marginBottom: '1rem' }}>Foto Profil Diri</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                    <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: '#f8fafc', border: `2px dashed ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      {myCv.foto_url ? (
+                        <img src={myCv.foto_url} alt="Foto Profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <Camera size={40} color={C.muted} />
+                      )}
+                    </div>
+                    <div style={{ width: '100%', maxWidth: '500px' }}>
+                      <label className="form-label">URL Link Foto Diri <span style={{ color: '#ef4444' }}>*</span></label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="Contoh: https://link-foto-anda.com/foto.jpg" 
+                        value={myCv.foto_url || ''} 
+                        onChange={e => set('foto_url', e.target.value)} 
+                      />
+                      <small style={{ color: C.muted, marginTop: '8px', display: 'block' }}>Masukkan link foto Anda (dari Google Drive, Imgur, atau hosting foto tepercaya).</small>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION 3: GAMBARAN FISIK */}
+              {activeEditSection === 3 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Tinggi Badan (cm) <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: 170" value={myCv.tinggi_badan || ''} onChange={e => set('tinggi_badan', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Berat Badan (kg) <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: 65" value={myCv.berat_badan || ''} onChange={e => set('berat_badan', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Kondisi Kesehatan <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Sehat walafiat, tidak ada riwayat penyakit kronis" value={myCv.kesehatan || ''} onChange={e => set('kesehatan', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Bentuk Fisik & Ciri Khas <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '100px' }} placeholder="Jelaskan warna kulit, bentuk wajah, ciri khas fisik (jika ada tahi lalat, berkacamata, dll)..." value={myCv.ciri_fisik || ''} onChange={e => set('ciri_fisik', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 4: GAMBARAN DIRI */}
+              {activeEditSection === 4 && (
+                <>
+                  <div className="form-group full-width">
+                    <label className="form-label">Karakter Diri Positif <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Tulis sifat positif Anda (contoh: disiplin, jujur, humoris)..." value={myCv.karakter_positif || ''} onChange={e => set('karakter_positif', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Karakter Diri Negatif <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Tulis kelemahan atau hal negatif diri Anda secara jujur..." value={myCv.karakter_negatif || ''} onChange={e => set('karakter_negatif', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Hobi & Kegemaran <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Membaca buku sirah, bersepeda sore" value={myCv.hobi || ''} onChange={e => set('hobi', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Hal-hal yang Disukai <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Makanan, aktivitas, adab, dll..." value={myCv.hal_disukai || ''} onChange={e => set('hal_disukai', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Hal-hal yang Tidak Disukai <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Sifat buruk, aktivitas maksiat, dll..." value={myCv.hal_benci || ''} onChange={e => set('hal_benci', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 5: GAMBARAN KELUARGA */}
+              {activeEditSection === 5 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Urutan Bersaudara <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Anak ke 2 dari 3 bersaudara" value={myCv.anak_ke_dari || ''} onChange={e => set('anak_ke_dari', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Pekerjaan Orang Tua <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Ayah Pensiunan PNS, Ibu Rumah Tangga" value={myCv.pekerjaan_ortu || ''} onChange={e => set('pekerjaan_ortu', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Kondisi Keagamaan / Hubungan Keluarga <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '100px' }} placeholder="Ceritakan bagaimana kebiasaan ibadah di keluarga Anda, keharmonisan hubungan orang tua, dsb..." value={myCv.kondisi_keluarga || ''} onChange={e => set('kondisi_keluarga', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 6: PENDIDIKAN */}
+              {activeEditSection === 6 && (
+                <>
+                  <div className="form-group full-width">
+                    <label className="form-label">Pendidikan Terakhir <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.education || ''} onChange={e => set('education', e.target.value)}>
+                      <option value="">Pilih Pendidikan</option>
+                      {['SMA/SMK', 'D3', 'S1', 'S2', 'S3', 'Lainnya'].map(edu => <option key={edu} value={edu}>{edu}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Detail Riwayat Pendidikan <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Tuliskan nama instansi sekolah/universitas, tahun lulus, jurusan, pondok pesantren (jika ada)..." value={myCv.riwayat_pendidikan || ''} onChange={e => set('riwayat_pendidikan', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 7: PENGALAMAN */}
+              {activeEditSection === 7 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Pekerjaan Saat Ini <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Guru / Software Engineer" value={myCv.job || ''} onChange={e => set('job', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Estimasi Gaji Bulanan <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.salary || ''} onChange={e => set('salary', e.target.value)}>
+                      <option value="">Pilih Rentang Gaji</option>
+                      {['< 3 Juta', '3 - 5 Juta', '5 - 10 Juta', '> 10 Juta', 'Tidak Berpenghasilan'].map(sal => <option key={sal} value={sal}>{sal}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Pengalaman Kerja & Organisasi Terdahulu <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Jelaskan sejarah pekerjaan atau kegiatan organisasi sosial/keagamaan yang pernah Anda ikuti..." value={myCv.pengalaman_kerja || ''} onChange={e => set('pengalaman_kerja', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 8: IBADAH */}
+              {activeEditSection === 8 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Ketaatan Ibadah Wajib <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Apakah shalat 5 waktu rutin (ikhwan berjamaah di masjid)? Ketaatan puasa Ramadhan?" value={myCv.worship_wajib || ''} onChange={e => set('worship_wajib', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Rutinitas Ibadah Sunnah <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Shalat tahajjud, dhuha, puasa sunnah, dzikir pagi-petang..." value={myCv.worship_sunnah || ''} onChange={e => set('worship_sunnah', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Kemampuan Membaca Al-Qur'an <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Kelancaran membaca, pemahaman tajwid, hafalan surat..." value={myCv.baca_quran || ''} onChange={e => set('baca_quran', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Kajian yang Sering Diikuti <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: Kajian kitab Aqidah/Fikih Ustadz Yazid, dsb" value={myCv.kajian || ''} onChange={e => set('kajian', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 9: PERSIAPAN PERNIKAHAN */}
+              {activeEditSection === 9 && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Target Menikah <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" className="form-control" placeholder="Contoh: 6 Bulan ke depan / akhir tahun ini" value={myCv.target_menikah || ''} onChange={e => set('target_menikah', e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Pandangan Terhadap Poligami <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select className="form-control" value={myCv.poligami || ''} onChange={e => set('poligami', e.target.value)}>
+                      <option value="Tidak Bersedia">Tidak Bersedia</option>
+                      <option value="Bersedia">Bersedia</option>
+                      <option value="Mungkin">Mungkin / Diskusi</option>
+                    </select>
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Visi Pernikahan Islami Anda <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Bagaimana visi rumah tangga sakinah, mawaddah, warahmah yang ingin Anda bangun?" value={myCv.marriage_vision || ''} onChange={e => set('marriage_vision', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Hak & Tanggung Jawab Pasangan (Role) <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Bagaimana pandangan Anda tentang pembagian tugas suami istri di rumah tangga?" value={myCv.role_view || ''} onChange={e => set('role_view', e.target.value)} />
+                  </div>
+                  <div className="form-group full-width">
+                    <label className="form-label">Rencana Nafkah & Pengelolaan Keuangan <span style={{ color: '#ef4444' }}>*</span></label>
+                    <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Bagaimana pengelolaan nafkah, hak nafkah istri, tabungan bersama, dsb..." value={myCv.rencana_nafkah || ''} onChange={e => set('rencana_nafkah', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* SECTION 10: HARAPAN */}
+              {activeEditSection === 10 && (
+                <div className="form-group full-width">
+                  <label className="form-label">Harapan Setelah Menikah <span style={{ color: '#ef4444' }}>*</span></label>
+                  <textarea className="form-control" style={{ minHeight: '150px' }} placeholder="Tuliskan harapan tempat tinggal (kontrak/ikut ortu), karir istri (boleh kerja/di rumah), pendidikan anak, nafkah, dll..." value={myCv.harapan_pasangan || ''} onChange={e => set('harapan_pasangan', e.target.value)} />
+                </div>
+              )}
+
+              {/* SECTION 11: KRITERIA FISIK */}
+              {activeEditSection === 11 && (
+                <div className="form-group full-width">
+                  <label className="form-label">Kriteria Fisik Pasangan <span style={{ color: '#ef4444' }}>*</span></label>
+                  <textarea className="form-control" style={{ minHeight: '150px' }} placeholder="Sebutkan rentang usia yang dicari, tinggi/berat badan idaman, warna kulit, penampilan dsb..." value={myCv.kriteria_fisik || ''} onChange={e => set('kriteria_fisik', e.target.value)} />
+                </div>
+              )}
+
+              {/* SECTION 12: KRITERIA NON FISIK */}
+              {activeEditSection === 12 && (
+                <div className="form-group full-width">
+                  <label className="form-label">Kriteria Non-Fisik Pasangan <span style={{ color: '#ef4444' }}>*</span></label>
+                  <textarea className="form-control" style={{ minHeight: '150px' }} placeholder="Sebutkan kriteria pemahaman agama (manhaj), akhlak, karakter sifat, tingkat pendidikan dsb..." value={myCv.kriteria_non_fisik || ''} onChange={e => set('kriteria_non_fisik', e.target.value)} />
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <button 
+                className="cv-btn-side cv-btn-side-outline" 
+                style={{ flex: 1, padding: '1.1rem', borderRadius: '12px', fontWeight: '800', background: 'white', border: `2px solid ${C.border}`, color: C.primary, cursor: 'pointer' }}
+                onClick={() => setActiveEditSection(null)}
+              >
+                BATAL & KEMBALI
+              </button>
+              <button 
+                className="cv-btn-side cv-btn-side-primary" 
+                disabled={isSubmittingCv}
+                style={{ flex: 2, padding: '1.1rem', borderRadius: '12px', fontWeight: '900', background: C.primary, border: 'none', color: 'white', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.15)', opacity: isSubmittingCv ? 0.6 : 1 }}
+                onClick={handleSectionSave}
+              >
+                {isSubmittingCv ? 'MENYIMPAN...' : 'SIMPAN BAGIAN INI'}
+              </button>
+            </div>
           </div>
-       </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,20 +1,22 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Clock, Trash2, ShieldAlert, CheckCircle, ChevronRight, ToggleLeft, ToggleRight, User, Eye, XCircle } from 'lucide-react';
-import { supabase } from '../../supabase';
-import { AppContext } from '../../App';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 
-export default function AdminReviewsTab({ showAlert }) {
-  const { setConfirmState, userReviews, setUserReviews } = useContext(AppContext);
+export default function AdminReviewsTab() {
+  const { showAlert, setConfirmState, userReviews, setUserReviews } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
 
   useEffect(() => {
     fetchReviews();
+    setIsMobile(window.innerWidth < 768);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchReviews = async () => {

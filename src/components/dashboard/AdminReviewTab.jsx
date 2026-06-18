@@ -1,19 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../../App';
+import React, { useState } from 'react';
+import { useAppContext } from '@/context/AppContext';
 import { CheckCircle, XCircle, Eye, ShieldCheck, MapPin, Briefcase, GraduationCap, Clock, User, MessageSquare, AlertCircle } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminReviewTab() {
-  const { cvs, setCvs, showAlert, addNotification } = useContext(AppContext);
+  const { cvs, setCvs, showAlert, addNotification } = useAppContext();
   const [reviewingCv, setReviewingCv] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const pendingCvs = cvs.filter(cv => cv.status === 'pending');
 
   const handleApprove = async (id, alias, userId) => {

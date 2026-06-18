@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState, useMemo } from 'react';
-import { AppContext } from '../../App';
-import { supabase } from '../../supabase';
+import React, { useEffect, useState } from 'react';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { 
   Users, Activity, TrendingUp, MapPin, Award, Clock, 
   UserCheck, PieChart as PieChartIcon, Filter, Layers, 
@@ -12,12 +12,13 @@ import {
 } from 'recharts';
 
 export default function AdminHomeTab() {
-  const { cvs, taarufRequests, usersDb } = useContext(AppContext);
+  const { cvs, taarufRequests, usersDb } = useAppContext();
   const [growthData, setGrowthData] = useState([]);
   const [dynamicChartData, setDynamicChartData] = useState([]);
   const [taarufChartData, setTaarufChartData] = useState([]);
-  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+
   const [isMounted, setIsMounted] = useState(false);
+  // eslint-disable-next-line
   useEffect(() => { setIsMounted(true); }, []);
 
   // Filter States
@@ -137,7 +138,7 @@ export default function AdminHomeTab() {
           if (rDate < limit) return false;
 
           if (chartsGender !== 'all') {
-            const sender = usersDb.find(u => u.email === r.senderEmail);
+            const sender = usersDb.find(u => u.id === r.senderId);
             if (sender?.gender !== chartsGender) return false;
           }
           return true;
@@ -167,14 +168,14 @@ export default function AdminHomeTab() {
         setTaarufChartData(tResult);
       }
 
-      setIsLoadingAnalytics(false);
+
     };
 
     processAnalytics();
   }, [usersDb, taarufRequests, chartsGender, timeRange, distributionType]);
 
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease', paddingBottom: '3rem' }}>
+    <div style={{ animation: 'fadeIn 0.5s ease', padding: '2rem 2.5rem 4rem' }}>
       
       {/* 🟢 STATS GRID */}
       <div className="dashboard-grid" style={{ marginTop: 0, marginBottom: '2.5rem' }}>
@@ -327,7 +328,7 @@ export default function AdminHomeTab() {
                       <RechartsTooltip 
                         cursor={{ fill: 'rgba(19, 78, 57, 0.03)' }} 
                         contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }} 
-                        formatter={(v, name, props) => [v, 'Penyelesaian']}
+                        formatter={(v) => [v, 'Penyelesaian']}
                         labelFormatter={(label, payload) => payload[0]?.payload?.full || label}
                       />
                       <Bar dataKey="value" name="Jumlah" fill="#134E39" radius={distributionType === 'region' ? [0, 8, 8, 0] : [8, 8, 0, 0]} barSize={25}>
@@ -519,6 +520,7 @@ export default function AdminHomeTab() {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function StatCard({ Icon, label, value, color, bg }) {
   return (
     <div style={{ 
@@ -535,6 +537,7 @@ function StatCard({ Icon, label, value, color, bg }) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function ChartHeader({ Icon, title, subtitle }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>

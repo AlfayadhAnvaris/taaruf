@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, RefreshCw, KeyRound, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 
 function PwInput({ value, onChange, show, setShow, placeholder }) {
   return (
@@ -15,7 +16,8 @@ function PwInput({ value, onChange, show, setShow, placeholder }) {
   );
 }
 
-export default function ChangePasswordCard({ showAlert }) {
+export default function ChangePasswordCard() {
+  const { showAlert } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const [current, setCurrent] = useState('');
   const [newPw, setNewPw] = useState('');

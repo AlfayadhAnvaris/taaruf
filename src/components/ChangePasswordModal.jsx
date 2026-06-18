@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabase';
+import { supabase } from '@/lib/supabase';
 import { KeyRound, Eye, EyeOff, X, Loader, CheckCircle, ShieldCheck } from 'lucide-react';
 
 export default function ChangePasswordModal({ onClose, showAlert }) {
@@ -58,15 +58,7 @@ export default function ChangePasswordModal({ onClose, showAlert }) {
     setIsLoading(false);
   };
 
-  const inputStyle = (show, setter) => ({
-    wrapper: { position: 'relative' },
-    input: { paddingRight: '3rem' },
-    btn: {
-      position: 'absolute', right: '0.875rem', top: '50%',
-      transform: 'translateY(-50%)', background: 'none',
-      border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0,
-    },
-  });
+
 
   return (
     <div
@@ -207,7 +199,7 @@ export default function ChangePasswordModal({ onClose, showAlert }) {
                   <small style={{ color: 'var(--danger)', marginTop: '0.25rem', display: 'block' }}>Password tidak cocok</small>
                 )}
                 {confirmPassword && confirmPassword === newPassword && newPassword.length >= 8 && (
-                  <small style={{ color: '#22c55e', marginTop: '0.25rem', display: 'block', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <small style={{ color: '#22c55e', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     <CheckCircle size={13} /> Password cocok
                   </small>
                 )}

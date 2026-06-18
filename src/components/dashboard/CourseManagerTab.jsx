@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
-import { AppContext } from '../../App';
-import { supabase } from '../../supabase';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import {
   BookOpen, Plus, Trash2, Edit3, Save, X, ChevronDown, ChevronLeft, ChevronRight,
   PlayCircle, FileQuestion, GraduationCap, CheckCircle, FileText,
@@ -21,7 +21,7 @@ const BTN_SM = (extra = {}) => ({
 });
 
 export default function CourseManagerTab() {
-  const { setConfirmState } = useContext(AppContext);
+  const { setConfirmState } = useAppContext();
   const [classes, setClasses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
@@ -49,8 +49,7 @@ export default function CourseManagerTab() {
   const [expandedClass, setExpandedClass] = useState(null);
   const [expandedCourse, setExpandedCourse] = useState(null);
   const [expandedLesson, setExpandedLesson] = useState(null);
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = useSearchParams();
   const subTab = searchParams.get('sub') || 'curriculum';
   
   const [userProgressList, setUserProgressList] = useState([]);
@@ -62,8 +61,9 @@ export default function CourseManagerTab() {
   const [academyMeta, setAcademyMeta] = useState({ classes: [], courses: [], lessons: [] });
   const progPerPage = 10;
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -165,6 +165,7 @@ export default function CourseManagerTab() {
       setLoading(false);
       if (subTab === 'progress') fetchUserProgress();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subTab]);
 
   const showToast = (msg, type = 'success') => {
@@ -213,7 +214,8 @@ export default function CourseManagerTab() {
     // Upload banner if file selected
     if (bannerFile) {
       const fileName = `${Date.now()}-${bannerFile.name}`;
-      const { data, error: uploadErr } = await supabase.storage
+      const { error: uploadErr } = await supabase
+        .storage
         .from('lms-banners')
         .upload(fileName, bannerFile);
       
@@ -343,17 +345,7 @@ export default function CourseManagerTab() {
       }
     });
   };
-  const toggleCourseActive = async (course) => {
-    await supabase.from('courses').update({ is_active: !course.is_active }).eq('id', course.id);
-    setCourses(prev => prev.map(c => c.id === course.id ? { ...c, is_active: !c.is_active } : c));
-  };
 
-  const toggleClassPublished = async (cls) => {
-    const newVal = !cls.is_published;
-    const { error } = await supabase.from('lms_classes').update({ is_published: newVal }).eq('id', cls.id);
-    if (error) showToast('Gagal update status: ' + error.message, 'error');
-    else setClasses(prev => prev.map(c => c.id === cls.id ? { ...c, is_published: newVal } : c));
-  };
 
   const toggleLessonPublished = async (lesson) => {
     const newVal = !lesson.is_published;
@@ -613,77 +605,7 @@ export default function CourseManagerTab() {
     });
   };
 
-  // ─── Reorder helpers ──────────────────────────────────────────────────────
-  const reorderCourse = async (course, dir) => {
-    const sorted = [...courses].sort((a, b) => a.order_index - b.order_index);
-    const idx = sorted.findIndex(c => c.id === course.id);
-    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const swap = sorted[swapIdx];
-    await Promise.all([
-      supabase.from('courses').update({ order_index: swap.order_index }).eq('id', course.id),
-      supabase.from('courses').update({ order_index: course.order_index }).eq('id', swap.id),
-    ]);
-    fetchAll();
-  };
 
-  const reorderLesson = async (lesson, dir) => {
-    const courseLessons = lessons.filter(l => l.course_id === lesson.course_id).sort((a,b) => a.order_index - b.order_index);
-    const idx = courseLessons.findIndex(l => l.id === lesson.id);
-    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= courseLessons.length) return;
-    const swap = courseLessons[swapIdx];
-    await Promise.all([
-      supabase.from('lessons').update({ order_index: swap.order_index }).eq('id', lesson.id),
-      supabase.from('lessons').update({ order_index: lesson.order_index }).eq('id', swap.id),
-    ]);
-    fetchAll();
-  };
-
-  const seedModul6 = async () => {
-    setConfirmState({
-      isOpen: true,
-      title: 'Seed Data?',
-      message: 'Ingin menambahkan Modul 6 secara otomatis?',
-      onConfirm: async () => {
-        setConfirmState(p => ({ ...p, isOpen: false }));
-        setSaving(true);
-        try {
-          // 1. Course (Upsert map: class_id is needed if it's a new schema)
-          // Find the first class ID
-          const firstClassId = classes.length > 0 ? classes[0].id : 1;
-          
-          await supabase.from('courses').upsert({ 
-            id: 6, 
-            class_id: firstClassId,
-            title: 'Modul 6: Etika Pernikahan dalam Islam', 
-            order_index: 6, 
-            is_active: true 
-          });
-          
-          // 2. Lessons
-          await supabase.from('lessons').upsert([
-            { id: 'v6-1', course_id: 6, title: 'Etika Pernikahan & Adab Malam Pertama', type: 'video', video_url: 'https://www.youtube.com/embed/bWZyWAnIMpU', duration: '15:00', order_index: 1, is_published: true },
-            { id: 'q6-1', course_id: 6, title: 'Kuis Modul 6: Etika Pernikahan', type: 'quiz', order_index: 2, is_published: true }
-          ]);
-          
-          // 3. Quiz Questions
-          await supabase.from('quiz_questions').delete().eq('lesson_id', 'q6-1');
-          await supabase.from('quiz_questions').insert([
-            { lesson_id: 'q6-1', question_text: 'Apa niat utama seorang muslim dalam melangsungkan pernikahan?', options: ['Mencari kekayaan pasangan', 'Mengikuti tren sosial semata', 'Ibadah kepada Allah', 'Sekadar memenuhi keinginan ortu'], correct_index: 2, order_index: 1 },
-            { lesson_id: 'q6-1', question_text: 'Apa yang disunnahkan saat masuk kamar pengantin?', options: ['Diskusi keuangan', 'Bersikap lembut & suguhan ringan', 'Bersikap tegas', 'Tuntut hak'], correct_index: 1, order_index: 2 }
-          ]);
-          
-          showToast('Modul 6 Berhasil Ditambahkan!');
-          fetchAll();
-        } catch (err) { 
-          showToast('Gagal: ' + err.message, 'error'); 
-        } finally {
-          setSaving(false);
-        }
-      }
-    });
-  };
 
   // ─── Render ───────────────────────────────────────────────────────────────
   if (loading && !courses.length) return (
@@ -692,8 +614,6 @@ export default function CourseManagerTab() {
       <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Memuat data akademi...</p>
     </div>
   );
-
-  const sortedCourses = [...courses].sort((a, b) => a.order_index - b.order_index);
 
   return (
     <>
@@ -1094,13 +1014,13 @@ export default function CourseManagerTab() {
                               type="text" 
                               placeholder="Cari nama atau email..." 
                               style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
-                              value={progSearch}
+                              value={progSearch || ''}
                               onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
                             />
                           </div>
                           <select 
                             style={{ padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', height: '50px', flexShrink: 0, background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
-                            value={progGender}
+                            value={progGender || ''}
                             onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
                           >
                             <option value="all">Semua Gender</option>
@@ -1189,13 +1109,13 @@ export default function CourseManagerTab() {
                       type="text" 
                       placeholder="Cari nama atau email..." 
                       style={{ width: '100%', height: '50px', padding: '0 1rem 0 2.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }} 
-                      value={progSearch}
+                      value={progSearch || ''}
                       onChange={(e) => { setProgSearch(e.target.value); setProgPage(1); }}
                     />
                   </div>
                   <select 
                     style={{ width: '100%', padding: '0 1rem', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.9rem', height: '50px', background: '#fff', cursor: 'pointer', boxSizing: 'border-box' }}
-                    value={progGender}
+                    value={progGender || ''}
                     onChange={(e) => { setProgGender(e.target.value); setProgPage(1); }}
                   >
                     <option value="all">Semua Gender</option>
@@ -1296,7 +1216,7 @@ export default function CourseManagerTab() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Judul Kelas/Course <span style={{ color: 'var(--danger)' }}>*</span></label>
-                <input className="form-control" style={{ fontSize: '1.1rem', padding: '1rem' }} value={classForm.title} onChange={e => setClassForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Akademi Persiapan Pernikahan Dasar" />
+                <input className="form-control" style={{ fontSize: '1.1rem', padding: '1rem' }} value={classForm.title || ''} onChange={e => setClassForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Akademi Persiapan Pernikahan Dasar" />
               </div>
               
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -1329,7 +1249,7 @@ export default function CourseManagerTab() {
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Deskripsi Lengkap Kelas</label>
-                <textarea className="form-control" rows={8} value={classForm.description} onChange={e => setClassForm(p => ({ ...p, description: e.target.value }))} placeholder="Berikan gambaran mendalam tentang apa yang akan dipelajari di kelas ini..." />
+                <textarea className="form-control" rows={8} value={classForm.description || ''} onChange={e => setClassForm(p => ({ ...p, description: e.target.value }))} placeholder="Berikan gambaran mendalam tentang apa yang akan dipelajari di kelas ini..." />
               </div>
             </div>
 
@@ -1359,7 +1279,7 @@ export default function CourseManagerTab() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Judul Modul <span style={{ color: 'var(--danger)' }}>*</span></label>
-                <input className="form-control" style={{ fontSize: '1.1rem', padding: '1rem' }} value={courseForm.title} onChange={e => setCourseForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Modul 1: Fondasi Pernikahan" />
+                <input className="form-control" style={{ fontSize: '1.1rem', padding: '1rem' }} value={courseForm.title || ''} onChange={e => setCourseForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Modul 1: Fondasi Pernikahan" />
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -1391,7 +1311,7 @@ export default function CourseManagerTab() {
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Deskripsi Ringkas</label>
-                <textarea className="form-control" rows={5} value={courseForm.description} onChange={e => setCourseForm(p => ({ ...p, description: e.target.value }))} placeholder="Akan membahas apa saja di modul ini?" />
+                <textarea className="form-control" rows={5} value={courseForm.description || ''} onChange={e => setCourseForm(p => ({ ...p, description: e.target.value }))} placeholder="Akan membahas apa saja di modul ini?" />
               </div>
             </div>
 
@@ -1417,11 +1337,11 @@ export default function CourseManagerTab() {
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Judul Lesson <span style={{ color: 'var(--danger)' }}>*</span></label>
-                <input className="form-control" value={lessonForm.title} onChange={e => setLessonForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Materi 3: Komunikasi dalam Keluarga" />
+                <input className="form-control" value={lessonForm.title || ''} onChange={e => setLessonForm(p => ({ ...p, title: e.target.value }))} placeholder="contoh: Materi 3: Komunikasi dalam Keluarga" />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Tipe Lesson</label>
-                <select className="form-control" value={lessonForm.type} onChange={e => setLessonForm(p => ({ ...p, type: e.target.value }))}>
+                <select className="form-control" value={lessonForm.type || ''} onChange={e => setLessonForm(p => ({ ...p, type: e.target.value }))}>
                   <option value="video">🎬 Video</option>
                   <option value="text">📄 Text (Ringkasan)</option>
                   <option value="quiz">📝 Quiz</option>
@@ -1431,11 +1351,11 @@ export default function CourseManagerTab() {
                 <>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">URL Video (YouTube Embed)</label>
-                    <input className="form-control" value={lessonForm.video_url} onChange={e => setLessonForm(p => ({ ...p, video_url: e.target.value }))} placeholder="https://www.youtube.com/embed/xxxx" />
+                    <input className="form-control" value={lessonForm.video_url || ''} onChange={e => setLessonForm(p => ({ ...p, video_url: e.target.value }))} placeholder="https://www.youtube.com/embed/xxxx" />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Durasi</label>
-                    <input className="form-control" value={lessonForm.duration} onChange={e => setLessonForm(p => ({ ...p, duration: e.target.value }))} placeholder="contoh: 21:30" />
+                    <input className="form-control" value={lessonForm.duration || ''} onChange={e => setLessonForm(p => ({ ...p, duration: e.target.value }))} placeholder="contoh: 21:30" />
                   </div>
                 </>
               )}
@@ -1460,7 +1380,7 @@ export default function CourseManagerTab() {
                         const formattedParts = parts.map(part => {
                           const match = part.match(/^(\d+\.\s+)([^\n.]+)([.!\s])(.*)/s);
                           if (match) {
-                            const [_, num, title, punc, rest] = match;
+                            const [_, num, title, , rest] = match;
                             return `<h3>${num}${title.trim()}</h3>\n<p>${rest.trim()}</p>\n`;
                           }
                           return part;
@@ -1477,7 +1397,7 @@ export default function CourseManagerTab() {
                       ✨ FORMAT OTOMATIS
                     </button>
                   </div>
-                  <textarea className="form-control" rows={12} value={lessonForm.content} onChange={e => setLessonForm(p => ({ ...p, content: e.target.value }))} placeholder="Tuliskan ringkasan materi atau konten teks di sini..." style={{ fontSize: '0.9rem', lineHeight: 1.5 }} />
+                  <textarea className="form-control" rows={12} value={lessonForm.content || ''} onChange={e => setLessonForm(p => ({ ...p, content: e.target.value }))} placeholder="Tuliskan ringkasan materi atau konten teks di sini..." style={{ fontSize: '0.9rem', lineHeight: 1.5 }} />
                 </div>
               )}
             </div>
@@ -1502,7 +1422,7 @@ export default function CourseManagerTab() {
             <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Pertanyaan <span style={{ color: 'var(--danger)' }}>*</span></label>
-                <textarea className="form-control" rows={3} value={quizForm.question_text} onChange={e => setQuizForm(p => ({ ...p, question_text: e.target.value }))} placeholder="Tulis pertanyaan di sini..." />
+                <textarea className="form-control" rows={3} value={quizForm.question_text || ''} onChange={e => setQuizForm(p => ({ ...p, question_text: e.target.value }))} placeholder="Tulis pertanyaan di sini..." />
               </div>
               <div>
                 <label className="form-label" style={{ marginBottom: '0.6rem', display: 'block' }}>Opsi Jawaban <span style={{ color: 'var(--danger)' }}>*</span></label>
@@ -1521,7 +1441,7 @@ export default function CourseManagerTab() {
                     </label>
                     <input
                       className="form-control"
-                      value={opt}
+                      value={opt || ''}
                       onChange={e => {
                         const opts = [...quizForm.options];
                         opts[oi] = e.target.value;

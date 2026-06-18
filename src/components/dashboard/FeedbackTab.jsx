@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare, Send, CheckCircle2, Star, AlertCircle, Sparkles, Heart, Quote, Info, ChevronRight } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
 
 export default function FeedbackTab({ user, showAlert }) {
   const [content, setContent] = useState('');
@@ -57,12 +57,66 @@ export default function FeedbackTab({ user, showAlert }) {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100%', width: '100%', background: 'white', 
-      animation: 'fadeIn 0.5s ease', padding: '1.5rem 2rem'
-    }}>
+    <div className="feedback-container">
+      <style>{`
+        .feedback-container {
+          height: 100%;
+          width: 100%;
+          background: transparent;
+          animation: fadeIn 0.5s ease;
+          padding: 1.5rem 1.25rem;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          overflow-y: auto;
+        }
+        .feedback-form-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+        .feedback-card-category {
+          background: white;
+          padding: 1.25rem;
+          border-radius: 16px;
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        }
+        .feedback-card-rating {
+          background: white;
+          padding: 1.25rem;
+          border-radius: 16px;
+          border: 1px solid #FFF1CC;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+          display: flex;
+          flex-direction: column;
+        }
+        .feedback-card-message {
+          background: white;
+          padding: 1.5rem 1.25rem;
+          border-radius: 16px;
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        }
+        
+        @media (max-width: 768px) {
+          .feedback-container {
+            padding: 1rem 0.5rem !important;
+          }
+          .feedback-form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem !important;
+          }
+          .feedback-card-category, .feedback-card-rating, .feedback-card-message {
+            padding: 1.25rem 1rem !important;
+            border-radius: 12px !important;
+          }
+        }
+      `}</style>
+
       {/* HEADER CONSISTENCY */}
-      <div style={{ marginBottom: '2rem' }}>
+      <div style={{ marginBottom: '1rem', maxWidth: '1000px', width: '100%', margin: '0 auto 1.25rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: '800', color: '#134E39', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
           Saran & <span style={{ color: '#D4AF37' }}>Masukan</span>
         </h1>
@@ -71,13 +125,13 @@ export default function FeedbackTab({ user, showAlert }) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         
         {/* TOP ROW: CATEGORY & RATING GRID */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+        <div className="feedback-form-grid">
           
           {/* CATEGORY SECTION */}
-          <div style={{ background: '#F8FAF9', padding: '1.75rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+          <div className="feedback-card-category">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MessageSquare size={16} />
@@ -98,12 +152,12 @@ export default function FeedbackTab({ user, showAlert }) {
                   onClick={() => setCategory(cat.id)}
                   style={{ 
                     padding: '1rem', borderRadius: '8px', border: '2px solid', 
-                    borderColor: category === cat.id ? '#134E39' : '#FFFFFF',
-                    background: category === cat.id ? '#FFFFFF' : '#FFFFFF',
+                    borderColor: category === cat.id ? '#134E39' : '#F1F5F9',
+                    background: category === cat.id ? '#FFFFFF' : '#F8FAFC',
                     color: category === cat.id ? '#134E39' : '#64748b',
                     cursor: 'pointer', transition: 'all 0.3s ease',
                     textAlign: 'left', position: 'relative',
-                    boxShadow: category === cat.id ? '0 8px 15px rgba(19,78,57,0.06)' : '0 2px 8px rgba(0,0,0,0.01)'
+                    boxShadow: category === cat.id ? '0 8px 15px rgba(19,78,57,0.06)' : 'none'
                   }}
                 >
                   <div style={{ fontWeight: '900', fontSize: '0.9rem', marginBottom: '2px', color: category === cat.id ? '#134E39' : '#475569' }}>{cat.label}</div>
@@ -114,7 +168,7 @@ export default function FeedbackTab({ user, showAlert }) {
           </div>
 
           {/* RATING SECTION */}
-          <div style={{ background: '#FFFCF5', padding: '1.75rem', borderRadius: '12px', border: '1px solid #FFF1CC', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="feedback-card-rating">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.75rem' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#D4AF37', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Star size={16} fill="white" />
@@ -122,7 +176,7 @@ export default function FeedbackTab({ user, showAlert }) {
               <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#134E39', letterSpacing: '0.02em' }}>TINGKAT KEPUASAN</h3>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '1.25rem', borderRadius: '10px', border: '1px solid #FFF1CC' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFDF9', padding: '1.25rem', borderRadius: '10px', border: '1px solid #FFF1CC' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[1, 2, 3, 4, 5].map(star => (
                   <button
@@ -152,7 +206,7 @@ export default function FeedbackTab({ user, showAlert }) {
 
         {/* BOTTOM SECTION: TEXTAREA */}
         <div style={{ position: 'relative' }}>
-          <div style={{ background: '#F8FAFC', padding: '2rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+          <div className="feedback-card-message">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#134E39', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Send size={14} />
@@ -164,14 +218,14 @@ export default function FeedbackTab({ user, showAlert }) {
               required
               placeholder="Tuliskan saran atau kendala Anda di sini..."
               style={{ 
-                width: '100%', minHeight: '160px', padding: '1.25rem', borderRadius: '10px', 
+                width: '100%', minHeight: '120px', padding: '1.25rem', borderRadius: '10px', 
                 border: '2px solid #E2E8F0', fontSize: '1rem', lineHeight: '1.6', outline: 'none', 
-                resize: 'none', color: '#1e293b', background: 'white',
+                resize: 'none', color: '#1e293b', background: '#F8FAFC',
                 fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600,
                 transition: 'all 0.3s ease'
               }}
-              onFocus={e => { e.target.style.borderColor = '#134E39'; }}
-              onBlur={e => { e.target.style.borderColor = '#E2E8F0'; }}
+              onFocus={e => { e.target.style.borderColor = '#134E39'; e.target.style.background = 'white'; }}
+              onBlur={e => { e.target.style.borderColor = '#E2E8F0'; e.target.style.background = '#F8FAFC'; }}
               value={content}
               onChange={e => setContent(e.target.value)}
             />

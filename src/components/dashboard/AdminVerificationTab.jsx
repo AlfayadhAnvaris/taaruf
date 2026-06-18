@@ -1,16 +1,16 @@
-import React, { useContext, useState } from 'react';
-import { AppContext } from '../../App';
+import React, { useState } from 'react';
+import { useAppContext } from '@/context/AppContext';
 import { 
   BadgeCheck, XCircle, ShieldCheck, Clock, 
   Search, Filter, User, Phone, Check, X, PieChart as PieChartIcon, Activity
 } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend 
 } from 'recharts';
 
-export default function AdminVerificationTab({ showAlert }) {
-  const { usersDb, setUsersDb } = useContext(AppContext);
+export default function AdminVerificationTab() {
+  const { usersDb, setUsersDb, showAlert } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending'); // Default to pending
   const [processingId, setProcessingId] = useState(null);
@@ -20,8 +20,6 @@ export default function AdminVerificationTab({ showAlert }) {
     const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           u.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // We only care about users who have submitted or already verified/rejected
-    const isVerificationRelevant = u.verification_status && u.verification_status !== 'unverified';
     const matchesStatus = statusFilter === 'all' || u.verification_status === statusFilter;
     
     return matchesSearch && matchesStatus && u.role !== 'admin';

@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Clock, Trash2, ChevronRight, Eye, User, Mail, AlertTriangle, X, ShieldCheck, MessageSquare } from 'lucide-react';
-import { supabase } from '../../supabase';
-import { AppContext } from '../../App';
+import { supabase } from '@/lib/supabase';
+import { useAppContext } from '@/context/AppContext';
 
 export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) {
-  const { setConfirmState } = useContext(AppContext);
+  const { setConfirmState } = useAppContext();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -24,8 +24,8 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
 
       if (error) throw error;
       setReports(data || []);
-    } catch (err) {
-      console.error('Error fetching reports:', err);
+    } catch {
+      console.error('Error fetching reports');
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
           setReports(prev => prev.filter(r => r.id !== id));
           if (selectedReport?.id === id) setSelectedReport(null);
           showAlert('Berhasil', 'Data telah dihapus.', 'success');
-        } catch (err) {
+        } catch {
           showAlert('Error', 'Gagal menghapus data.', 'error');
         } finally {
           setConfirmState(prev => ({ ...prev, isOpen: false }));
@@ -68,7 +68,7 @@ export default function AdminReportsTab({ showAlert, setViewingUser, usersDb }) 
       showAlert('Berhasil', 'Laporan ditandai telah ditinjau.', 'success');
       setReports(prev => prev.map(r => r.id === id ? { ...r, status: 'reviewed' } : r));
       if (selectedReport?.id === id) setSelectedReport(prev => ({ ...prev, status: 'reviewed' }));
-    } catch (err) {
+    } catch {
       showAlert('Error', 'Gagal memperbarui status.', 'error');
     }
   };

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { User, Phone, Shield, Save, X as XIcon, ShieldCheck, Mail, Briefcase, Lock } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import ChangePasswordCard from './ChangePasswordCard';
 
-export default function AdminAccountTab({ user, showAlert }) {
+export default function AdminAccountTab() {
+  const { user, setUser, showAlert } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
@@ -27,9 +29,12 @@ export default function AdminAccountTab({ user, showAlert }) {
       if (error) throw error;
       
       // Update object local (untuk UI instan)
-      user.name = form.name.trim();
-      user.phone_wa = form.phone_wa.trim();
-      user.role_title = form.role_title.trim();
+      setUser({
+        ...user,
+        name: form.name.trim(),
+        phone_wa: form.phone_wa.trim(),
+        role_title: form.role_title.trim()
+      });
       
       showAlert('Berhasil', 'Profil Admin berhasil diperbarui.', 'success');
       setIsEditing(false);
@@ -124,7 +129,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Nama Lengkap</label>
                 <input 
                   type="text" className="form-control" 
-                  value={form.name} onChange={e => set('name', e.target.value)} 
+                  value={form.name || ''} onChange={e => set('name', e.target.value)} 
                   style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>
@@ -132,7 +137,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Jabatan/Gelar (Display)</label>
                 <input 
                   type="text" className="form-control" 
-                  value={form.role_title} onChange={e => set('role_title', e.target.value)} 
+                  value={form.role_title || ''} onChange={e => set('role_title', e.target.value)} 
                   style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>
@@ -140,7 +145,7 @@ export default function AdminAccountTab({ user, showAlert }) {
                 <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Nomor WhatsApp</label>
                 <input 
                   type="text" className="form-control" 
-                  value={form.phone_wa} onChange={e => set('phone_wa', e.target.value)} 
+                  value={form.phone_wa || ''} onChange={e => set('phone_wa', e.target.value)} 
                   style={{ borderRadius: '10px', padding: '1rem', fontSize: '0.95rem' }} 
                 />
               </div>

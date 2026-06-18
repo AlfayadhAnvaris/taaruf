@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
-import { AppContext } from '../../App';
+import React, { useState } from 'react';
+import { useAppContext } from '@/context/AppContext';
 import { CheckCircle, XCircle, ShieldAlert, MessageCircle, Eye, Search, Filter, ChevronLeft, ChevronRight, Clock, User, Users, Activity, Phone, ExternalLink, AlertCircle, Trash2 } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminMediateTab() {
-  const { taarufRequests, setTaarufRequests, showAlert, messages, addNotification } = useContext(AppContext);
+  const { taarufRequests, setTaarufRequests, showAlert, messages, addNotification } = useAppContext();
   const [monitoringChatId, setMonitoringChatId] = useState(null);
   const [verifyingWaliId, setVerifyingWaliId] = useState(null); // ID request yang akan diverifikasi walinya
   const [viewingRequestId, setViewingRequestId] = useState(null); // ID request yang akan dilihat detailnya
@@ -26,7 +26,7 @@ export default function AdminMediateTab() {
       setTaarufRequests(taarufRequests.map(req => 
         req.id === id ? { ...req, status: newStatus, updatedAt: new Date().toISOString() } : req
       ));
-    } catch (err) { 
+    } catch { 
       showAlert('Gagal', 'Terjadi kesalahan sistem saat update status.', 'error');
     }
   };
@@ -41,7 +41,7 @@ export default function AdminMediateTab() {
       setTaarufRequests(taarufRequests.filter(req => req.id !== id));
       showAlert('Terhapus', 'Permintaan mediasi berhasil dihapus.', 'success');
       setRequestToDelete(null);
-    } catch (err) {
+    } catch {
       showAlert('Gagal', 'Terjadi kesalahan sistem saat menghapus data.', 'error');
     }
   };
@@ -501,7 +501,6 @@ export default function AdminMediateTab() {
                     {statusSteps.map((step, idx) => {
                       const isCompleted = idx < currentStepIdx || (idx === currentStepIdx && req.status === 'completed');
                       const isActive = idx === currentStepIdx && req.status !== 'completed';
-                      const isRejected = req.status === 'rejected';
 
                       return (
                         <div key={idx} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>

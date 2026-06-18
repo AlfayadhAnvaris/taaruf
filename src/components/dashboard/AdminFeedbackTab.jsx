@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Star, Clock, Filter, Trash2, PieChart as PieChartIcon, Eye, XCircle, User } from 'lucide-react';
-import { supabase } from '../../supabase';
-import { AppContext } from '../../App';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export default function AdminFeedbackTab({ showAlert }) {
-  const { setConfirmState } = useContext(AppContext);
+export default function AdminFeedbackTab() {
+  const { setConfirmState, showAlert } = useAppContext();
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
     fetchFeedback();
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -47,7 +48,7 @@ export default function AdminFeedbackTab({ showAlert }) {
           if (error) throw error;
           setFeedback(prev => prev.filter(f => f.id !== id));
           showAlert('Berhasil', 'Data telah dihapus.', 'success');
-        } catch (err) {
+        } catch {
           showAlert('Error', 'Gagal menghapus data.', 'error');
         } finally {
           setConfirmState(prev => ({ ...prev, isOpen: false }));

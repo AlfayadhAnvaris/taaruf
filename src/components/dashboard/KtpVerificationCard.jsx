@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { BadgeCheck, Clock, Camera, AlertTriangle, Upload, RefreshCw, X as XIcon } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '@/lib/supabase';
+import { useAppContext } from '@/context/AppContext';
 
-export default function KtpVerificationCard({ user, showAlert }) {
-  const [ktpStatus, setKtpStatus] = useState(user.ktp_status || 'unverified');
-  const [ktpUrl, setKtpUrl] = useState(user.ktp_url || null);
+export default function KtpVerificationCard() {
+  const { user, setUser, showAlert } = useAppContext();
+  const [ktpStatus, setKtpStatus] = useState(user?.ktp_status || 'unverified');
+  const [ktpUrl, setKtpUrl] = useState(user?.ktp_url || null);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -38,8 +40,7 @@ export default function KtpVerificationCard({ user, showAlert }) {
       const { data: { publicUrl } } = supabase.storage.from('ktp-photos').getPublicUrl(filePath);
       const { error: dbError } = await supabase.from('profiles').update({ ktp_url: publicUrl, ktp_status: 'pending' }).eq('id', user.id);
       if (dbError) { showAlert('Gagal Simpan', dbError.message, 'error'); setIsUploading(false); return; }
-      user.ktp_url = publicUrl;
-      user.ktp_status = 'pending';
+      setUser({ ...user, ktp_url: publicUrl, ktp_status: 'pending' });
       setKtpUrl(publicUrl);
       setKtpStatus('pending');
       setFile(null);

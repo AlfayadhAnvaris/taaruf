@@ -3,27 +3,45 @@ import {
   CheckCircle, PlayCircle, ChevronDown, ChevronRight, ChevronLeft,
   Award, BookOpen, BarChart2, GraduationCap, Lock, ArrowRight,
   Search, ShieldCheck, Zap, Menu, X, Clock, AlertCircle, Users, FileText,
-  Maximize2, Minimize2, Sparkles
+  Maximize2, Minimize2, Sparkles, LayoutDashboard, Activity
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
+import { useAppContext } from '@/context/AppContext';
+
 export default function LearningTab({
-  user, classes, activeClass, selectClass,
+  classes, activeClass,
   curriculum, activeLesson, setActiveLesson,
   lmsView, setLmsView, quizAnswers, setQuizAnswers,
   quizSubmitted, setQuizSubmitted, progressPercent,
-  doneLessons, totalLessons, allDone, markLessonDone,
-  toggleModule, setActiveTab, enrollClass, selectClassForPlayer
+  markLessonDone,
+  setActiveTab, enrollClass, selectClassForPlayer, lmsLoading
 }) {
+  const { user } = useAppContext();
+
   const [isMounted, setIsMounted] = useState(false);
-  useState(() => { setIsMounted(true); }, []);
+  const [isMobile, setIsMobile] = useState(false);
   const [isLmsSidebarOpen, setIsLmsSidebarOpen] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
-  const isMobile = window.innerWidth < 768;
+
+  React.useEffect(() => {
+    setIsMounted(true);
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [pendingLesson, setPendingLesson] = useState(null);
   const [timeLeft, setTimeLeft] = useState(600); // 10 menit default
+  const [quizAttempts, setQuizAttempts] = useState([]);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem(`quiz_history_${user?.id}_${activeLesson?.id}`);
+    setQuizAttempts(saved ? JSON.parse(saved) : []);
+  }, [activeLesson?.id, user?.id]);
 
   React.useEffect(() => {
     let timer;
@@ -35,23 +53,7 @@ export default function LearningTab({
       setQuizSubmitted(true);
     }
     return () => clearInterval(timer);
-  }, [quizStarted, quizSubmitted, timeLeft]);
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  const [quizAttempts, setQuizAttempts] = useState(() => {
-    const saved = localStorage.getItem(`quiz_history_${user?.id}_${activeLesson?.id}`);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  React.useEffect(() => {
-    const saved = localStorage.getItem(`quiz_history_${user?.id}_${activeLesson?.id}`);
-    setQuizAttempts(saved ? JSON.parse(saved) : []);
-  }, [activeLesson?.id, user?.id]);
+  }, [quizStarted, quizSubmitted, timeLeft, setQuizSubmitted]);
 
   React.useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -63,6 +65,34 @@ export default function LearningTab({
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [quizStarted, quizSubmitted]);
+
+  if (lmsLoading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10rem 2rem', gap: '1.5rem' }}>
+        <div style={{ position: 'relative', width: '80px', height: '80px' }}>
+          <div style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', border: '4px solid rgba(19,78,57,0.1)', borderTopColor: '#134E39', animation: 'spin 1s linear infinite' }} />
+          <div style={{ position: 'absolute', width: '60%', height: '60%', top: '20%', left: '20%', borderRadius: '50%', border: '4px solid rgba(212,175,55,0.1)', borderBottomColor: '#D4AF37', animation: 'spin 1.5s linear infinite reverse' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#134E39' }}>
+            <Sparkles size={24} />
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ margin: 0, fontWeight: '900', color: '#134E39', fontSize: '1.2rem' }}>Menyiapkan Kurikulum</h3>
+          <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '0.9rem', fontWeight: '600' }}>Mohon tunggu sebentar, kami sedang memuat materi belajar Anda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isMounted) return null;
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+
 
   const allItems = curriculum.flatMap(m => m.items);
   const currentLessonIdx = allItems.findIndex(i => i.id === activeLesson?.id);
@@ -149,19 +179,13 @@ export default function LearningTab({
     }
   };
 
-  const handleCertificateDownload = async () => {
-    if (activeLesson) {
-      await markLessonDone(activeLesson.id, quizScore);
-    }
-    const classId = activeClass?.id || (window.location.pathname.split('/')[3]);
-    setActiveTab(`certificate/${classId}`);
-  };
+
 
   // ============================
   // VIEW: ACADEMY DASHBOARD
   // ============================
   if (lmsView === 'dashboard') {
-    const totalClasses = classes.length;
+
     const completedClasses = classes.filter(cls => {
       const clsLessons = cls.modules.flatMap(m => m.items);
       return clsLessons.length > 0 && clsLessons.every(l => l.done);
@@ -169,126 +193,258 @@ export default function LearningTab({
     const totalAcademyLessons = classes.reduce((acc, cls) => acc + cls.modules.flatMap(m => m.items).length, 0);
     const completedAcademyLessons = classes.reduce((acc, cls) => acc + cls.modules.flatMap(m => m.items).filter(l => l.done).length, 0);
 
-    return (
-      <div key="academy-dashboard" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#F8FAF9', animation: 'fadeIn 0.5s ease' }}>
-        
-        {/* ⚪️ HERO HEADER (LIGHT) ⚪️ */}
-        <div style={{ 
-          background: '#F8FAFC', 
-          padding: 'clamp(2.5rem, 10vw, 5rem) 5%', color: '#1e293b', position: 'relative', overflow: 'hidden', flexShrink: 0 
-        }}>
-          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%)', borderRadius: '50%' }}></div>
-          
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto' }}>
-             <button 
-               onClick={() => setActiveTab('home')} 
-               style={{ 
-                 background: 'white', border: '1px solid #E2E8F0', 
-                 borderRadius: '8px', padding: '0.6rem 1.25rem', 
-                 fontWeight: '800', color: '#134E39', cursor: 'pointer',
-                 display: 'inline-flex', alignItems: 'center', gap: '8px',
-                 marginBottom: '2rem', fontSize: '0.8rem', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-               }}
-             >
-               <ChevronLeft size={18} /> KEMBALI KE BERANDA
-             </button>
+    const chartData = totalAcademyLessons === 0 
+      ? [{ name: 'Belum Mulai', value: 1, color: '#F1F5F9' }]
+      : [
+          { name: 'Selesai', value: completedAcademyLessons, color: '#134E39' },
+          ...(totalAcademyLessons > completedAcademyLessons 
+            ? [{ name: 'Belum', value: totalAcademyLessons - completedAcademyLessons, color: '#F1F5F9' }]
+            : [])
+        ];
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-              <div style={{ flex: '1 1 300px' }}>
-                <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#134E39' }}>
-                  Dashboard <span style={{ color: '#D4AF37' }}>Akademi</span>
-                </h1>
-                <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: '#64748b', marginTop: '1rem', maxWidth: '600px', lineHeight: 1.6, fontWeight: 500 }}>
-                  Kelola dan pantau setiap progres pembelajaran Anda untuk membekali diri dengan ilmu syar'i.
-                </p>
+    return (
+      <div key="academy-dashboard" className="academy-dashboard-container">
+        <style>{`
+          .academy-dashboard-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: white;
+            animation: fadeIn 0.5s ease;
+          }
+          .stat-card {
+            background: white;
+            padding: 1.75rem;
+            border-radius: 16px;
+            border: 1px solid #E4EDE8;
+            box-shadow: 0 10px 30px rgba(19, 78, 57, 0.015);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(19, 78, 57, 0.05);
+            border-color: #D4AF37;
+          }
+          .class-item-card {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid #E4EDE8;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-wrap: wrap;
+          }
+          .class-item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(19, 78, 57, 0.03);
+            border-color: #134E39;
+          }
+          @media (max-width: 768px) {
+            .class-item-card {
+              gap: 1.25rem !important;
+              padding: 1.25rem !important;
+              border-radius: 12px !important;
+            }
+          }
+        `}</style>
+        
+        {/* PREMIUM ACADEMY HERO */}
+        <div style={{ 
+          padding: '2rem 5% 2.5rem', 
+          background: 'linear-gradient(180deg, #F4F9F6 0%, #FFFFFF 100%)', 
+          color: '#134E39',
+          position: 'relative',
+          overflow: 'hidden',
+          borderBottom: '1px solid #E4EDE8'
+        }}>
+          {/* Decorative Elements */}
+          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '300px', height: '300px', background: 'rgba(212,175,55,0.08)', borderRadius: '50%', filter: 'blur(60px)' }}></div>
+          <div style={{ position: 'absolute', bottom: '-20px', left: '10%', width: '150px', height: '150px', background: 'rgba(19,78,57,0.02)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+ 
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+            <div>
+              <button 
+                onClick={() => setLmsView('welcome')}
+                style={{ 
+                  background: 'white', border: '1px solid #e2e8f0', color: '#134E39', 
+                  padding: '0.6rem 1.2rem', borderRadius: '10px', fontSize: '0.75rem', 
+                  fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                  gap: '8px', marginBottom: '1.25rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
+              >
+                <ChevronLeft size={16} /> KEMBALI KE BERANDA
+              </button>
+ 
+              <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.2rem)', fontWeight: '950', margin: 0, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#134E39' }}>
+                Dashboard <span style={{ color: '#D4AF37' }}>Akademi</span>
+              </h1>
+              <p style={{ margin: '0.75rem 0 0', color: '#64748b', fontSize: '1.05rem', maxWidth: '600px', fontWeight: 500, lineHeight: 1.6 }}>
+                Kelola dan pantau setiap progres pembelajaran Anda untuk membekali diri dengan ilmu syar'i.
+              </p>
+            </div>
+ 
+            <div style={{ 
+              background: 'linear-gradient(135deg, #134E39 0%, #1e6b52 100%)', 
+              padding: '1.5rem 2rem', borderRadius: '16px', 
+              textAlign: 'center', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 10px 25px rgba(19, 78, 57, 0.15)', minWidth: '190px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Award size={24} color="#D4AF37" fill="#D4AF37" />
+                <span style={{ fontSize: '2.5rem', fontWeight: '950', color: '#D4AF37', lineHeight: 1 }}>{completedClasses}</span>
               </div>
-              <div style={{ 
-                background: 'white', padding: '1.25rem 2rem', borderRadius: '10px', 
-                border: '1px solid #E2E8F0', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
-                flex: '0 0 auto', minWidth: '160px'
-              }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D4AF37' }}>{completedClasses}</div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sertifikat Diraih</div>
-              </div>
+              <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sertifikat Diraih</div>
             </div>
           </div>
         </div>
-
-        {/* ⚪️ CONTENT AREA ⚪️ */}
-        <div style={{ padding: '4rem 5%', flex: 1 }}>
-          <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+ 
+        {/* CONTENT AREA */}
+        <div style={{ padding: '2.5rem 5% 5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginBottom: '3.5rem' }}>
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
-                  {[
-                    { label: 'Kelas Diikuti', value: classes.filter(c => c.isEnrolled).length, total: classes.length, color: '#134E39', icon: <BookOpen /> },
-                    { label: 'Materi Selesai', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <CheckCircle /> },
-                    { label: 'Total Progres', value: `${totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%`, total: '100%', color: '#0ea5e9', icon: <BarChart2 /> }
-                  ].map((stat, i) => (
-                    <div key={i} style={{ background: 'white', padding: '1.5rem', borderRadius: '10px', border: '1px solid #E4EDE8', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: `${stat.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '1.25rem' }}>
-                        {React.cloneElement(stat.icon, { size: 20 })}
-                      </div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#134E39', marginBottom: '0.2rem' }}>{stat.value}</div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#64748B' }}>{stat.label}</div>
-                    </div>
-                  ))}
-               </div>
+            {/* STATS TILES GRID */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+              {[
+                { label: 'Kelas Diikuti', value: classes.filter(c => c.isEnrolled).length, total: classes.length, color: '#134E39', icon: <BookOpen />, bg: '#f0fdf4' },
+                { label: 'Materi Selesai', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <CheckCircle />, bg: '#fefbf0' },
+                { label: 'Total Progres', value: `${totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%`, total: '100%', color: '#0ea5e9', icon: <BarChart2 />, bg: '#f0f9ff' }
+              ].map((stat, i) => (
+                <div key={i} className="stat-card">
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '1.25rem' }}>
+                    {React.cloneElement(stat.icon, { size: 24 })}
+                  </div>
+                  <div style={{ fontSize: '1.85rem', fontWeight: '950', color: '#134E39', marginBottom: '0.2rem' }}>{stat.value}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
 
+            {/* TWO-COLUMN GRAPHICS & LEARNING TIP SECTION */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+               {/* Column 1: Statistik Belajar Donut Chart */}
                <div style={{ 
-                 background: 'white', padding: 'clamp(1.5rem, 5vw, 2.5rem)', borderRadius: '12px', 
-                 border: '1px solid #E4EDE8', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem' 
+                 background: 'white', padding: '2rem', borderRadius: '16px', 
+                 border: '1px solid #E4EDE8', display: 'flex', flexWrap: 'wrap', 
+                 alignItems: 'center', justifyContent: 'center', gap: '2rem',
+                 boxShadow: '0 10px 30px rgba(19, 78, 57, 0.015)'
                }}>
-                  <div style={{ width: '110px', height: '110px', flexShrink: 0, margin: '0 auto' }}>
+                  <div style={{ position: 'relative', width: '150px', height: '150px', flexShrink: 0 }}>
                     {isMounted && (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie 
-                            data={[
-                              { name: 'Selesai', value: completedAcademyLessons, color: '#134E39' },
-                              { name: 'Belum', value: (totalAcademyLessons - completedAcademyLessons) || 1, color: '#F1F5F9' }
-                            ]} 
-                            innerRadius={40} outerRadius={55} paddingAngle={5} dataKey="value" stroke="none"
+                            data={chartData} 
+                            innerRadius={50} outerRadius={68} 
+                            paddingAngle={chartData.length > 1 ? 4 : 0} 
+                            dataKey="value" stroke="none"
                           >
-                            <Cell fill="#134E39" />
-                            <Cell fill="#F1F5F9" />
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
                           </Pie>
                         </PieChart>
                       </ResponsiveContainer>
                     )}
+                    <div style={{
+                      position: 'absolute', top: '50%', left: '50%',
+                      transform: 'translate(-50%, -50%)', textAlign: 'center',
+                      pointerEvents: 'none'
+                    }}>
+                      <div style={{ fontSize: '1.65rem', fontWeight: '950', color: '#134E39', lineHeight: 1 }}>
+                        {totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%
+                      </div>
+                      <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#94A3B8', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.05em' }}>
+                        Selesai
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ flex: '1 1 200px', textAlign: 'center' }}>
-                     <h4 style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Statistik Belajar</h4>
-                     <div style={{ fontSize: '2.2rem', fontWeight: '950', color: '#134E39', margin: '4px 0' }}>
-                       {totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%
+                  <div style={{ flex: '1 1 200px', textAlign: 'left' }}>
+                     <h4 style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Progress</h4>
+                     <div style={{ fontSize: '2rem', fontWeight: '950', color: '#134E39', margin: '4px 0', lineHeight: 1 }}>
+                       {completedAcademyLessons} <span style={{ fontSize: '1.1rem', color: '#94A3B8', fontWeight: '700' }}>/ {totalAcademyLessons} Materi</span>
                      </div>
-                     <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>{completedAcademyLessons} materi dari {totalAcademyLessons} telah dikuasai.</p>
+                     <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#64748B', fontWeight: 600, lineHeight: 1.5 }}>
+                       {completedAcademyLessons === totalAcademyLessons && totalAcademyLessons > 0 
+                         ? 'Mabruk! Seluruh materi pembelajaran di akademi telah Anda selesaikan.' 
+                         : 'Pertahankan semangat belajar Anda untuk memahami konsep pernikahan syar\'i.'}
+                     </p>
                   </div>
                </div>
-            </div>
 
+               {/* Column 2: Premium Quote / Pathway Accent */}
+               <div style={{ 
+                 background: 'linear-gradient(135deg, #134E39 0%, #1e6b52 100%)', 
+                 padding: '2.25rem 2rem', borderRadius: '16px', 
+                 color: 'white', position: 'relative', overflow: 'hidden',
+                 display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                 boxShadow: '0 12px 30px rgba(19, 78, 57, 0.12)',
+                 border: '1px solid rgba(255,255,255,0.05)'
+               }}>
+                 {/* Decorative background shape */}
+                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '130px', height: '130px', background: 'rgba(212,175,55,0.12)', borderRadius: '50%', filter: 'blur(10px)' }}></div>
+                 <div style={{ position: 'absolute', bottom: '-40px', left: '-20px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%', filter: 'blur(20px)' }}></div>
+                 
+                 <div style={{ position: 'relative', zIndex: 1 }}>
+                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.1)', color: '#D4AF37', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '99px', marginBottom: '1.25rem' }}>
+                     <Sparkles size={12} fill="#D4AF37" /> Tips Belajar Hari Ini
+                   </div>
+                   <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '900', color: '#ffffff', lineHeight: 1.3, letterSpacing: '-0.01em' }}>
+                     Ilmu Sebelum Amal dan Ucapan
+                   </h3>
+                   <p style={{ margin: '0.85rem 0 0', color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 500 }}>
+                     "Pernikahan adalah ibadah terpanjang. Bekali diri Anda dengan pemahaman syar'i untuk membangun keluarga sakinah, mawaddah, warahmah."
+                   </p>
+                 </div>
+
+                 <div style={{ position: 'relative', zIndex: 1, marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', flexShrink: 0 }}>
+                     <Award size={18} />
+                   </div>
+                   <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'rgba(255, 255, 255, 0.95)' }}>
+                     Sertifikat otomatis terbit setelah Anda menuntaskan seluruh materi kelas.
+                   </span>
+                 </div>
+               </div>
+            </div>
+ 
+            {/* DAFTAR KELAS SECTION */}
             <div style={{ 
-              background: 'white', borderRadius: '12px', padding: 'clamp(1.5rem, 5vw, 3rem)', 
-              border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' 
+              background: 'white', borderRadius: '16px', padding: 'clamp(1.5rem, 5vw, 3rem)', 
+              border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(19, 78, 57, 0.015)' 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: '900', color: '#134E39' }}>Daftar Kelas Anda</h3>
-                  <p style={{ margin: '0.4rem 0 0', color: '#64748B', fontSize: '0.85rem', fontWeight: 500 }}>Lanjutkan materi yang belum Anda selesaikan.</p>
+                  <h3 style={{ margin: 0, fontSize: 'clamp(1.25rem, 3vw, 1.65rem)', fontWeight: '950', color: '#134E39', letterSpacing: '-0.01em' }}>Daftar Kelas Anda</h3>
+                  <p style={{ margin: '0.4rem 0 0', color: '#64748B', fontSize: '0.85rem', fontWeight: 600 }}>Lanjutkan materi yang belum Anda selesaikan.</p>
                 </div>
                 <button 
                   onClick={() => setLmsView('catalog')}
                   style={{ 
                     background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', 
-                    padding: '0.7rem 1.25rem', borderRadius: '14px', fontWeight: '800', 
+                    padding: '0.8rem 1.5rem', borderRadius: '14px', fontWeight: '900', 
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                    fontSize: '0.8rem'
+                    fontSize: '0.8rem', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(19,78,57,0.1)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(19,78,57,0.05)';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
                   <Search size={16} /> JELAJAHI KELAS
                 </button>
               </div>
-
+ 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {classes.filter(c => c.isEnrolled).length > 0 ? (
                   classes.filter(c => c.isEnrolled).map(cls => {
@@ -297,22 +453,17 @@ export default function LearningTab({
                     const clsTotal = clsLessons.length;
                     const pct = clsTotal > 0 ? Math.round((clsDone / clsTotal) * 100) : 0;
                     return (
-                      <div key={cls.id} style={{ 
-                        display: 'flex', alignItems: 'center', gap: 'clamp(1rem, 3vw, 2rem)', 
-                        padding: '1.25rem', borderRadius: '10px', background: '#F8FAF9', 
-                        border: '1px solid #E4EDE8', transition: 'all 0.3s ease',
-                        flexWrap: 'wrap'
-                      }}>
-                        <div style={{ width: 'clamp(60px, 15vw, 90px)', height: 'clamp(60px, 15vw, 90px)', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8' }}>
+                      <div key={cls.id} className="class-item-card">
+                        <div style={{ width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
                           <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                         <div style={{ flex: '1 1 200px' }}>
-                          <div style={{ fontWeight: '900', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#134E39', marginBottom: '8px' }}>{cls.title}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ flex: 1, height: '6px', background: '#E2E8F0', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: '#134E39', borderRadius: '99px', transition: 'width 0.8s ease' }} />
+                          <div style={{ fontWeight: '950', fontSize: '1.25rem', color: '#134E39', marginBottom: '8px', letterSpacing: '-0.01em' }}>{cls.title}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                            <div style={{ flex: 1, height: '8px', background: '#F1F5F9', borderRadius: '99px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #134E39 0%, #1e6b52 100%)', borderRadius: '99px', transition: 'width 0.8s ease' }} />
                             </div>
-                            <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#134E39', minWidth: '40px' }}>{pct}%</span>
+                            <span style={{ fontSize: '0.9rem', fontWeight: '900', color: '#134E39', minWidth: '45px', textAlign: 'right' }}>{pct}%</span>
                           </div>
                         </div>
                         <button 
@@ -323,17 +474,22 @@ export default function LearningTab({
                           style={{ 
                             background: pct === 100 ? '#D4AF37' : '#134E39', 
                             color: pct === 100 ? '#134E39' : 'white', 
-                            border: 'none', padding: '0.8rem 1.5rem', 
+                            border: 'none', padding: '0.9rem 1.75rem', 
                             borderRadius: '14px', fontWeight: '900', 
                             fontSize: '0.85rem', cursor: 'pointer', 
-                            boxShadow: '0 8px 15px rgba(0,0,0,0.1)', 
+                            boxShadow: pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)', 
                             transition: 'all 0.2s',
-                            width: '100%',
-                            maxWidth: '200px',
-                            flex: '1 1 auto'
+                            minWidth: '160px',
+                            textAlign: 'center'
                           }}
-                          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = pct === 100 ? '0 12px 25px rgba(212,175,55,0.35)' : '0 12px 25px rgba(19,78,57,0.25)';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)';
+                          }}
                         >
                           {pct === 100 ? 'SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR')}
                         </button>
@@ -348,7 +504,6 @@ export default function LearningTab({
                      <button onClick={() => setLmsView('catalog')} style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 3rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>LIHAT DAFTAR KELAS</button>
                   </div>
                 )}
-              </div>
             </div>
           </div>
         </div>
@@ -362,71 +517,49 @@ export default function LearningTab({
   if (lmsView === 'welcome') {
     return (
       <div style={{ 
-        display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', 
+        display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 200px)', 
         background: 'white', animation: 'fadeIn 0.5s ease', justifyContent: 'center', 
-        alignItems: 'center', padding: isMobile ? '1.5rem' : '2rem'
+        alignItems: 'center', padding: isMobile ? '1.5rem 1rem' : '2.5rem 1.5rem',
+        textAlign: 'center'
       }}>
-        
-        {/* ⚪️ HERO WELCOME (CENTERED) ⚪️ */}
         <div style={{ 
-          background: 'white', 
-          padding: isMobile ? '1rem 0' : '2rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden', textAlign: 'center',
-          width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'
+          width: '80px', height: '80px', borderRadius: '24px', 
+          background: 'rgba(212, 175, 55, 0.1)', display: 'flex', 
+          alignItems: 'center', justifyContent: 'center', color: '#D4AF37', 
+          marginBottom: '1.25rem' 
         }}>
-
-          <div style={{ position: 'relative', zIndex: 1, width: '100%', margin: '0 auto', maxWidth: '1000px' }}>
-            <div style={{ 
-              width: isMobile ? '80px' : '100px', 
-              height: isMobile ? '80px' : '100px', 
-              background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', 
-              borderRadius: isMobile ? '24px' : '32px', display: 'flex', alignItems: 'center', 
-              justifyContent: 'center', color: '#D4AF37', margin: isMobile ? '0 auto 1.5rem' : '0 auto 3rem' 
-            }}>
-              <GraduationCap size={isMobile ? 40 : 56} />
-            </div>
-            
-            <h1 style={{ 
-              fontFamily: "'Plus Jakarta Sans', sans-serif", 
-              fontSize: isMobile ? '2.2rem' : 'clamp(3rem, 8vw, 4.5rem)', 
-              fontWeight: '950', color: '#134E39', marginBottom: isMobile ? '1rem' : '2rem', 
-              lineHeight: 1.1, letterSpacing: '-0.03em' 
-            }}>
-              Selamat Datang di <br />
-              <span style={{ color: '#D4AF37' }}>Separuh Agama Academy</span>
-            </h1>
-            
-            <p style={{ 
-              fontSize: isMobile ? '1rem' : '1.4rem', 
-              color: '#64748b', lineHeight: isMobile ? 1.6 : 1.8, 
-              marginBottom: isMobile ? '2.5rem' : '4rem', 
-              maxWidth: '850px', margin: isMobile ? '0 auto 2.5rem' : '0 auto 4rem', 
-              fontWeight: 500 
-            }}>
-              Bekali niat suci Anda dengan ilmu syar'i tentang pernikahan dan rumah tangga sebelum melangkah menuju ikatan yang abadi di bawah ridha Allah.
-            </p>
-            
-            <button 
-              onClick={() => setLmsView('dashboard')}
-              style={{ 
-                background: '#D4AF37', color: '#134E39', border: 'none', 
-                padding: isMobile ? '1.2rem 2.5rem' : '1.5rem 5rem', 
-                borderRadius: '20px', fontSize: isMobile ? '0.95rem' : '1.2rem', 
-                fontWeight: '900', cursor: 'pointer', display: 'inline-flex', 
-                alignItems: 'center', gap: '12px',
-                boxShadow: '0 20px 40px rgba(212,175,55,0.2)',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={e => {
-                if (!isMobile) e.currentTarget.style.transform = 'translateY(-4px)';
-              }}
-              onMouseLeave={e => {
-                if (!isMobile) e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              MULAI BELAJAR SEKARANG <ArrowRight size={isMobile ? 20 : 24} />
-            </button>
-          </div>
+          <GraduationCap size={42} />
         </div>
+        
+        <h1 style={{ 
+          fontSize: isMobile ? '2rem' : '2.8rem', fontWeight: '900', 
+          color: '#134E39', marginBottom: '0.75rem', lineHeight: 1.2 
+        }}>
+          Selamat Datang di <br />
+          <span style={{ color: '#D4AF37' }}>Separuh Agama Academy</span>
+        </h1>
+        
+        <p style={{ 
+          fontSize: '1.1rem', color: '#64748b', lineHeight: 1.7, 
+          marginBottom: '1.5rem', maxWidth: '650px', fontWeight: '500' 
+        }}>
+          Bekali niat suci Anda dengan ilmu syar'i tentang pernikahan dan rumah tangga sebelum melangkah menuju ikatan yang abadi di bawah ridha Allah.
+        </p>
+ 
+        <button 
+          onClick={() => setLmsView('catalog')}
+          style={{ 
+            background: '#D4AF37', color: '#134E39', border: 'none', 
+            padding: '1.25rem 3rem', borderRadius: '16px', fontWeight: '900', 
+            fontSize: '1rem', cursor: 'pointer', display: 'flex', 
+            alignItems: 'center', gap: '12px', boxShadow: '0 15px 35px rgba(212,175,55,0.3)',
+            transition: 'all 0.3s'
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          MULAI BELAJAR SEKARANG <ArrowRight size={22} />
+        </button>
       </div>
     );
   }
@@ -436,31 +569,117 @@ export default function LearningTab({
   // ============================
   if (lmsView === 'catalog') {
     return (
-      <div key="academy-catalog" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f8fafc', animation: 'fadeIn 0.5s ease' }}>
+      <div key="academy-catalog" className="academy-catalog-container">
+        <style>{`
+          .academy-catalog-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: white;
+            animation: fadeIn 0.5s ease;
+          }
+          .catalog-hero-section {
+            padding: 1.5rem 5% 1rem;
+          }
+          .catalog-filter-bar {
+            padding: 0.5rem 5% 1.5rem;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+          }
+          .catalog-grid-wrapper {
+            padding: 0 5% 2.5rem;
+            flex: 1;
+          }
+          .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+          }
+          .catalog-card {
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+          }
+          .catalog-card-banner {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+          }
+          .catalog-card-content {
+            padding: 1.75rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+          }
+
+          @media (max-width: 768px) {
+            .catalog-hero-section {
+              padding: 2rem 1rem 1rem !important;
+            }
+            .catalog-hero-section h1 {
+              font-size: 1.75rem !important;
+            }
+            .catalog-hero-section p {
+              font-size: 0.95rem !important;
+              margin-top: 0.75rem !important;
+            }
+            .catalog-filter-bar {
+              padding: 1rem 1rem 1.5rem !important;
+              gap: 10px !important;
+            }
+            .catalog-grid-wrapper {
+              padding: 0 1rem 3rem !important;
+            }
+            .catalog-grid {
+              grid-template-columns: 1fr !important;
+              gap: 1.5rem !important;
+            }
+            .catalog-card {
+              border-radius: 16px !important;
+            }
+            .catalog-card-banner {
+              height: 180px !important;
+            }
+            .catalog-card-content {
+              padding: 1.25rem !important;
+            }
+          }
+        `}</style>
         
-        {/* ⚪️ MINIMALIST HEADER (GRAY BACKGROUND) ⚪️ */}
-        <div style={{ padding: '4rem 5% 2rem' }}>
-          <div style={{ 
-            position: 'relative', 
-            overflow: 'hidden'
-          }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#e2e8f0', color: '#64748b', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1.5rem' }}>
-                <Zap size={14} fill="#64748b" /> KURIKULUM TAARUF
-              </div>
-              
-              <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                DAFTAR <span style={{ color: '#D4AF37' }}>KELAS</span> 
-              </h1>
-              <p style={{ fontSize: '1.2rem', color: '#64748b', marginTop: '1.25rem', maxWidth: '700px', lineHeight: 1.6, fontWeight: 500 }}>
-                Persiapkan diri menuju pernikahan sakinah mawaddah warahmah dengan kurikulum terbaik kami.
-              </p>
+        <div className="catalog-hero-section">
+          <button 
+            onClick={() => setLmsView('welcome')}
+            style={{ 
+              background: 'white', border: '1px solid #e2e8f0', color: '#134E39', 
+              padding: '0.6rem 1.2rem', borderRadius: '10px', fontSize: '0.75rem', 
+              fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', 
+              gap: '8px', marginBottom: '1rem'
+            }}
+          >
+            <ChevronLeft size={16} /> KEMBALI KE BERANDA
+          </button>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(19,78,57,0.05)', color: '#134E39', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '0.75rem' }}>
+              <Zap size={14} fill="#134E39" /> KURIKULUM TAARUF
             </div>
+            
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+              DAFTAR <span style={{ color: '#D4AF37' }}>KELAS</span> 
+            </h1>
+            <p style={{ fontSize: '1.25rem', color: '#64748b', marginTop: '0.75rem', maxWidth: '700px', lineHeight: 1.6, fontWeight: 500 }}>
+              Persiapkan diri menuju pernikahan sakinah mawaddah warahmah dengan kurikulum terbaik kami.
+            </p>
           </div>
         </div>
 
         {/* ⚪️ SEARCH & FILTER BAR ⚪️ */}
-        <div style={{ padding: '1rem 5% 3rem', display: 'flex', gap: '15px', alignItems: 'center' }}>
+        <div className="catalog-filter-bar">
           <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
             <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
             <input 
@@ -475,23 +694,19 @@ export default function LearningTab({
         </div>
 
         {/* ⚪️ CLASS GRID ⚪️ */}
-        <div style={{ padding: '0 5% 5rem', flex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2.5rem' }}>
+        <div className="catalog-grid-wrapper">
+          <div className="catalog-grid">
             {classes.map(cls => {
               const clsLessonsCount = cls.modules.reduce((a, m) => a + m.items.length, 0);
               const clsDoneCount = cls.modules.reduce((a, m) => a + m.items.filter(i => i.done).length, 0);
               const isFinished = clsLessonsCount > 0 && clsLessonsCount === clsDoneCount;
               
               return (
-                <div key={cls.id} style={{ 
-                  borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', 
-                  background: 'white', display: 'flex', flexDirection: 'column', 
-                  transition: 'transform 0.3s ease'
-                }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                <div key={cls.id} className="catalog-card" onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                   
                   {/* Banner Image */}
-                  <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
-                    <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop"} alt={cls.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div className="catalog-card-banner">
+                    <img src={cls.banner_url || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop"} alt={cls.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     {isFinished && (
                       <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#D4AF37', color: 'white', padding: '6px 14px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.05em' }}>
                         SELESAI
@@ -500,7 +715,7 @@ export default function LearningTab({
                   </div>
                   
                   {/* Content Area */}
-                  <div style={{ padding: '1.75rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div className="catalog-card-content">
                     <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#1e293b', marginBottom: '0.75rem' }}>{cls.title}</h3>
                     <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: 1.5, flex: 1 }}>
                       {cls.description || "Program intensif persiapan menuju keluarga sakinah mawaddah warahmah."}
@@ -536,7 +751,7 @@ export default function LearningTab({
   // ============================
   return (
     <div className="lms-player" style={{ 
-      height: isMobile ? 'auto' : 'calc(100vh - 100px)', 
+      height: isMobile ? 'calc(100dvh - 80px)' : 'calc(100vh - 100px)', 
       display: 'flex', 
       background: '#fff', 
       position: 'relative',

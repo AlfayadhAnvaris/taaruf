@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Users, Phone, Shield, MapPin, Edit3, Save, X as XIcon, BadgeCheck, Clock, AlertTriangle, Briefcase, GraduationCap, ShieldCheck, Sparkles, Heart, ArrowRight, Settings, Lock } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import ChangePasswordCard from './ChangePasswordCard';
 
 const Field = ({ label, value, icon }) => (
@@ -23,7 +24,7 @@ const InputField = ({ label, fieldKey, type = 'text', placeholder, value, onChan
     <input 
       type={type} 
       placeholder={placeholder} 
-      value={value} 
+      value={value || ''} 
       onChange={e => onChange(fieldKey, e.target.value)} 
       style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none', transition: 'border-color 0.2s', color: '#1C2B22' }}
       onFocus={e => e.target.style.borderColor = '#134E39'}
@@ -32,7 +33,33 @@ const InputField = ({ label, fieldKey, type = 'text', placeholder, value, onChan
   </div>
 );
 
-export default function AccountTab({ user, showAlert }) {
+const ReligiousCard = ({ label, value, icon, onDetailClick }) => {
+  const isLong = value && value.length > 80;
+  const preview = value ? (isLong ? value.substring(0, 77) + '...' : value) : 'Belum diisi';
+
+  return (
+    <div 
+      onClick={() => value && onDetailClick({ title: label, value, icon })}
+      style={{ 
+        background: 'white', border: '1px solid #E4EDE8', borderRadius: '14px', padding: '1.75rem',
+        cursor: value ? 'pointer' : 'default', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        display: 'flex', flexDirection: 'column', height: '180px', position: 'relative'
+      }}
+      onMouseEnter={e => { if(value) { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#134E39'; } }}
+      onMouseLeave={e => { if(value) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E4EDE8'; } }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>{icon}</div>
+        <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+      </div>
+      <p style={{ fontSize: '0.9rem', color: value ? '#475569' : '#94A3B8', fontStyle: value ? 'normal' : 'italic', margin: 0, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preview}</p>
+      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}><ArrowRight size={14} color="#D4AF37" /></div>
+    </div>
+  );
+};
+
+export default function AccountTab() {
+  const { user, setUser, showAlert } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeDetail, setActiveDetail] = useState(null); 
@@ -151,7 +178,8 @@ export default function AccountTab({ user, showAlert }) {
     setIsSaving(false);
     if (error) { showAlert('Gagal Menyimpan', error.message, 'error'); return; }
     
-    Object.assign(user, {
+    setUser({
+      ...user,
       name: form.name.trim(),
       profile_complete: isProfileComplete,
       phone_wa: form.phone_wa.trim(),
@@ -176,38 +204,15 @@ export default function AccountTab({ user, showAlert }) {
     setIsEditing(false);
   };
 
-  const ReligiousCard = ({ label, value, icon }) => {
-    const isLong = value && value.length > 80;
-    const preview = value ? (isLong ? value.substring(0, 77) + '...' : value) : 'Belum diisi';
 
-    return (
-      <div 
-        onClick={() => value && setActiveDetail({ title: label, value, icon })}
-        style={{ 
-          background: 'white', border: '1px solid #E4EDE8', borderRadius: '14px', padding: '1.75rem',
-          cursor: value ? 'pointer' : 'default', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          display: 'flex', flexDirection: 'column', height: '180px', position: 'relative'
-        }}
-        onMouseEnter={e => { if(value) { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#134E39'; } }}
-        onMouseLeave={e => { if(value) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E4EDE8'; } }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>{icon}</div>
-          <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-        </div>
-        <p style={{ fontSize: '0.9rem', color: value ? '#475569' : '#94A3B8', fontStyle: value ? 'normal' : 'italic', margin: 0, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preview}</p>
-        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}><ArrowRight size={14} color="#D4AF37" /></div>
-      </div>
-    );
-  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f8fafc', animation: 'fadeIn 0.5s ease' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
       
       {/* ⚪️ HERO HEADER (GRAY) ⚪️ */}
       <div style={{ 
-        background: '#f8fafc', 
-        padding: '5rem 5% 4rem', color: '#1e293b', position: 'relative', overflow: 'hidden' 
+        background: 'transparent', 
+        padding: '2rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
       }}>
         <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%)', borderRadius: '50%' }}></div>
         
@@ -216,7 +221,7 @@ export default function AccountTab({ user, showAlert }) {
             <Settings size={14} /> MANAJEMEN AKUN & KEAMANAN
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                <div style={{ 
                   width: '120px', height: '120px', borderRadius: '16px', 
                   background: 'white', color: '#134E39', 
@@ -252,11 +257,11 @@ export default function AccountTab({ user, showAlert }) {
       </div>
 
       {/* ⚪️ CONTENT AREA ⚪️ */}
-      <div style={{ padding: '4rem 5%', flex: 1 }}>
+      <div style={{ padding: '2rem 5%', flex: 1 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           
           {!isProfileComplete && (
-            <div style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '16px', padding: '2rem', marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '1.5rem', boxShadow: '0 10px 25px rgba(251,146,60,0.08)' }}>
+            <div style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 25px rgba(251,146,60,0.08)' }}>
               <div style={{ width: 60, height: 60, background: '#F97316', color: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <AlertTriangle size={32} />
               </div>
@@ -268,15 +273,15 @@ export default function AccountTab({ user, showAlert }) {
           )}
 
           {!isEditing ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               {/* Basic Section */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '4rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                 <div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2rem' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                     <div style={{ width: 3, height: 18, background: '#D4AF37', borderRadius: '2px' }}></div>
                     <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#134E39', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Informasi Dasar</h4>
                   </div>
-                  <div style={{ background: 'white', padding: '1rem 2rem', borderRadius: '16px', border: '1px solid #E4EDE8' }}>
+                  <div style={{ background: 'white', padding: '0.5rem 1.25rem', borderRadius: '16px', border: '1px solid #E4EDE8' }}>
                     <Field label="Nama Lengkap" value={user.name} icon={<User size={18} />} />
                     <Field label="Pendidikan" value={user.pendidikan_terakhir} icon={<GraduationCap size={18} />} />
                     <Field label="Pekerjaan" value={user.pekerjaan} icon={<Briefcase size={18} />} />
@@ -285,11 +290,11 @@ export default function AccountTab({ user, showAlert }) {
                 </div>
 
                 <div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2rem' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                     <div style={{ width: 3, height: 18, background: '#D4AF37', borderRadius: '2px' }}></div>
                     <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#134E39', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Domisili & Wali</h4>
                   </div>
-                  <div style={{ background: 'white', padding: '1rem 2rem', borderRadius: '16px', border: '1px solid #E4EDE8' }}>
+                  <div style={{ background: 'white', padding: '0.5rem 1.25rem', borderRadius: '16px', border: '1px solid #E4EDE8' }}>
                     <Field label="Provinsi" value={user.domisili_provinsi} icon={<MapPin size={18} />} />
                     <Field label="Kota / Kabupaten" value={user.domisili_kota} icon={<MapPin size={18} />} />
                     {isAkhwat && (
@@ -304,7 +309,7 @@ export default function AccountTab({ user, showAlert }) {
 
               {/* Religious Section */}
               <div id="religious-section">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
                   <div style={{ width: 3, height: 18, background: '#D4AF37', borderRadius: '2px' }}></div>
                   <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#134E39', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pemahaman Agama & Aqidah</h4>
                 </div>
@@ -334,8 +339,8 @@ export default function AccountTab({ user, showAlert }) {
             </div>
           ) : (
             /* 📝 EDIT FORM 📝 */
-            <div style={{ background: '#f8fafc', padding: '4rem', borderRadius: '20px', border: '1px solid #E4EDE8', boxShadow: '0 20px 50px rgba(0,0,0,0.02)' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '2rem' }}>
+            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid #E4EDE8', boxShadow: '0 20px 50px rgba(0,0,0,0.02)' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '1rem' }}>
                  <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '900', color: '#134E39' }}>Edit Profil Anda</h2>
                  <div style={{ display: 'flex', gap: '1rem' }}>
                     <button onClick={() => {
@@ -354,51 +359,50 @@ export default function AccountTab({ user, showAlert }) {
                  </div>
                </div>
 
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '4rem' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
                  <div>
-                    <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '2rem', letterSpacing: '0.1em' }}>Data Pribadi</h5>
-                    <InputField label="Nama Lengkap" fieldKey="name" placeholder="Nama sesuai KTP" value={form.name} onChange={set} />
-                    <div style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Pendidikan Terakhir</label>
-                      <select value={form.pendidikan_terakhir} onChange={e => set('pendidikan_terakhir', e.target.value)} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none', color: '#1C2B22' }}>
-                        <option value="">-- Pilih Pendidikan --</option>
-                        {['SD', 'SMP', 'SMA/SMK', 'Diploma', 'Sarjana (S1)', 'Magister (S2)', 'Doktor (S3)', 'Pondok Pesantren'].map(edu => <option key={edu} value={edu}>{edu}</option>)}
-                      </select>
-                    </div>
-                    <InputField label="Pekerjaan" fieldKey="pekerjaan" placeholder="Contoh: Pengusaha..." value={form.pekerjaan} onChange={set} />
-                    <InputField label="No. WhatsApp" fieldKey="phone_wa" placeholder="0812..." value={form.phone_wa} onChange={set} />
-                    
-                    <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '2rem', marginTop: '3rem', letterSpacing: '0.1em' }}>Domisili</h5>
-                    <div style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Provinsi</label>
-                      <select value={form.domisili_provinsi} onChange={e => { set('domisili_provinsi', e.target.value); set('domisili_kota', ''); }} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none' }}>
-                        <option value="">-- Pilih Provinsi --</option>
-                        {provinces.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-                      </select>
-                    </div>
-                    <div style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Kota / Kabupaten</label>
-                      <select value={form.domisili_kota} onChange={e => set('domisili_kota', e.target.value)} disabled={!form.domisili_provinsi || isFetchingCities} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none' }}>
-                        <option value="">{isFetchingCities ? 'Memuat...' : '-- Pilih Kota --'}</option>
-                        {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                      </select>
-                    </div>
-
+                   <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.1em' }}>Data Pribadi</h5>
+                   <InputField label="Nama Lengkap" fieldKey="name" placeholder="Nama sesuai KTP" value={form.name} onChange={set} />
+                   <div style={{ marginBottom: '1.25rem' }}>
+                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Pendidikan Terakhir</label>
+                     <select value={form.pendidikan_terakhir || ''} onChange={e => set('pendidikan_terakhir', e.target.value)} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none', color: '#1C2B22' }}>
+                       <option value="">-- Pilih Pendidikan --</option>
+                       {['SD', 'SMP', 'SMA/SMK', 'Diploma', 'Sarjana (S1)', 'Magister (S2)', 'Doktor (S3)', 'Pondok Pesantren'].map(edu => <option key={edu} value={edu}>{edu}</option>)}
+                     </select>
+                   </div>
+                   <InputField label="Pekerjaan" fieldKey="pekerjaan" placeholder="Contoh: Pengusaha..." value={form.pekerjaan} onChange={set} />
+                   <InputField label="No. WhatsApp" fieldKey="phone_wa" placeholder="0812..." value={form.phone_wa} onChange={set} />
+                   
+                   <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '1rem', marginTop: '1.5rem', letterSpacing: '0.1em' }}>Domisili</h5>
+                   <div style={{ marginBottom: '1.25rem' }}>
+                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Provinsi</label>
+                     <select value={form.domisili_provinsi || ''} onChange={e => { set('domisili_provinsi', e.target.value); set('domisili_kota', ''); }} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none' }}>
+                       <option value="">-- Pilih Provinsi --</option>
+                       {provinces.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                     </select>
+                   </div>
+                   <div style={{ marginBottom: '1.25rem' }}>
+                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Kota / Kabupaten</label>
+                     <select value={form.domisili_kota || ''} onChange={e => set('domisili_kota', e.target.value)} disabled={!form.domisili_provinsi || isFetchingCities} style={{ width: '100%', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none' }}>
+                       <option value="">{isFetchingCities ? 'Memuat...' : '-- Pilih Kota --'}</option>
+                       {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                     </select>
+                   </div>
                     {isAkhwat && (
-                      <div style={{ marginTop: '3rem', background: '#FFF7ED', padding: '2rem', borderRadius: '12px', border: '1px solid #FFEDD5' }}>
-                        <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#C2410C', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Kontak Wali (Wajib)</h5>
+                      <div style={{ marginTop: '1.5rem', background: '#FFF7ED', padding: '1.25rem', borderRadius: '12px', border: '1px solid #FFEDD5' }}>
+                        <h5 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#C2410C', textTransform: 'uppercase', marginBottom: '1rem' }}>Kontak Wali (Wajib)</h5>
                         <InputField label="Nama Wali" fieldKey="wali_name" value={form.wali_name} onChange={set} />
                         <InputField label="WhatsApp Wali" fieldKey="wali_phone" value={form.wali_phone} onChange={set} />
                         <div style={{ marginBottom: '1rem' }}>
                           <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>Pandangan Poligami</label>
-                          <textarea value={form.polygamy_view} onChange={e => set('polygamy_view', e.target.value)} style={{ width: '100%', minHeight: '80px', padding: '1rem', borderRadius: '10px', border: '1px solid #E4EDE8', outline: 'none' }} placeholder="Tuliskan pandangan Anda..." />
+                          <textarea value={form.polygamy_view || ''} onChange={e => set('polygamy_view', e.target.value)} style={{ width: '100%', minHeight: '80px', padding: '1rem', borderRadius: '10px', border: '1px solid #E4EDE8', outline: 'none' }} placeholder="Tuliskan pandangan Anda..." />
                         </div>
                       </div>
                     )}
                  </div>
 
                  <div>
-                    <h5 id="religious-section" style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '2rem', letterSpacing: '0.1em' }}>Pemahaman Agama</h5>
+                    <h5 id="religious-section" style={{ fontSize: '0.8rem', fontWeight: 900, color: '#D4AF37', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.1em' }}>Pemahaman Agama</h5>
                     {[
                       { key: 'aqidah1', label: '1. Sebutkan 3 Landasan Utama?' },
                       { key: 'aqidah2', label: '2. Apa Makna Kalimat Syahadat?' },
@@ -409,7 +413,7 @@ export default function AccountTab({ user, showAlert }) {
                     ].map(f => (
                       <div key={f.key} style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '800', color: '#134E39', marginBottom: '8px' }}>{f.label}</label>
-                        <textarea value={form[f.key]} onChange={e => set(f.key, e.target.value)} style={{ width: '100%', minHeight: '120px', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none', lineHeight: 1.6 }} placeholder="Jelaskan secara detail..." />
+                        <textarea value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)} style={{ width: '100%', minHeight: '120px', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #E4EDE8', fontSize: '1rem', outline: 'none', lineHeight: 1.6 }} placeholder="Jelaskan secara detail..." />
                       </div>
                     ))}
                  </div>
