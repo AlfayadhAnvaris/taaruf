@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { User, Users, Phone, Shield, MapPin, Edit3, Save, X as XIcon, BadgeCheck, Clock, AlertTriangle, Briefcase, GraduationCap, ShieldCheck, Sparkles, Heart, ArrowRight, Settings, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, Users, Phone, Shield, MapPin, Edit3, Save, X as XIcon, BadgeCheck, Clock, AlertTriangle, Briefcase, GraduationCap, ShieldCheck, Sparkles, Heart, ArrowRight, Settings, Lock, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
 import ChangePasswordCard from './ChangePasswordCard';
@@ -39,14 +40,14 @@ const ReligiousCard = ({ label, value, icon, onDetailClick }) => {
 
   return (
     <div 
-      onClick={() => value && onDetailClick({ title: label, value, icon })}
+      onClick={() => value && onDetailClick && onDetailClick({ title: label, value, icon })}
       style={{ 
         background: 'white', border: '1px solid #E4EDE8', borderRadius: '14px', padding: '1.75rem',
-        cursor: value ? 'pointer' : 'default', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        cursor: value ? 'pointer' : 'default', transition: 'all 0.2s ease',
         display: 'flex', flexDirection: 'column', height: '180px', position: 'relative'
       }}
-      onMouseEnter={e => { if(value) { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#134E39'; } }}
-      onMouseLeave={e => { if(value) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E4EDE8'; } }}
+      onMouseEnter={e => { if(value) { e.currentTarget.style.borderColor = '#134E39'; } }}
+      onMouseLeave={e => { if(value) { e.currentTarget.style.borderColor = '#E4EDE8'; } }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
         <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(19,78,57,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#134E39' }}>{icon}</div>
@@ -59,7 +60,8 @@ const ReligiousCard = ({ label, value, icon, onDetailClick }) => {
 };
 
 export default function AccountTab() {
-  const { user, setUser, showAlert } = useAppContext();
+  const router = useRouter();
+  const { user, setUser, showAlert, handleLogout } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeDetail, setActiveDetail] = useState(null); 
@@ -207,26 +209,26 @@ export default function AccountTab() {
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
+    <div className="account-tab-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
       
       {/* ⚪️ HERO HEADER (GRAY) ⚪️ */}
       <div style={{ 
         background: 'transparent', 
-        padding: '2rem 5%', color: '#1e293b', position: 'relative', overflow: 'hidden' 
+        padding: '1.5rem 0 2.5rem', color: '#1e293b', position: 'relative', overflow: 'hidden' 
       }}>
         <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%)', borderRadius: '50%' }}></div>
         
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #E2E8F0', color: '#10B981', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 18px', borderRadius: '99px', marginBottom: '1.5rem' }}>
             <Settings size={14} /> MANAJEMEN AKUN & KEAMANAN
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                <div style={{ 
                   width: '120px', height: '120px', borderRadius: '16px', 
-                  background: 'white', color: '#134E39', 
+                  background: 'white', color: '#134E39', border: '1px solid #E4EDE8',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontSize: '3.5rem', fontWeight: '900', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' 
+                  fontSize: '3.5rem', fontWeight: '900' 
                }}>
                  {user.name.charAt(0).toUpperCase()}
                </div>
@@ -247,7 +249,7 @@ export default function AccountTab() {
             {!isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
-                style={{ background: '#D4AF37', color: '#134E39', border: 'none', padding: '1rem 2rem', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
+                style={{ background: '#D4AF37', color: '#134E39', border: 'none', padding: '1rem 2rem', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <Edit3 size={18} /> EDIT PROFIL
               </button>
@@ -257,11 +259,11 @@ export default function AccountTab() {
       </div>
 
       {/* ⚪️ CONTENT AREA ⚪️ */}
-      <div style={{ padding: '2rem 5%', flex: 1 }}>
+      <div style={{ padding: '1.5rem 0', flex: 1 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           
           {!isProfileComplete && (
-            <div style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 25px rgba(251,146,60,0.08)' }}>
+            <div style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ width: 60, height: 60, background: '#F97316', color: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <AlertTriangle size={32} />
               </div>
@@ -314,32 +316,40 @@ export default function AccountTab() {
                   <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#134E39', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pemahaman Agama & Aqidah</h4>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                  <ReligiousCard label="3 Landasan Utama" value={user.aqidah1} icon={<ShieldCheck size={18} />} />
-                  <ReligiousCard label="Makna Syahadat" value={user.aqidah2} icon={<ShieldCheck size={18} />} />
-                  <ReligiousCard label="Tujuan Penciptaan" value={user.aqidah3} icon={<ShieldCheck size={18} />} />
-                  <ReligiousCard label="Rukun Iman" value={user.aqidah4} icon={<ShieldCheck size={18} />} />
-                  <ReligiousCard label="Visi Pernikahan" value={user.marriage_vision} icon={<Sparkles size={18} />} />
-                  <ReligiousCard label={isAkhwat ? 'Hak & Ketaatan Istri' : 'Tanggung Jawab Suami'} value={user.role_view} icon={<Heart size={18} />} />
-                  {isAkhwat && <ReligiousCard label="Pandangan Poligami" value={user.polygamy_view} icon={<Users size={18} />} />}
+                  <ReligiousCard label="3 Landasan Utama" value={user.aqidah1} icon={<ShieldCheck size={18} />} onDetailClick={setActiveDetail} />
+                  <ReligiousCard label="Makna Syahadat" value={user.aqidah2} icon={<ShieldCheck size={18} />} onDetailClick={setActiveDetail} />
+                  <ReligiousCard label="Tujuan Penciptaan" value={user.aqidah3} icon={<ShieldCheck size={18} />} onDetailClick={setActiveDetail} />
+                  <ReligiousCard label="Rukun Iman" value={user.aqidah4} icon={<ShieldCheck size={18} />} onDetailClick={setActiveDetail} />
+                  <ReligiousCard label="Visi Pernikahan" value={user.marriage_vision} icon={<Sparkles size={18} />} onDetailClick={setActiveDetail} />
+                  <ReligiousCard label={isAkhwat ? 'Hak & Ketaatan Istri' : 'Tanggung Jawab Suami'} value={user.role_view} icon={<Heart size={18} />} onDetailClick={setActiveDetail} />
+                  {isAkhwat && <ReligiousCard label="Pandangan Poligami" value={user.polygamy_view} icon={<Users size={18} />} onDetailClick={setActiveDetail} />}
                 </div>
               </div>
 
               {/* Security */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start', marginTop: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', marginTop: '1.5rem' }}>
                 <ChangePasswordCard showAlert={showAlert} />
                 <button 
                   onClick={() => showAlert('Keamanan', 'Silakan hubungi Admin untuk proses penghapusan akun secara aman.', 'error')}
-                  style={{ background: 'transparent', color: '#EF4444', border: '2px solid #EF4444', padding: '1rem', width: '240px', borderRadius: '10px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem', textAlign: 'center' }}
+                  style={{ background: 'transparent', color: '#EF4444', border: '2px solid #EF4444', padding: '1rem', width: '220px', borderRadius: '10px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem', textAlign: 'center' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                 >
                   HAPUS AKUN
                 </button>
+                <button 
+                  onClick={handleLogout}
+                  style={{ background: '#EF4444', color: 'white', border: 'none', padding: '1rem', width: '220px', borderRadius: '10px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem', textAlign: 'center' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#DC2626'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#EF4444'; }}
+                >
+                  KELUAR AKUN
+                </button>
               </div>
             </div>
           ) : (
             /* 📝 EDIT FORM 📝 */
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid #E4EDE8', boxShadow: '0 20px 50px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid #E4EDE8' }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '1rem' }}>
                  <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '900', color: '#134E39' }}>Edit Profil Anda</h2>
                  <div style={{ display: 'flex', gap: '1rem' }}>
@@ -425,14 +435,57 @@ export default function AccountTab() {
 
       {/* Modal Detail */}
       {activeDetail && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(19,78,57,0.5)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001, padding: '2rem' }} onClick={() => setActiveDetail(null)}>
-           <div style={{ background: 'white', width: '100%', maxWidth: '600px', borderRadius: '16px', padding: '2.5rem', position: 'relative', animation: 'scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} onClick={e => e.stopPropagation()}>
-              <button onClick={() => setActiveDetail(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer' }}><XIcon size={20} /></button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '2rem' }}>
-                 <div style={{ width: 54, height: 54, borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{activeDetail.icon}</div>
-                 <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#134E39' }}>{activeDetail.title}</h3>
+        <div 
+          style={{ 
+            position: 'fixed', inset: 0, 
+            background: 'rgba(15, 23, 42, 0.3)', 
+            backdropFilter: 'blur(12px)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            zIndex: 10001, padding: '1.5rem',
+            animation: 'fadeIn 0.2s ease'
+          }} 
+          onClick={() => setActiveDetail(null)}
+        >
+           <div 
+             style={{ 
+               background: '#ffffff', width: '100%', maxWidth: '600px', 
+               borderRadius: '24px', padding: '2.5rem', position: 'relative', 
+               border: '1px solid #E4EDE8', 
+               boxShadow: '0 20px 40px rgba(19, 78, 57, 0.03)',
+               animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+             }} 
+             onClick={e => e.stopPropagation()}
+           >
+              <button 
+                onClick={() => setActiveDetail(null)} 
+                style={{ 
+                  position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                  background: '#F8FAF9', border: '1px solid #E4EDE8', 
+                  width: '36px', height: '36px', borderRadius: '10px', 
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#64748B', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#134E39'; e.currentTarget.style.color = '#134E39'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E4EDE8'; e.currentTarget.style.color = '#64748B'; }}
+              >
+                <XIcon size={18} />
+              </button>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.75rem' }}>
+                 <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(19,78,57,0.06)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(19,78,57,0.1)' }}>
+                   {activeDetail.icon}
+                 </div>
+                 <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#134E39', letterSpacing: '-0.02em' }}>
+                   {activeDetail.title}
+                 </h3>
               </div>
-              <div style={{ background: '#F8FAF9', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E4EDE8', fontSize: '1.05rem', lineHeight: 1.8, color: '#475569', whiteSpace: 'pre-wrap' }}>
+              
+              <div style={{ 
+                background: '#F8FAF9', padding: '1.75rem', borderRadius: '16px', 
+                border: '1px solid #E4EDE8', borderLeft: '4px solid #134E39',
+                fontSize: '1rem', lineHeight: '1.8', color: '#334155', 
+                whiteSpace: 'pre-wrap', maxHeight: '60vh', overflowY: 'auto'
+              }}>
                 {activeDetail.value}
               </div>
            </div>

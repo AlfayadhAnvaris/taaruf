@@ -334,8 +334,8 @@ button {
   gap: 0.6rem;
   padding: 0.4rem 0.75rem 0.4rem 0.4rem;
   border-radius: 12px;
-  background: rgba(44, 95, 77, 0.04);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   cursor: pointer;
   transition: var(--transition);
   color: var(--text-main);
@@ -343,8 +343,7 @@ button {
 }
 
 .profile-card-btn:hover {
-  background: rgba(44, 95, 77, 0.08);
-  border-color: rgba(44, 95, 77, 0.2);
+  background: rgba(44, 95, 77, 0.05);
 }
 
 .profile-card-avatar {
@@ -959,23 +958,11 @@ button {
   overflow: hidden;
 }
 
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 4px;
-  background: var(--primary);
-  opacity: 0;
-  transition: var(--transition);
-}
-
 /* Subtle lift on card hover — gentle, not jarring */
 .card:not(.card-no-hover):hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
   background: rgba(255, 255, 255, 0.95);
-}
-.card:not(.card-no-hover):hover::before {
-  opacity: 0.6;
 }
 
 .card-title {
@@ -3293,7 +3280,7 @@ pre, code {
   width: 40px !important;
   height: 40px !important;
   background: transparent !important;
-  border: 1px solid #f1f5f9 !important;
+  border: none !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
@@ -3303,7 +3290,7 @@ pre, code {
 }
 
 .hamburger-btn:hover, .icon-btn:hover {
-  background: #f8fafc !important;
+  background: rgba(19, 78, 57, 0.05) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -3689,16 +3676,22 @@ pre, code {
   position: fixed;
   top: 0;
   right: 0;
-  width: 480px;
+  width: 540px;
   max-width: 100vw;
   height: 100vh;
   background: white;
   z-index: 4000;
-  box-shadow: -10px 0 35px rgba(15, 23, 42, 0.12);
+  box-shadow: -10px 0 40px rgba(15, 23, 42, 0.08);
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 600px) {
+  .status-drawer-panel {
+    width: 100vw;
+  }
 }
 
 .status-drawer-panel.open {
@@ -3707,32 +3700,35 @@ pre, code {
 
 .status-drawer-header {
   padding: 1.25rem 1.5rem;
-  background: #134E39;
+  background: linear-gradient(135deg, #134E39 0%, #1c664b 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  box-shadow: 0 4px 20px rgba(19, 78, 57, 0.08);
 }
 
 .status-drawer-title-area h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: -0.01em;
+  color: white !important;
 }
 
 .status-drawer-title-area p {
-  margin: 2px 0 0;
-  font-size: 0.72rem;
-  opacity: 0.8;
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  opacity: 0.85;
   font-weight: 700;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .status-drawer-close-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border: none;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   width: 36px;
   height: 36px;
   display: flex;
@@ -3842,6 +3838,117 @@ pre, code {
     border-radius: 10px !important;
   }
 }
+
+/* ==========================================================================
+   Clean settings view overrides (Account Tab & Admin Account Tab)
+   ========================================================================== */
+.account-tab-container .card,
+.admin-account-container .card {
+  box-shadow: none !important;
+  border: 1px solid #E4EDE8 !important;
+  background: #ffffff !important;
+}
+
+.account-tab-container .card:hover,
+.admin-account-container .card:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: #E4EDE8 !important;
+}
+
+/* ==========================================================================
+   Admin Mobile View (Full Screen / Flatten Cards)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Zero out parent padding and margins for full width admin screen */
+  .main-content:has(.admin-dashboard-container) {
+    padding: 0 !important;
+  }
+  .admin-dashboard-container {
+    padding: 0 !important;
+  }
+  
+  /* Apply padding only to the main header so it doesn't touch edges */
+  .admin-dashboard-container .admin-portal-header {
+    padding: 1rem 1rem 0.5rem !important;
+  }
+  
+  /* Ensure children wrappers also have no horizontal padding */
+  .admin-dashboard-container > div {
+    padding: 0 !important;
+  }
+  .admin-dashboard-container > div > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Make all cards full-width and remove rounded corners, shadows, and side borders */
+  .admin-dashboard-container .card,
+  .admin-dashboard-container .admin-chart-card,
+  .admin-dashboard-container .admin-stat-card,
+  .admin-dashboard-container .admin-table-container,
+  .admin-dashboard-container .admin-toolbar,
+  .admin-dashboard-container .admin-toolbar-mediate,
+  .admin-dashboard-container .admin-mediate-card-new,
+  .admin-dashboard-container .testi-compact-row,
+  .admin-dashboard-container .admin-account-container .card {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Adjust internal padding of elements so the content doesn't touch the edge */
+  .admin-dashboard-container .card,
+  .admin-dashboard-container .admin-chart-card,
+  .admin-dashboard-container .admin-stat-card,
+  .admin-dashboard-container .admin-toolbar,
+  .admin-dashboard-container .admin-toolbar-mediate,
+  .admin-dashboard-container .admin-mediate-card-new,
+  .admin-dashboard-container .testi-compact-row,
+  .admin-dashboard-container .admin-account-container .card {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Specific adjustment for filter bar container inside AdminHomeTab */
+  .admin-dashboard-container .filter-bar-container {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.25rem 1rem !important;
+  }
+
+  /* Table responsive styling to prevent overflows */
+  .admin-dashboard-container .admin-table-container {
+    overflow-x: auto !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* For Admin Mediate Tab active chats or components */
+  .admin-dashboard-container .mediate-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Fix CV page and candidate detail views to be full width without outer grey gaps */
+.main-content:has(.cv-root-view),
+.main-content:has(.cv-root),
+.main-content:has(.viewing-cv) {
+  padding: 0 !important;
+}
+
 
 
 

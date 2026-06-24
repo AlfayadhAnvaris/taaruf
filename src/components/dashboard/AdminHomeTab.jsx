@@ -523,7 +523,7 @@ export default function AdminHomeTab() {
 // eslint-disable-next-line no-unused-vars
 function StatCard({ Icon, label, value, color, bg }) {
   return (
-    <div style={{ 
+    <div className="card admin-stat-card" style={{ 
       background: 'white', padding: '1.5rem', borderRadius: '16px', 
       border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '1.25rem',
       boxShadow: '0 4px 12px rgba(0,0,0,0.02)', transition: 'all 0.3s'

@@ -3,7 +3,7 @@ import {
   ChevronLeft, ChevronDown, User, Settings, Eye, Clock, MapPin, Heart, Compass, 
   ShieldCheck, ShieldAlert, ArrowRight, Target, GraduationCap, Briefcase, CheckCircle, 
   X, Users, Sparkles, Award, Quote, BookOpen, Star, BadgeCheck, Bookmark, Plus, FileText,
-  Camera, HeartHandshake, Smile, Users2, Shield, EyeOff, Info
+  Camera, HeartHandshake, Smile, Users2, Shield, EyeOff, Info, Loader2, UploadCloud
 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
@@ -30,7 +30,7 @@ export default function MyCvTab({
   onBack = null,
   provinces = EMPTY_ARRAY
 }) {
-  const { userReviews, setUserReviews, showAlert, bookmarks, setBookmarks, setReportModalState } = useAppContext();
+  const { userReviews, setUserReviews, showAlert, showToast, bookmarks, setBookmarks, setReportModalState } = useAppContext();
   const [fullViewItem, setFullViewItem] = useState(null);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -43,6 +43,46 @@ export default function MyCvTab({
   const [activeEditSection, setActiveEditSection] = useState(null);
   const [cities, setCities] = useState([]);
   const [isFetchingCities, setIsFetchingCities] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      showAlert('Format Tidak Valid', 'Mohon unggah file berupa gambar (JPG/PNG/WEBP).', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert('File Terlalu Besar', 'Maksimal ukuran foto adalah 5MB.', 'error');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id || 'unknown'}_${Date.now()}.${fileExt}`;
+      const filePath = `profiles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('cv-photos')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('cv-photos')
+        .getPublicUrl(filePath);
+
+      set('foto_url', data.publicUrl);
+      showToast('Foto berhasil diunggah.', 'success');
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      showAlert('Gagal Mengunggah', 'Terjadi kesalahan saat mengunggah foto. Pastikan bucket "cv-photos" sudah dibuat.', 'error');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const isViewingOther = !!targetCv;
   const displayCv = targetCv || myExistingCv;
@@ -128,17 +168,18 @@ export default function MyCvTab({
       // Validate Profil first
       if (activeEditSection === 1) {
         if (!myCv.alias || !myCv.gender || !myCv.age || !myCv.domisili_provinsi || !myCv.domisili_kota || !myCv.marital_status || !myCv.suku) {
-          showAlert('Formulir Belum Lengkap', 'Harap isi semua kolom bertanda bintang (*).', 'error');
+          showToast('Harap isi semua kolom bertanda bintang (*).', 'error');
           return;
         }
       }
       
       // Auto save to DB silently
       await handleCvSubmit(true);
-      showAlert('Berhasil', `Data bagian ${sections.find(s => s.id === activeEditSection).name} berhasil disimpan.`, 'success');
+      showToast(`Data bagian ${sections.find(s => s.id === activeEditSection).name} berhasil disimpan.`, 'success');
       setActiveEditSection(null);
     } catch (err) {
-      showAlert('Gagal', 'Gagal menyimpan data bagian: ' + (err.message || 'Terjadi kesalahan'), 'error');
+      console.error('Save failed:', err);
+      showToast(err?.message || 'Gagal menyimpan data ke database. Cek koneksi Anda.', 'error');
     }
   };
 
@@ -156,11 +197,12 @@ export default function MyCvTab({
           .cv-full-container {
             display: flex; width: 100%; 
             flex: 1; min-height: 0; gap: 1.25rem;
+            padding: 1.25rem 2rem;
           }
           .cv-side-id {
             width: 280px; flex-shrink: 0; background: white; 
             padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center;
-            height: fit-content; max-height: 100%; overflow-y: auto; align-self: flex-start;
+            height: 100%; max-height: 100%; overflow-y: auto; align-self: stretch;
             border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: none;
           }
           .cv-side-id::-webkit-scrollbar { width: 4px; }
@@ -183,30 +225,30 @@ export default function MyCvTab({
           }
           
           .cv-stat-card-small {
-            width: 100%; min-height: 48px; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #f1f5f9;
-            background: white; margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
-            font-weight: 800; color: #134E39; font-size: 0.85rem; transition: all 0.2s;
+            width: 100%; min-height: 44px; padding: 0.5rem 0.85rem; border-radius: 12px; border: 1px solid rgba(19, 78, 57, 0.05);
+            background: rgba(19, 78, 57, 0.02); margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+            font-weight: 700; color: #134E39; font-size: 0.8rem; transition: all 0.2s;
             text-align: left; box-shadow: none;
           }
           .cv-stat-card-small i {
-            width: 32px; height: 32px; border-radius: 6px; background: rgba(19,78,57,0.05);
+            width: 32px; height: 32px; border-radius: 8px; background: rgba(19,78,57,0.05);
             display: flex; align-items: center; justify-content: center; color: #D4AF37;
             flex-shrink: 0;
           }
           
           .cv-grid-layout {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1.25rem;
           }
           
           .cv-card-premium {
-            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.25rem;
-            box-shadow: none;
+            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.01);
             position: relative; overflow: hidden;
             display: flex; flex-direction: column; height: 100%;
           }
           
           .cv-card-title {
-            display: flex; align-items: center; gap: 14px; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem;
           }
           
           .cv-card-icon {
@@ -219,7 +261,9 @@ export default function MyCvTab({
           }
           
           .cv-info-grid {
-            display: flex; flex-direction: column; gap: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.25rem 1rem;
           }
           
           .cv-info-field {
@@ -247,9 +291,22 @@ export default function MyCvTab({
           .cv-tabs-dropdown-wrapper {
             display: none;
           }
+          .cv-back-bar-mobile {
+            display: none;
+          }
+          @media (max-width: 768px) {
+            .cv-back-bar-mobile {
+              display: flex !important;
+              padding: 0.75rem 1rem;
+              border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+              background: white;
+              align-items: center;
+              flex-shrink: 0;
+            }
+          }
           
           @media (max-width: 1200px) {
-            .cv-full-container { flex-direction: column; border-radius: 24px; width: auto; margin: 1rem; }
+            .cv-full-container { flex-direction: column; border-radius: 24px; width: auto; margin: 1rem; padding: 0; }
             .cv-side-id { 
               width: 100%; max-width: 380px; margin: 0 auto; height: auto; 
               position: static; border-right: none; border-bottom: 1px solid #f1f5f9; 
@@ -262,7 +319,7 @@ export default function MyCvTab({
           
           @media (max-width: 992px) {
             .cv-root-view { height: auto; padding: 0; overflow-y: auto; display: block; }
-            .cv-full-container { height: auto; border-radius: 0; margin: 0; border: none; }
+            .cv-full-container { height: auto; border-radius: 0; margin: 0; border: none; padding: 0; }
           }
 
           @media (max-width: 768px) {
@@ -300,6 +357,43 @@ export default function MyCvTab({
           @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
+        
+        {onBack && (
+          <div className="cv-back-bar-mobile">
+            <button 
+              onClick={onBack}
+              style={{ 
+                background: '#f8fafc', 
+                border: '1px solid #e2e8f0', 
+                color: '#134E39', 
+                fontWeight: '800', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                cursor: 'pointer', 
+                fontSize: '0.75rem', 
+                padding: '6px 14px', 
+                borderRadius: '6px', 
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.05em',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.transform = 'translateX(-2px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.transform = 'none';
+              }}
+            >
+              <ChevronLeft size={14} /> KEMBALI
+            </button>
+          </div>
+        )}
         
         {/* Dropdown Tab Navigation for Mobile */}
         <div className="cv-tabs-dropdown-wrapper">
@@ -339,78 +433,114 @@ export default function MyCvTab({
 
         {/* Scroll Tab Navigation for Desktop */}
         <div className="cv-tabs-scroll" style={{ 
-          display: 'flex', 
-          gap: '1.5rem', 
-          borderBottom: '2px solid rgba(226, 232, 240, 0.6)', 
-          marginBottom: '1rem', 
+          display: 'grid', 
+          gridTemplateColumns: '150px 1fr 150px',
+          alignItems: 'center',
+          borderBottom: '1.5px solid rgba(226, 232, 240, 0.8)', 
+          marginBottom: '0', 
           width: '100%',
-          padding: '0.5rem 1rem 0 1rem',
-          justifyContent: 'center',
+          padding: '0.25rem 1.25rem',
+          background: 'white',
           flexShrink: 0
         }}>
-           {[
-             { id: 'profil_fisik', label: 'PROFIL & FISIK' },
-             { id: 'latar_belakang', label: 'LATAR BELAKANG' },
-             { id: 'agama_nikah', label: 'AGAMA & PERNIKAHAN' },
-             { id: 'kriteria', label: 'KRITERIA PASANGAN' },
-             { id: 'reviews', label: 'REVIEW & KESAN', badge: userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length }
-           ].map((tab) => (
-             <button 
-               key={tab.id}
-               onClick={() => setActiveViewTab(tab.id)}
-               style={{ 
-                 background: 'none', 
-                 border: 'none', 
-                 borderBottom: activeViewTab === tab.id ? `3px solid #134E39` : '3px solid transparent',
-                 color: activeViewTab === tab.id ? '#134E39' : '#94a3b8', 
-                 padding: '0.8rem 0', 
-                 fontWeight: '900', 
-                 cursor: 'pointer', 
-                 fontSize: '0.8rem', 
-                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                 letterSpacing: '0.08em',
-                 marginBottom: '-2px',
-                 display: 'flex',
-                 alignItems: 'center',
-                 height: '100%',
-                 gap: '10px'
-               }}
-             >
-               {tab.label}
-               {tab.id === 'reviews' && tab.badge > 0 && (
-                 <span style={{ 
-                   background: activeViewTab === 'reviews' ? '#134E39' : '#f1f5f9', 
-                   color: activeViewTab === 'reviews' ? 'white' : '#64748b', 
-                   width: '20px',
-                   height: '20px',
-                   borderRadius: '50%', 
-                   fontSize: '0.65rem', 
-                   fontWeight: '900',
+          {/* Left Column: Back button */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+            {onBack && (
+              <button 
+                onClick={onBack}
+                style={{ 
+                  background: '#f8fafc', 
+                  border: '1px solid #e2e8f0', 
+                  color: '#134E39', 
+                  fontWeight: '800', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  cursor: 'pointer', 
+                  fontSize: '0.75rem', 
+                  padding: '6px 14px', 
+                  borderRadius: '6px', 
+                  transition: 'all 0.2s ease',
+                  letterSpacing: '0.05em',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#f1f5f9';
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                  e.currentTarget.style.transform = 'translateX(-2px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#f8fafc';
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.transform = 'none';
+                }}
+              >
+                <ChevronLeft size={14} /> KEMBALI
+              </button>
+            )}
+          </div>
+
+          {/* Center Column: Tabs */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+             {[
+               { id: 'profil_fisik', label: 'PROFIL & FISIK' },
+               { id: 'latar_belakang', label: 'LATAR BELAKANG' },
+               { id: 'agama_nikah', label: 'AGAMA & PERNIKAHAN' },
+               { id: 'kriteria', label: 'KRITERIA PASANGAN' },
+               { id: 'reviews', label: 'REVIEW & KESAN', badge: userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length }
+             ].map((tab) => (
+               <button 
+                 key={tab.id}
+                 onClick={() => setActiveViewTab(tab.id)}
+                 style={{ 
+                   background: 'none', 
+                   border: 'none', 
+                   borderBottom: activeViewTab === tab.id ? `3px solid #134E39` : '3px solid transparent',
+                   color: activeViewTab === tab.id ? '#134E39' : '#94a3b8', 
+                   padding: '0.8rem 0', 
+                   fontWeight: '900', 
+                   cursor: 'pointer', 
+                   fontSize: '0.8rem', 
+                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                   letterSpacing: '0.08em',
+                   marginBottom: '-2px',
                    display: 'flex',
                    alignItems: 'center',
-                   justifyContent: 'center'
-                 }}>
-                     {tab.badge}
-                 </span>
-               )}
-             </button>
-           ))}
+                   height: '100%',
+                   gap: '10px'
+                 }}
+               >
+                 {tab.label}
+                 {tab.id === 'reviews' && tab.badge > 0 && (
+                   <span style={{ 
+                     background: activeViewTab === 'reviews' ? '#134E39' : '#f1f5f9', 
+                     color: activeViewTab === 'reviews' ? 'white' : '#64748b', 
+                     width: '20px',
+                     height: '20px',
+                     borderRadius: '50%', 
+                     fontSize: '0.65rem', 
+                     fontWeight: '900',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center'
+                   }}>
+                       {tab.badge}
+                   </span>
+                 )}
+               </button>
+             ))}
+          </div>
+
+          {/* Right Column: Spacer */}
+          <div />
         </div>
 
         <div className="cv-full-container">
             {/* 🏆 LEFT PANEL (IDENTITY CARD) 🏆 */}
             <div className="cv-side-id">
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '1.5rem' }}>
-                {onBack ? (
-                  <button 
-                    onClick={onBack}
-                    style={{ background: 'none', border: 'none', color: '#134E39', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: 0.7 }}
-                  >
-                    <ChevronLeft size={18} /> KEMBALI
-                  </button>
-                ) : <div />}
-                
-                {isViewingOther && (
+              {isViewingOther && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
                       onClick={() => {
@@ -451,8 +581,8 @@ export default function MyCvTab({
                       <Heart size={18} fill={isBookmarked ? 'white' : 'transparent'} />
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
               
               <div className="avatar-wrapper" style={{ position: 'relative', marginBottom: '1.5rem', width: '120px', height: '120px', flexShrink: 0 }}>
                  {displayCv?.foto_url ? (
@@ -474,6 +604,12 @@ export default function MyCvTab({
                  <div className="cv-stat-card-small"><i><MapPin size={16} /></i> {displayCv?.location}</div>
                  <div className="cv-stat-card-small"><i><Clock size={16} /></i> {displayCv?.age} Tahun</div>
                  <div className="cv-stat-card-small"><i><Heart size={16} /></i> {displayCv?.marital_status}</div>
+                 {displayCv?.suku && (
+                   <div className="cv-stat-card-small"><i><User size={16} /></i> Suku {displayCv.suku}</div>
+                 )}
+                 {displayCv?.education && (
+                   <div className="cv-stat-card-small"><i><GraduationCap size={16} /></i> Pendidikan {displayCv.education}</div>
+                 )}
               </div>
 
                {!isViewingOther && (
@@ -520,7 +656,7 @@ export default function MyCvTab({
                          <label>Kota Domisili</label>
                          <span>{displayCv?.domisili_kota || '—'}</span>
                        </div>
-                       <div className="cv-info-field">
+                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
                          <label>Alamat Lengkap</label>
                          <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.address || '—'}</span>
                        </div>
@@ -550,8 +686,7 @@ export default function MyCvTab({
                          <label>Bentuk Fisik & Ciri Khas</label>
                          <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.ciri_fisik || '—'}</span>
                        </div>
-                    </div>
-                    
+                    </div>          
                   </div>
 
                   {/* Card: 4. Gambaran Diri (Full Width) */}
@@ -603,7 +738,7 @@ export default function MyCvTab({
                          <label>Pekerjaan Orang Tua</label>
                          <span>{displayCv?.pekerjaan_ortu || '—'}</span>
                        </div>
-                       <div className="cv-info-field">
+                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
                          <label>Kondisi Agama / Sosial Keluarga</label>
                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.kondisi_keluarga || '—'}</p>
                        </div>
@@ -621,7 +756,7 @@ export default function MyCvTab({
                          <label>Pendidikan Terakhir</label>
                          <span>{displayCv?.education || '—'}</span>
                        </div>
-                       <div className="cv-info-field">
+                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
                          <label>Detail Riwayat Pendidikan</label>
                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.riwayat_pendidikan || '—'}</p>
                        </div>
@@ -902,9 +1037,9 @@ export default function MyCvTab({
                      setNewComment('');
                      setNewRating(5);
                      setShowReviewModal(false);
-                     showAlert('Alhamdulillah', 'Review Anda telah berhasil disimpan.', 'success');
+                     showToast('Review Anda telah berhasil disimpan.', 'success');
                    } catch {
-                     showAlert('Afwan', 'Terjadi kesalahan saat menyimpan review.', 'error');
+                     showToast('Terjadi kesalahan saat menyimpan review.', 'error');
                    } finally {
                      setIsSubmittingReview(false);
                    }
@@ -1154,8 +1289,8 @@ export default function MyCvTab({
                   <div className="form-group">
                     <label className="form-label">Jenis Kelamin <span style={{ color: '#ef4444' }}>*</span></label>
                     <select className="form-control" value={myCv.gender || ''} onChange={e => set('gender', e.target.value)}>
-                      <option value="ikhwan">Ikhwan (Pria)</option>
-                      <option value="akhwat">Akhwat (Wanita)</option>
+                      <option value="ikhwan">Ikhwan (Laki-laki)</option>
+                      <option value="akhwat">Akhwat (perempuan)</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -1225,16 +1360,33 @@ export default function MyCvTab({
                         <Camera size={40} color={C.muted} />
                       )}
                     </div>
-                    <div style={{ width: '100%', maxWidth: '500px' }}>
-                      <label className="form-label">URL Link Foto Diri <span style={{ color: '#ef4444' }}>*</span></label>
+                    <div style={{ width: '100%', maxWidth: '500px', textAlign: 'center' }}>
                       <input 
-                        type="text" 
-                        className="form-control" 
-                        placeholder="Contoh: https://link-foto-anda.com/foto.jpg" 
-                        value={myCv.foto_url || ''} 
-                        onChange={e => set('foto_url', e.target.value)} 
+                        type="file" 
+                        accept="image/*"
+                        id="photo-upload"
+                        style={{ display: 'none' }}
+                        onChange={handlePhotoUpload}
+                        disabled={isUploadingPhoto}
                       />
-                      <small style={{ color: C.muted, marginTop: '8px', display: 'block' }}>Masukkan link foto Anda (dari Google Drive, Imgur, atau hosting foto tepercaya).</small>
+                      <label 
+                        htmlFor="photo-upload"
+                        style={{ 
+                          display: 'inline-flex', alignItems: 'center', gap: '8px', 
+                          padding: '0.85rem 1.5rem', borderRadius: '12px',
+                          background: isUploadingPhoto ? '#f1f5f9' : '#134E39', 
+                          color: isUploadingPhoto ? '#94a3b8' : 'white', 
+                          fontWeight: '800', cursor: isUploadingPhoto ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s', border: 'none',
+                          boxShadow: isUploadingPhoto ? 'none' : '0 4px 12px rgba(19, 78, 57, 0.2)'
+                        }}
+                      >
+                        {isUploadingPhoto ? <Loader2 size={18} className="spin-anim" /> : <UploadCloud size={18} />}
+                        {isUploadingPhoto ? 'Mengunggah...' : (myCv.foto_url ? 'Ganti Foto' : 'Unggah Foto')}
+                      </label>
+                      <small style={{ color: C.muted, marginTop: '12px', display: 'block', lineHeight: '1.5' }}>
+                        Format yang didukung: JPG, PNG, WEBP.<br/>Maksimal ukuran: 5MB.
+                      </small>
                     </div>
                   </div>
                 </div>

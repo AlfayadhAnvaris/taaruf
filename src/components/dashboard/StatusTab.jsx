@@ -61,7 +61,7 @@ export default function StatusTab({
   };
 
   return (
-    <div key="tab-container-status" className="status-container" style={{ animation: 'fadeInUp 0.5s ease-out', padding: '1.25rem' }}>
+    <div key="tab-container-status" className="status-container" style={{ animation: 'fadeInUp 0.5s ease-out', padding: 0 }}>
        {activeChatId ? (() => {
         const req = taarufRequests.find(r => r.id === activeChatId);
         return (
@@ -241,7 +241,10 @@ export default function StatusTab({
                   {/* Drawer Header */}
                   <div className="status-drawer-header">
                     <div className="status-drawer-title-area">
-                      <h3>Detail Progres Taaruf</h3>
+                      <h3 style={{ color: 'white', margin: 0, fontSize: '1.25rem', fontWeight: '900' }}>Detail Progres Taaruf</h3>
+                      <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.85)', fontWeight: '600' }}>
+                        Calon Pasangan: {partnerAlias}
+                      </p>
                     </div>
                     <button className="status-drawer-close-btn" onClick={() => setViewingStatusId(null)}>
                       <X size={18} />
@@ -518,7 +521,29 @@ export default function StatusTab({
 
                   {/* Drawer Footer */}
                   <div className="status-drawer-footer">
-                    <button className="btn btn-outline" style={{ padding: '0.6rem 1.5rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '800' }} onClick={() => setViewingStatusId(null)}>
+                    <button 
+                      className="btn" 
+                      style={{ 
+                        padding: '0.6rem 1.5rem', 
+                        borderRadius: '10px', 
+                        fontSize: '0.8rem', 
+                        fontWeight: '800',
+                        background: '#f1f5f9',
+                        border: '1px solid #e2e8f0',
+                        color: '#475569',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }} 
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = '#e2e8f0';
+                        e.currentTarget.style.color = '#1e293b';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                        e.currentTarget.style.color = '#475569';
+                      }}
+                      onClick={() => setViewingStatusId(null)}
+                    >
                       Tutup Detail
                     </button>
                   </div>

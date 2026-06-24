@@ -85,6 +85,7 @@ export const AppContextProvider = ({ children }) => {
   const [hideBanner, setHideBanner] = useState(false);
   const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [confirmState, setConfirmState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+  const [toast, setToast] = useState(null);
   const [reportModalState, setReportModalState] = useState({
     isOpen: false,
     reportedUserId: null,
@@ -92,10 +93,17 @@ export const AppContextProvider = ({ children }) => {
     reportedAlias: ''
   });
   const [lmsView, setLmsView] = useState('welcome');
+  const [csContacts, setCsContacts] = useState([]);
 
   const showAlert = (title, message, type = 'info') => {
     setModalState({ isOpen: true, title, message, type });
   };
+
+  const showToast = useCallback((msg, type = 'success') => {
+    setToast({ msg, type });
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const addNotification = async (text, targetUserId) => {
     const finalTargetId = targetUserId || user?.id;
@@ -127,17 +135,22 @@ export const AppContextProvider = ({ children }) => {
   const fetchAllData = useCallback(async () => {
     try {
       // 1. Fetch CVs
-      // Public approved CVs
-      const { data: pubCvData } = await supabase.from('cv_profiles').select('*').eq('status', 'approved');
-      
-      // Current user's CV (any status)
-      let allVisibleCvs = pubCvData || [];
-      if (user) {
-        const { data: myCvData } = await supabase.from('cv_profiles').select('*').eq('user_id', user.id);
-        if (myCvData) {
-          // Merge and remove duplicates by ID
-          const merged = [...allVisibleCvs, ...myCvData];
-          allVisibleCvs = Array.from(new Map(merged.map(cv => [cv.id, cv])).values());
+      let allVisibleCvs = [];
+      if (isAdmin) {
+        const { data: allCvData } = await supabase.from('cv_profiles').select('*').order('updated_at', { ascending: false });
+        allVisibleCvs = allCvData || [];
+      } else {
+        // Public approved CVs
+        const { data: pubCvData } = await supabase.from('cv_profiles').select('*').eq('status', 'approved');
+        allVisibleCvs = pubCvData || [];
+        // Current user's CV (any status)
+        if (user) {
+          const { data: myCvData } = await supabase.from('cv_profiles').select('*').eq('user_id', user.id);
+          if (myCvData) {
+            // Merge and remove duplicates by ID
+            const merged = [...allVisibleCvs, ...myCvData];
+            allVisibleCvs = Array.from(new Map(merged.map(cv => [cv.id, cv])).values());
+          }
         }
       }
       setCvs(allVisibleCvs);
@@ -178,13 +191,47 @@ export const AppContextProvider = ({ children }) => {
         if (bmarkData) setBookmarks(bmarkData);
       }
 
-      // 5. Fetch Academy Levels (Count how many lessons completed per user)
-      const { data: progData } = await supabase.from('user_lesson_progress').select('user_id, completed');
+      // 5. Fetch Academy Levels (Count how many lessons completed per user in active classes)
+      let lessonToClass = {};
+      let userSuspendedClasses = new Set();
+      try {
+        const [lessonsRes, coursesRes, enrollmentsRes] = await Promise.all([
+          supabase.from('lessons').select('id, course_id'),
+          supabase.from('courses').select('id, class_id'),
+          supabase.from('course_enrollments').select('user_id, class_id, is_suspended')
+        ]);
+
+        if (lessonsRes.data && coursesRes.data) {
+          const courseToClass = {};
+          coursesRes.data.forEach(c => {
+            courseToClass[c.id] = c.class_id;
+          });
+          lessonsRes.data.forEach(l => {
+            lessonToClass[l.id] = courseToClass[l.course_id];
+          });
+        }
+
+        if (enrollmentsRes.data) {
+          enrollmentsRes.data.forEach(e => {
+            if (e.is_suspended) {
+              userSuspendedClasses.add(`${e.user_id}_${e.class_id}`);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Error fetching relations for academy levels:', err);
+      }
+
+      const { data: progData } = await supabase.from('user_lesson_progress').select('user_id, completed, lesson_id');
       if (progData) {
         const levels = {};
         progData.forEach(p => {
           if (p.completed) {
-            levels[p.user_id] = (levels[p.user_id] || 0) + 1;
+            const classId = lessonToClass[p.lesson_id];
+            const isSuspended = classId ? userSuspendedClasses.has(`${p.user_id}_${classId}`) : false;
+            if (!isSuspended) {
+              levels[p.user_id] = (levels[p.user_id] || 0) + 1;
+            }
           }
         });
         setAcademyLevels(levels);
@@ -231,6 +278,14 @@ export const AppContextProvider = ({ children }) => {
       if (isAdmin) {
         const { data: uData } = await supabase.from('profiles').select('*');
         if (uData) setUsersDb(uData);
+      }
+
+      // 8. Fetch CS Contacts
+      try {
+        const { data: csData } = await supabase.from('cs_contacts').select('*').order('created_at', { ascending: true });
+        if (csData) setCsContacts(csData);
+      } catch (err) {
+        console.warn('cs_contacts table not available yet:', err);
       }
     } catch (err) {
       console.error('AppContext: fetchAllData error:', err);
@@ -351,12 +406,12 @@ export const AppContextProvider = ({ children }) => {
         user, setUser, cvs, setCvs, taarufRequests, setTaarufRequests, usersDb, setUsersDb, 
         messages, setMessages, notifications, setNotifications, isAdmin, setIsAdmin, 
         bookmarks, setBookmarks, userReviews, setUserReviews,
-        showAlert, addNotification, profileNeedsCompletion, setProfileNeedsCompletion,
+        showAlert, showToast, addNotification, profileNeedsCompletion, setProfileNeedsCompletion,
         academyLevels, setAcademyLevels, claimedBadges, setClaimedBadges,
         hideBanner, setHideBanner, setConfirmState,
         modalState, setModalState, confirmState, isInitializing,
         lmsView, setLmsView, handleLogout, unreadCount, markNotificationsAsRead,
-        reportModalState, setReportModalState,
+        reportModalState, setReportModalState, csContacts, setCsContacts,
         getAcademyBadge: (completedCount, iconSize = 14) => {
           const count = Number(completedCount) || 0;
           if (count < 1) return null;
@@ -367,6 +422,207 @@ export const AppContextProvider = ({ children }) => {
         }
       }}>
       {children}
+
+      {/* 🔔 GLOBAL ALERT MODAL 🔔 */}
+      {modalState.isOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1.5rem',
+          animation: 'fadeIn 0.2s ease'
+        }} onClick={() => setModalState(prev => ({ ...prev, isOpen: false }))}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            width: '95%',
+            maxWidth: '400px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            border: '1px solid #f1f5f9',
+            animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              padding: '2rem 1.5rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: modalState.type === 'error' ? '#fef2f2' : (modalState.type === 'success' ? '#f0fdf4' : '#f0f9ff'),
+                color: modalState.type === 'error' ? '#ef4444' : (modalState.type === 'success' ? '#22c55e' : '#3b82f6')
+              }}>
+                {modalState.type === 'error' ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                ) : modalState.type === 'success' ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                )}
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#1e293b' }}>{modalState.title}</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: '500', lineHeight: 1.5 }}>{modalState.message}</p>
+            </div>
+            <div style={{
+              background: '#f8fafc',
+              padding: '1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid #f1f5f9'
+            }}>
+              <button 
+                onClick={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+                style={{
+                  background: '#134E39',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '8px',
+                  fontWeight: '800',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ❓ GLOBAL CONFIRM MODAL ❓ */}
+      {confirmState.isOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1.5rem',
+          animation: 'fadeIn 0.2s ease'
+        }} onClick={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            width: '95%',
+            maxWidth: '400px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            border: '1px solid #f1f5f9',
+            animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              padding: '2rem 1.5rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: confirmState.confirmColor === '#134E39' ? '#f0fdf4' : '#fef2f2',
+                color: confirmState.confirmColor || '#ef4444'
+              }}>
+                {confirmState.confirmColor === '#134E39' ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                )}
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#1e293b' }}>{confirmState.title}</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: '500', lineHeight: 1.5 }}>{confirmState.message}</p>
+            </div>
+            <div style={{
+              background: '#f8fafc',
+              padding: '1rem 1.5rem',
+              display: 'flex',
+              gap: '0.75rem',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid #f1f5f9'
+            }}>
+              <button 
+                onClick={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+                style={{
+                  background: 'white',
+                  color: '#475569',
+                  border: '1.5px solid #e2e8f0',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  fontWeight: '800',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => {
+                  if (confirmState.onConfirm) {
+                    confirmState.onConfirm();
+                  }
+                  setConfirmState(prev => ({ ...prev, isOpen: false }));
+                }}
+                style={{
+                  background: confirmState.confirmColor || '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '8px',
+                  fontWeight: '800',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {confirmState.confirmText || 'Ya, Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🍞 GLOBAL TOAST NOTIFICATION 🍞 */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 999999,
+          padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: '800',
+          fontSize: '0.875rem', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+          background: toast.type === 'error' ? '#ef4444' : (toast.type === 'warning' ? '#f59e0b' : '#134E39'),
+          color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          {toast.type === 'error' ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ) : toast.type === 'warning' ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          )}
+          {toast.msg}
+        </div>
+      )}
     </AppContext.Provider>
   );
 };

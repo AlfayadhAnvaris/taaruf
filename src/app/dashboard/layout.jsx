@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Search, Activity, FileText, UserCheck, Star, 
   Quote, MessageSquare, GraduationCap, Menu, Bell, X, Trash2, 
   CheckCircle, ChevronDown, Settings, LogOut, Shield, AlertCircle, ShieldAlert, Heart, BookOpen,
-  Zap
+  Zap, Lock, ArrowLeft, Tag, MessageCircle, Phone
 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
@@ -32,13 +32,15 @@ function DashboardLayoutContent({ children }) {
   const { 
     user, isAdmin, notifications, setNotifications, unreadCount, 
     handleLogout, showAlert, hideBanner, setHideBanner, isInitializing,
-    lmsView, setLmsView, reportModalState, markNotificationsAsRead
+    lmsView, setLmsView, reportModalState, markNotificationsAsRead, cvs,
+    csContacts
   } = useAppContext();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showCsPopup, setShowCsPopup] = useState(false);
 
   const toggleNotifications = () => {
     const nextState = !showNotifications;
@@ -62,18 +64,28 @@ function DashboardLayoutContent({ children }) {
 
   const activeTab = pathname.split('/')[2] || 'home';
   const isAcademyMode = activeTab === 'materi' || activeTab === 'courses';
+  const isAccountMode = activeTab === 'account' || activeTab === 'admin';
+  const hideSidebar = isAcademyMode || isAccountMode;
   const subTab = searchParams.get('sub') || 'curriculum';
 
+  const myExistingCv = cvs.find(cv => cv.user_id === user?.id);
+  const isCvComplete = React.useMemo(() => {
+    if (!myExistingCv) return false;
+    const fields = [
+      'alias', 'gender', 'age', 'domisili_provinsi', 'domisili_kota', 'address', 'marital_status', 'suku',
+      'foto_url', 'tinggi_badan', 'berat_badan', 'ciri_fisik', 'kesehatan', 'karakter_positif', 'karakter_negatif',
+      'hobi', 'hal_disukai', 'hal_benci', 'kondisi_keluarga', 'pekerjaan_ortu', 'anak_ke_dari', 'education',
+      'riwayat_pendidikan', 'job', 'salary', 'pengalaman_kerja', 'worship_wajib', 'worship_sunnah', 'baca_quran',
+      'kajian', 'marriage_vision', 'role_view', 'target_menikah', 'rencana_nafkah', 'poligami', 'harapan_pasangan',
+      'kriteria_fisik', 'kriteria_non_fisik'
+    ];
+    return fields.every(field => {
+      const val = myExistingCv[field];
+      return val !== undefined && val !== null && val !== '';
+    });
+  }, [myExistingCv, cvs]);
+
   const navigateTo = (newTab) => {
-    const restrictedTabs = ['find', 'my_cv'];
-    if (restrictedTabs.includes(newTab)) {
-      if (!user?.profile_complete) {
-        showAlert('Profil Belum Lengkap', 'Silakan lengkapi profil Anda (Nama, WhatsApp, & Domisili) di menu Akun sebelum mengakses fitur ini.', 'error');
-        router.push('/dashboard/account?edit=true');
-        if (window.innerWidth <= 1024) setIsMobileMenuOpen(false);
-        return;
-      }
-    }
     router.push(`/dashboard/${newTab}`);
     if (isMobile) setIsMobileMenuOpen(false);
   };
@@ -100,8 +112,9 @@ function DashboardLayoutContent({ children }) {
 
   const renderAlertBanner = () => {
     if (!user || isAdmin) return null;
-    const isComplete = user.profile_complete;
-    if (!isComplete && (!hideBanner || activeTab === 'home')) {
+    const isProfileComplete = user.profile_complete;
+    
+    if (!isProfileComplete && (!hideBanner || activeTab === 'home')) {
       return (
         <div style={{ background: '#fee2e2', borderBottom: '1px solid #fecaca', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', position: 'sticky', top: 0, zIndex: 1100 }}>
           <AlertCircle size={16} color="#dc2626" />
@@ -111,15 +124,26 @@ function DashboardLayoutContent({ children }) {
         </div>
       );
     }
+    
+    if (!isCvComplete && (!hideBanner || activeTab === 'home')) {
+      return (
+        <div style={{ background: '#fffbeb', borderBottom: '1px solid #fef3c7', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', position: 'sticky', top: 0, zIndex: 1100 }}>
+          <AlertCircle size={16} color="#d97706" />
+          <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#92400e' }}>CV Taaruf Anda belum lengkap! Harap lengkapi untuk dapat mencari pasangan dan melihat status taaruf.</span>
+          <button onClick={() => router.push('/dashboard/my_cv?edit=true')} style={{ background: '#d97706', color: 'white', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}>Lengkapi CV</button>
+          <button onClick={() => setHideBanner(true)} style={{ background: 'none', border: 'none', color: '#d97706', cursor: 'pointer' }}><X size={16} /></button>
+        </div>
+      );
+    }
     return null;
   };
 
   return (
-    <div className={`app-container ${isAcademyMode ? 'academy-mode' : ''}`}>
+    <div className={`app-container ${hideSidebar ? 'academy-mode' : ''}`}>
       {/* Overlay: only on mobile when sidebar is open */}
-      {isMobile && isMobileMenuOpen && !isAcademyMode && <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
+      {isMobile && isMobileMenuOpen && !hideSidebar && <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
 
-      {!isAcademyMode && (
+      {!hideSidebar && (
         <aside className={`sidebar ${isMobileMenuOpen ? 'open' : 'closed'}`} style={{ background: 'linear-gradient(180deg, #134E39 0%, #1a5d46 100%)', color: 'white' }}>
           <div className="sidebar-header" style={{ padding: '2.5rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Link href="/dashboard" className="sidebar-brand" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -152,8 +176,8 @@ function DashboardLayoutContent({ children }) {
             <SidebarLink icon={<LayoutDashboard size={20}/>} label="Beranda" active={activeTab === 'home'} onClick={() => navigateTo('home')} />
             {!isAdmin ? (
               <>
-                <SidebarLink icon={<Search size={20}/>} label="Cari Pasangan" active={activeTab === 'find'} onClick={() => navigateTo('find')} />
-                <SidebarLink icon={<Activity size={20}/>} label="Status Taaruf" active={activeTab === 'status'} onClick={() => navigateTo('status')} />
+                <SidebarLink icon={<Search size={20}/>} label="Cari Pasangan" active={activeTab === 'find'} onClick={() => navigateTo('find')} locked={!user?.profile_complete || !isCvComplete} />
+                <SidebarLink icon={<Activity size={20}/>} label="Status Taaruf" active={activeTab === 'status'} onClick={() => navigateTo('status')} locked={!user?.profile_complete || !isCvComplete} />
                 <SidebarLink icon={<FileText size={20}/>} label="CV Taaruf" active={activeTab === 'my_cv'} onClick={() => navigateTo('my_cv')} />
               </>
             ) : (
@@ -181,7 +205,7 @@ function DashboardLayoutContent({ children }) {
         </aside>
       )}
 
-      <div className="main-wrapper" style={isAcademyMode ? { marginLeft: 0, width: '100%' } : {}}>
+      <div className="main-wrapper" style={hideSidebar ? { marginLeft: 0, width: '100%' } : {}}>
         {renderAlertBanner()}
         {isAcademyMode ? (
           <header className="academy-header" style={{
@@ -276,6 +300,20 @@ function DashboardLayoutContent({ children }) {
                   >
                     <Activity size={18} /> <span className="hide-on-tablet">PROGRES</span>
                   </button>
+                  <button 
+                    onClick={() => router.push('/dashboard/courses?sub=category')}
+                    className={`academy-nav-btn ${subTab === 'category' ? 'active' : ''}`}
+                    style={{ 
+                      background: subTab === 'category' ? '#134E39' : 'none', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+                      color: subTab === 'category' ? 'white' : '#64748b', 
+                      padding: '0.6rem 1rem', borderRadius: '10px',
+                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Tag size={18} /> <span className="hide-on-tablet">KATEGORI</span>
+                  </button>
                 </>
               )}
               </div>
@@ -315,7 +353,7 @@ function DashboardLayoutContent({ children }) {
             </div>
 
             {/* Right: User Actions */}
-            <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'flex-end', minWidth: 0, overflow: 'hidden' }}>
+            <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'flex-end', minWidth: 0 }}>
               <div className="notification-wrapper" style={{ position: 'relative' }}>
                 <button className="icon-btn" onClick={toggleNotifications} style={{ background: 'transparent', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Bell size={22} color="#64748b" />
@@ -371,79 +409,197 @@ function DashboardLayoutContent({ children }) {
               </div>
             </div>
           </header>
+        ) : isAccountMode ? (
+          <header className="top-header" style={{ background: '#ffffff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', padding: '0 2rem' }}>
+            <button 
+              onClick={() => router.push('/dashboard/home')}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                background: 'transparent', 
+                border: 'none', 
+                fontSize: '0.85rem', 
+                fontWeight: '800', 
+                color: '#134E39', 
+                cursor: 'pointer',
+                padding: '0.5rem 0',
+                transition: 'opacity 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <ArrowLeft size={18} /> KEMBALI KE BERANDA
+            </button>
+          </header>
         ) : (
           <header className="top-header" style={{ background: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
             <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <Menu size={20} />
             </button>
-          <div className="header-right">
-            <div className="notification-wrapper" style={{ position: 'relative' }}>
-              <button className="icon-btn" onClick={toggleNotifications}>
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="notification-badge" style={{ 
-                    position: 'absolute', top: '-4px', right: '-6px', background: '#10b981', 
-                    color: 'white', fontSize: '0.6rem', fontWeight: '900', width: '18px', height: '18px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-                    border: '2px solid white'
-                  }}>
-                    {unreadCount}
-                  </span>
+            <div className="header-right">
+              <div className="notification-wrapper" style={{ position: 'relative' }}>
+                <button className="icon-btn" onClick={toggleNotifications}>
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="notification-badge" style={{ 
+                      position: 'absolute', top: '-4px', right: '-6px', background: '#10b981', 
+                      color: 'white', fontSize: '0.6rem', fontWeight: '900', width: '18px', height: '18px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
+                      border: '2px solid white'
+                    }}>
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="notification-dropdown">
+                    <div className="notif-header">
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Notifikasi</h3>
+                      <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><X size={20} color="#64748b" /></button>
+                    </div>
+                    <div className="notif-list custom-scrollbar">
+                      {notifications.length === 0 ? <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Belum ada notifikasi.</p> : notifications.map(n => (
+                        <div key={n.id} className="notif-item">
+                          <div className="notif-content"><p>{n.text}</p><span>{n.time}</span></div>
+                          <button onClick={() => deleteNotification(n.id)} className="notif-delete-btn"><Trash2 size={14} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </button>
-              {showNotifications && (
-                <div className="notification-dropdown">
-                  <div className="notif-header">
-                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Notifikasi</h3>
-                    <button onClick={() => setShowNotifications(false)}><X size={20} /></button>
+              </div>
+              
+              <div className="profile-menu-wrapper">
+                <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                  <div className="profile-card-avatar"><span>{user?.name?.charAt(0).toUpperCase()}</span></div>
+                  <div className="profile-card-info">
+                    <span className="profile-card-name">{user?.name}</span>
                   </div>
-                  <div className="notif-list custom-scrollbar">
-                    {notifications.length === 0 ? <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Belum ada notifikasi.</p> : notifications.map(n => (
-                      <div key={n.id} className="notif-item">
-                        <div className="notif-content"><p>{n.text}</p><span>{n.time}</span></div>
-                        <button onClick={() => deleteNotification(n.id)} className="notif-delete-btn"><Trash2 size={14} /></button>
-                      </div>
-                    ))}
+                  <ChevronDown size={14} />
+                </button>
+                {showProfileMenu && (
+                  <div className="profile-dropdown">
+                    <button className="dropdown-action-btn" onClick={() => { setShowProfileMenu(false); router.push(isAdmin ? '/dashboard/admin' : '/dashboard/account'); }}>
+                      <Settings size={16} />
+                      <span>Pengaturan</span>
+                    </button>
+                    <button className="dropdown-action-btn logout" onClick={handleLogout}>
+                      <LogOut size={16} />
+                      <span>Keluar</span>
+                    </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-            
-            <div className="profile-menu-wrapper">
-              <button className="profile-card-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                <div className="profile-card-avatar"><span>{user?.name?.charAt(0).toUpperCase()}</span></div>
-                <div className="profile-card-info">
-                  <span className="profile-card-name">{user?.name}</span>
-                </div>
-                <ChevronDown size={14} />
-              </button>
-              {showProfileMenu && (
-                <div className="profile-dropdown">
-                  <button className="dropdown-action-btn" onClick={() => { setShowProfileMenu(false); router.push(isAdmin ? '/dashboard/admin' : '/dashboard/account'); }}>
-                    <Settings size={16} />
-                    <span>Pengaturan</span>
-                  </button>
-                  <button className="dropdown-action-btn logout" onClick={handleLogout}>
-                    <LogOut size={16} />
-                    <span>Keluar</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-      )}
+          </header>
+        )}
 
         <main className="main-content" style={{ padding: '0' }}>
           {children}
         </main>
       </div>
       <ReportModal />
+
+      {/* Floating CS WhatsApp Button */}
+      {(() => {
+        const activeCs = (csContacts || []).filter(c => c.is_active);
+        if (activeCs.length === 0 || isAdmin) return null;
+        return (
+          <>
+            {/* CS Popup */}
+            {showCsPopup && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 3500 }} onClick={() => setShowCsPopup(false)}>
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    position: 'fixed', bottom: '100px', right: '24px', zIndex: 3501,
+                    width: '320px', maxHeight: '400px',
+                    background: 'white', borderRadius: '18px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
+                    animation: 'csPopupIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                  }}
+                >
+                  <div style={{ padding: '1.25rem 1.25rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Customer Service</h4>
+                      <button onClick={() => setShowCsPopup(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+                        <X size={18} color="#94a3b8" />
+                      </button>
+                    </div>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '600' }}>Butuh bantuan? Chat CS via WhatsApp</p>
+                  </div>
+                  <div style={{ padding: '0.75rem', maxHeight: '280px', overflowY: 'auto' }} className="custom-scrollbar">
+                    {activeCs.map(cs => (
+                      <a
+                        key={cs.id}
+                        href={`https://wa.me/${cs.phone_number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent("Assalamu'alaikum, saya membutuhkan bantuan.")}`}
+                        target="_blank" rel="noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          padding: '0.85rem 1rem', borderRadius: '12px',
+                          textDecoration: 'none', color: '#1e293b',
+                          transition: 'all 0.15s', marginBottom: '4px'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '12px', flexShrink: 0,
+                          background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontSize: '1rem', fontWeight: '900'
+                        }}>
+                          {cs.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#1e293b' }}>{cs.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>
+                            {cs.label} • {cs.phone_number}
+                          </div>
+                        </div>
+                        <MessageCircle size={18} color="#25D366" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Floating Button */}
+            <button
+              onClick={() => setShowCsPopup(!showCsPopup)}
+              style={{
+                position: 'fixed', bottom: '28px', right: '28px', zIndex: 3499,
+                width: '56px', height: '56px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                border: 'none', cursor: 'pointer', color: 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 6px 20px rgba(37,211,102,0.4)',
+                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                transform: showCsPopup ? 'scale(0.9) rotate(45deg)' : 'scale(1)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = showCsPopup ? 'scale(0.95) rotate(45deg)' : 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(37,211,102,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = showCsPopup ? 'scale(0.9) rotate(45deg)' : 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(37,211,102,0.4)'; }}
+            >
+              {showCsPopup ? <X size={24} /> : <MessageCircle size={26} />}
+            </button>
+
+            <style>{`
+              @keyframes csPopupIn {
+                from { opacity: 0; transform: translateY(12px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}</style>
+          </>
+        );
+      })()}
     </div>
   );
 }
 
-function SidebarLink({ icon, label, active, onClick }) {
+function SidebarLink({ icon, label, active, onClick, locked }) {
   return (
     <button 
       onClick={onClick}
@@ -453,10 +609,16 @@ function SidebarLink({ icon, label, active, onClick }) {
         padding: '0.8rem 1rem', borderRadius: '8px', border: 'none',
         background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
         color: active ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-        fontWeight: active ? '800' : '600', cursor: 'pointer', marginBottom: '4px'
+        fontWeight: active ? '800' : '600', cursor: 'pointer', marginBottom: '4px',
+        position: 'relative'
       }}
     >
       {icon} <span>{label}</span>
+      {locked && (
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', opacity: 0.8, color: '#D4AF37' }}>
+          <Lock size={14} />
+        </span>
+      )}
     </button>
   );
 }

@@ -89,7 +89,8 @@ export default function ChangePasswordCard() {
         <div className="card" style={{ 
           marginTop: '1.25rem', 
           padding: '2.5rem', 
-          boxShadow: '0 20px 40px rgba(0,0,0,0.02)',
+          border: '1px solid #E4EDE8',
+          boxShadow: 'none',
           animation: 'fadeIn 0.3s ease' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>

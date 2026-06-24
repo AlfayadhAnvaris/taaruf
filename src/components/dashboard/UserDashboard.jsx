@@ -3,16 +3,76 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
-import { User, FileText, ShieldCheck } from 'lucide-react';
+import { User, FileText, ShieldCheck, Lock, ArrowRight } from 'lucide-react';
 
+import dynamic from 'next/dynamic';
 import AccountTab from './AccountTab';
-import LearningTab from './LearningTab';
+const LearningTab = dynamic(() => import('./LearningTab'), { ssr: false });
 import MyCvTab from './MyCvTab';
 import CertificateTab from './CertificateTab';
 import FeedbackTab from './FeedbackTab';
-import HomeTab from './HomeTab';
+const HomeTab = dynamic(() => import('./HomeTab'), { ssr: false });
 import FindTab from './FindTab';
 import StatusTab from './StatusTab';
+
+const RenderLockedState = ({ isProfileComplete, isCvComplete, router }) => {
+  return (
+    <div style={{ 
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+      minHeight: '60vh', padding: '3rem 2rem', textAlign: 'center', background: '#FFFFFF',
+      borderRadius: '24px', border: '1px solid #E4EDE8', margin: '2rem auto', maxWidth: '750px',
+      animation: 'fadeIn 0.5s ease', boxShadow: 'none'
+    }}>
+      <div style={{ 
+        width: 80, height: 80, borderRadius: '50%', background: 'rgba(212,175,55,0.08)', 
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', 
+        marginBottom: '2rem', border: '1px solid rgba(212,175,55,0.2)',
+        boxShadow: 'none'
+      }}>
+        <Lock size={36} />
+      </div>
+      
+      <h2 style={{ fontSize: '1.6rem', fontWeight: '900', color: '#134E39', marginBottom: '1rem', letterSpacing: '-0.02em' }}>
+        Fitur Terkunci (Akses Terbatas)
+      </h2>
+      
+      <p style={{ fontSize: '1rem', color: '#475569', lineHeight: '1.8', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
+        Anda harus mengisi data diri pada profil (menu Pengaturan Akun) dan CV Taaruf secara lengkap terlebih dahulu untuk mengakses fitur ini.
+      </p>
+      
+      <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {!isProfileComplete && (
+          <button 
+            onClick={() => router.push('/dashboard/account?edit=true')}
+            style={{ 
+              background: '#134E39', color: '#ffffff', border: 'none', 
+              padding: '0.85rem 1.75rem', borderRadius: '12px', fontWeight: '800', 
+              cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px' 
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#1E6B52'}
+            onMouseLeave={e => e.currentTarget.style.background = '#134E39'}
+          >
+            Lengkapi Profil Akun <ArrowRight size={16} />
+          </button>
+        )}
+        {!isCvComplete && (
+          <button 
+            onClick={() => router.push('/dashboard/my_cv?edit=true')}
+            style={{ 
+              background: '#D4AF37', color: '#134E39', border: 'none', 
+              padding: '0.85rem 1.75rem', borderRadius: '12px', fontWeight: '800', 
+              cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#E5C35E'}
+            onMouseLeave={e => e.currentTarget.style.background = '#D4AF37'}
+          >
+            Lengkapi CV Taaruf <ArrowRight size={16} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function UserDashboard({ activeTab, subId }) {
   const { 
@@ -130,14 +190,16 @@ export default function UserDashboard({ activeTab, subId }) {
       const { data: progressData } = await supabase.from('user_lesson_progress').select('lesson_id, completed, score').eq('user_id', user.id);
       const doneSet = new Set((progressData || []).filter(p => p.completed).map(p => p.lesson_id));
 
-      const { data: enrollmentData } = await supabase.from('course_enrollments').select('class_id').eq('user_id', user.id);
+      const { data: enrollmentData } = await supabase.from('course_enrollments').select('*').eq('user_id', user.id);
       const enrolledSet = new Set((enrollmentData || []).map(e => e.class_id));
+      const suspendedSet = new Set((enrollmentData || []).filter(e => e.is_suspended).map(e => e.class_id));
 
       const builtClasses = (clsData || [])
         .filter(cls => cls.is_published !== false)
         .map(cls => ({
           ...cls,
           isEnrolled: enrolledSet.has(cls.id),
+          isSuspended: suspendedSet.has(cls.id),
           modules: (coursesData || [])
             .filter(c => c.class_id === cls.id && c.is_active !== false)
             .map((course, mi) => ({
@@ -240,6 +302,22 @@ export default function UserDashboard({ activeTab, subId }) {
       cvFields.user_id = user.id;
       cvFields.status = myExistingCv ? myExistingCv.status : 'pending';
       cvFields.updated_at = new Date().toISOString();
+      
+      // Ensure we update the existing CV if one exists to prevent duplicate inserts
+      if (!cvFields.id) {
+        if (myExistingCv?.id) {
+          cvFields.id = myExistingCv.id;
+        } else {
+          const { data: existingDbCvs } = await supabase
+            .from('cv_profiles')
+            .select('id')
+            .eq('user_id', user.id);
+          
+          if (existingDbCvs && existingDbCvs.length > 0) {
+            cvFields.id = existingDbCvs[0].id;
+          }
+        }
+      }
       
       const { error: cvError } = await supabase.from('cv_profiles').upsert(cvFields);
       if (cvError) throw cvError;
@@ -411,7 +489,13 @@ export default function UserDashboard({ activeTab, subId }) {
   };
 
   return (
-    <div className="dashboard-content" style={{ animation: 'fadeIn 0.5s ease' }}>
+    <div className="dashboard-content" style={{ 
+      animation: 'fadeIn 0.5s ease',
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      minHeight: 0
+    }}>
       {activeTab === 'home' && (
         <HomeTab 
           greeting="Ahlan wa Sahlan"
@@ -427,41 +511,49 @@ export default function UserDashboard({ activeTab, subId }) {
         />
       )}
       {activeTab === 'find' && (
-        <FindTab 
-          cvs={cvs.filter(c => c.user_id !== user?.id)}
-          myExistingCv={myExistingCv}
-          viewingCv={viewingCv}
-          setViewingCv={setViewingCv}
-          filters={filters}
-          setFilters={setFilters}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          provinces={provinces}
-          candidateCount={cvs.filter(c => c.user_id !== user?.id).length}
-          bookmarks={bookmarks}
-          setBookmarks={setBookmarks}
-          getAcademyBadge={getAcademyBadge}
-          takenUserIds={takenUserIds}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          itemsPerPage={itemsPerPage}
-          handleAjukanTaaruf={handleAjukanTaaruf}
-          setActiveTab={(t) => router.push(`/dashboard/${t}`)}
-        />
+        (!user?.profile_complete || cvProgressPct < 100) ? (
+          <RenderLockedState isProfileComplete={!!user?.profile_complete} isCvComplete={cvProgressPct === 100} router={router} />
+        ) : (
+          <FindTab 
+            cvs={cvs.filter(c => c.user_id !== user?.id)}
+            myExistingCv={myExistingCv}
+            viewingCv={viewingCv}
+            setViewingCv={setViewingCv}
+            filters={filters}
+            setFilters={setFilters}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            provinces={provinces}
+            candidateCount={cvs.filter(c => c.user_id !== user?.id).length}
+            bookmarks={bookmarks}
+            setBookmarks={setBookmarks}
+            getAcademyBadge={getAcademyBadge}
+            takenUserIds={takenUserIds}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            handleAjukanTaaruf={handleAjukanTaaruf}
+            setActiveTab={(t) => router.push(`/dashboard/${t}`)}
+          />
+        )
       )}
       {activeTab === 'status' && (
-        <StatusTab 
-          myExistingCv={myExistingCv}
-          viewingStatusId={viewingStatusId}
-          setViewingStatusId={setViewingStatusId}
-          activeChatId={activeChatId}
-          setActiveChatId={setActiveChatId}
-          chatInput={chatInput}
-          setChatInput={setChatInput}
-          handleSendMessage={handleSendMessage}
-          setShowQaTemplates={setShowQaTemplates}
-          setActiveTab={(t) => router.push(`/dashboard/${t}`)}
-        />
+        (!user?.profile_complete || cvProgressPct < 100) ? (
+          <RenderLockedState isProfileComplete={!!user?.profile_complete} isCvComplete={cvProgressPct === 100} router={router} />
+        ) : (
+          <StatusTab 
+            myExistingCv={myExistingCv}
+            viewingStatusId={viewingStatusId}
+            setViewingStatusId={setViewingStatusId}
+            activeChatId={activeChatId}
+            setActiveChatId={setActiveChatId}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            handleSendMessage={handleSendMessage}
+            setShowQaTemplates={setShowQaTemplates}
+            setActiveTab={(t) => router.push(`/dashboard/${t}`)}
+          />
+        )
       )}
       {activeTab === 'my_cv' && (
         <MyCvTab 

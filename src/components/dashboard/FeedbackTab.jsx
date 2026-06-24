@@ -64,15 +64,15 @@ export default function FeedbackTab({ user, showAlert }) {
           width: 100%;
           background: transparent;
           animation: fadeIn 0.5s ease;
-          padding: 1.5rem 1.25rem;
+          padding: 0;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
           overflow-y: auto;
         }
         .feedback-form-grid {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
           gap: 1.25rem;
         }
         .feedback-card-category {
@@ -101,7 +101,7 @@ export default function FeedbackTab({ user, showAlert }) {
         
         @media (max-width: 768px) {
           .feedback-container {
-            padding: 1rem 0.5rem !important;
+            padding: 0 !important;
           }
           .feedback-form-grid {
             display: flex;

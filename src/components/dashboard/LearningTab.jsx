@@ -3,11 +3,12 @@ import {
   CheckCircle, PlayCircle, ChevronDown, ChevronRight, ChevronLeft,
   Award, BookOpen, BarChart2, GraduationCap, Lock, ArrowRight,
   Search, ShieldCheck, Zap, Menu, X, Clock, AlertCircle, Users, FileText,
-  Maximize2, Minimize2, Sparkles, LayoutDashboard, Activity
+  Maximize2, Minimize2, Sparkles, LayoutDashboard, Activity, MessageCircle, Phone
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 import { useAppContext } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 
 export default function LearningTab({
   classes, activeClass,
@@ -17,13 +18,58 @@ export default function LearningTab({
   markLessonDone,
   setActiveTab, enrollClass, selectClassForPlayer, lmsLoading
 }) {
-  const { user } = useAppContext();
+  const { user, csContacts } = useAppContext();
 
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLmsSidebarOpen, setIsLmsSidebarOpen] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categories, setCategories] = useState([]);
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [levels, setLevels] = useState([]);
+
+  React.useEffect(() => {
+    const fetchTaxonomies = async () => {
+      let catData = [];
+      try {
+        const { data, error } = await supabase.from('lms_categories').select('*').order('order_index');
+        if (!error && data) catData = data;
+      } catch (e) {
+        console.warn("Table lms_categories not found or error fetching", e);
+      }
+      if (!catData || catData.length === 0) {
+        catData = [
+          { id: 1, name: 'Umum', order_index: 1 },
+          { id: 2, name: 'Pranikah', order_index: 2 },
+          { id: 3, name: 'Aqidah', order_index: 3 },
+          { id: 4, name: 'Fikih', order_index: 4 },
+          { id: 5, name: 'Keluarga', order_index: 5 }
+        ];
+      }
+      setCategories(catData);
+
+      let lvlData = [];
+      try {
+        const { data, error } = await supabase.from('lms_levels').select('*').order('order_index');
+        if (!error && data) lvlData = data;
+      } catch (e) {
+        console.warn("Table lms_levels not found or error fetching", e);
+      }
+      if (!lvlData || lvlData.length === 0) {
+        lvlData = [
+          { id: 1, name: 'Dasar', order_index: 1 },
+          { id: 2, name: 'Menengah', order_index: 2 },
+          { id: 3, name: 'Lanjutan', order_index: 3 }
+        ];
+      }
+      setLevels(lvlData);
+    };
+    fetchTaxonomies();
+  }, []);
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -187,11 +233,12 @@ export default function LearningTab({
   if (lmsView === 'dashboard') {
 
     const completedClasses = classes.filter(cls => {
+      if (cls.isSuspended) return false;
       const clsLessons = cls.modules.flatMap(m => m.items);
       return clsLessons.length > 0 && clsLessons.every(l => l.done);
     }).length;
-    const totalAcademyLessons = classes.reduce((acc, cls) => acc + cls.modules.flatMap(m => m.items).length, 0);
-    const completedAcademyLessons = classes.reduce((acc, cls) => acc + cls.modules.flatMap(m => m.items).filter(l => l.done).length, 0);
+    const totalAcademyLessons = classes.reduce((acc, cls) => acc + (cls.isSuspended ? 0 : cls.modules.flatMap(m => m.items).length), 0);
+    const completedAcademyLessons = classes.reduce((acc, cls) => acc + (cls.isSuspended ? 0 : cls.modules.flatMap(m => m.items).filter(l => l.done).length), 0);
 
     const chartData = totalAcademyLessons === 0 
       ? [{ name: 'Belum Mulai', value: 1, color: '#F1F5F9' }]
@@ -312,7 +359,7 @@ export default function LearningTab({
             {/* STATS TILES GRID */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
               {[
-                { label: 'Kelas Diikuti', value: classes.filter(c => c.isEnrolled).length, total: classes.length, color: '#134E39', icon: <BookOpen />, bg: '#f0fdf4' },
+                { label: 'Kelas Diikuti', value: classes.filter(c => c.isEnrolled && !c.isSuspended).length, total: classes.length, color: '#134E39', icon: <BookOpen />, bg: '#f0fdf4' },
                 { label: 'Materi Selesai', value: completedAcademyLessons, total: totalAcademyLessons, color: '#D4AF37', icon: <CheckCircle />, bg: '#fefbf0' },
                 { label: 'Total Progres', value: `${totalAcademyLessons > 0 ? Math.round((completedAcademyLessons / totalAcademyLessons) * 100) : 0}%`, total: '100%', color: '#0ea5e9', icon: <BarChart2 />, bg: '#f0f9ff' }
               ].map((stat, i) => (
@@ -453,13 +500,24 @@ export default function LearningTab({
                     const clsTotal = clsLessons.length;
                     const pct = clsTotal > 0 ? Math.round((clsDone / clsTotal) * 100) : 0;
                     return (
-                      <div key={cls.id} className="class-item-card">
+                      <div key={cls.id} className="class-item-card" style={{ opacity: cls.isSuspended ? 0.85 : 1 }}>
                         <div style={{ width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
-                          <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: cls.isSuspended ? 'grayscale(100%)' : 'none' }} />
                         </div>
                         <div style={{ flex: '1 1 200px' }}>
-                          <div style={{ fontWeight: '950', fontSize: '1.25rem', color: '#134E39', marginBottom: '8px', letterSpacing: '-0.01em' }}>{cls.title}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)', color: '#1e40af', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(59, 130, 246, 0.15)', flexShrink: 0 }}>
+                              {cls.category || 'Umum'}
+                            </span>
+                            <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(71, 85, 105, 0.08)', color: '#475569', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(71, 85, 105, 0.15)', flexShrink: 0 }}>
+                              {cls.level || 'Dasar'}
+                            </span>
+                            <div style={{ fontWeight: '950', fontSize: '1.25rem', color: cls.isSuspended ? '#64748b' : '#134E39', letterSpacing: '-0.01em' }}>{cls.title}</div>
+                            {cls.isSuspended && (
+                              <span style={{ fontSize: '0.65rem', fontWeight: '800', background: '#fee2e2', color: '#b91c1c', padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Akses Ditangguhkan</span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', opacity: cls.isSuspended ? 0.5 : 1 }}>
                             <div style={{ flex: 1, height: '8px', background: '#F1F5F9', borderRadius: '99px', overflow: 'hidden' }}>
                               <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #134E39 0%, #1e6b52 100%)', borderRadius: '99px', transition: 'width 0.8s ease' }} />
                             </div>
@@ -468,30 +526,34 @@ export default function LearningTab({
                         </div>
                         <button 
                           onClick={() => {
+                            if (cls.isSuspended) return;
                             if (pct === 100) setActiveTab(`certificate/${cls.id}`);
                             else selectClassForPlayer(cls);
                           }}
+                          disabled={cls.isSuspended}
                           style={{ 
-                            background: pct === 100 ? '#D4AF37' : '#134E39', 
-                            color: pct === 100 ? '#134E39' : 'white', 
+                            background: cls.isSuspended ? '#e2e8f0' : (pct === 100 ? '#D4AF37' : '#134E39'), 
+                            color: cls.isSuspended ? '#94a3b8' : (pct === 100 ? '#134E39' : 'white'), 
                             border: 'none', padding: '0.9rem 1.75rem', 
                             borderRadius: '14px', fontWeight: '900', 
-                            fontSize: '0.85rem', cursor: 'pointer', 
-                            boxShadow: pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)', 
+                            fontSize: '0.85rem', cursor: cls.isSuspended ? 'not-allowed' : 'pointer', 
+                            boxShadow: cls.isSuspended ? 'none' : (pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)'), 
                             transition: 'all 0.2s',
                             minWidth: '160px',
                             textAlign: 'center'
                           }}
                           onMouseEnter={e => {
+                            if (cls.isSuspended) return;
                             e.currentTarget.style.transform = 'translateY(-2px)';
                             e.currentTarget.style.boxShadow = pct === 100 ? '0 12px 25px rgba(212,175,55,0.35)' : '0 12px 25px rgba(19,78,57,0.25)';
                           }}
                           onMouseLeave={e => {
+                            if (cls.isSuspended) return;
                             e.currentTarget.style.transform = 'translateY(0)';
                             e.currentTarget.style.boxShadow = pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)';
                           }}
                         >
-                          {pct === 100 ? 'SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR')}
+                          {cls.isSuspended ? 'DITANGGUHKAN' : (pct === 100 ? 'SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR'))}
                         </button>
                       </div>
                     );
@@ -568,6 +630,26 @@ export default function LearningTab({
   // VIEW: CATALOG
   // ============================
   if (lmsView === 'catalog') {
+    const filteredClasses = classes.filter(cls => {
+      const matchesSearch = cls.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (cls.description && cls.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === 'all' || (cls.category || 'Umum').toLowerCase() === selectedCategory.toLowerCase();
+      const matchesLevel = selectedLevel === 'all' || (cls.level || 'Dasar').toLowerCase() === selectedLevel.toLowerCase();
+
+      const clsLessonsCount = cls.modules.reduce((a, m) => a + m.items.length, 0);
+      const clsDoneCount = cls.modules.reduce((a, m) => a + m.items.filter(i => i.done).length, 0);
+      const isFinished = clsLessonsCount > 0 && clsLessonsCount === clsDoneCount;
+      
+      let matchesFilter = true;
+      if (activeFilter === 'enrolled') {
+        matchesFilter = cls.isEnrolled && !isFinished;
+      } else if (activeFilter === 'completed') {
+        matchesFilter = isFinished;
+      }
+      return matchesSearch && matchesCategory && matchesLevel && matchesFilter;
+    });
+
     return (
       <div key="academy-catalog" className="academy-catalog-container">
         <style>{`
@@ -579,39 +661,63 @@ export default function LearningTab({
             animation: fadeIn 0.5s ease;
           }
           .catalog-hero-section {
-            padding: 1.5rem 5% 1rem;
+            padding: 2.5rem 5% 1.5rem;
+            background: white;
+            border-bottom: 1px solid #E4EDE8;
+            position: relative;
+            overflow: hidden;
           }
           .catalog-filter-bar {
-            padding: 0.5rem 5% 1.5rem;
+            padding: 2rem 5% 1.5rem;
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
+            background: white;
+            flex-wrap: wrap;
           }
           .catalog-grid-wrapper {
-            padding: 0 5% 2.5rem;
+            padding: 0 5% 4rem;
             flex: 1;
+            background: white;
           }
           .catalog-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.25rem;
+            gap: 2rem;
           }
           .catalog-card {
             border-radius: 24px;
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #E4EDE8;
             background: white;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 20px rgba(19, 78, 57, 0.02);
+            position: relative;
+          }
+          .catalog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(19, 78, 57, 0.08);
+            border-color: rgba(19, 78, 57, 0.15);
           }
           .catalog-card-banner {
             position: relative;
             height: 220px;
             overflow: hidden;
+            background: #F1F5F9;
+          }
+          .catalog-card-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .catalog-card:hover .catalog-card-banner img {
+            transform: scale(1.08);
           }
           .catalog-card-content {
-            padding: 1.75rem;
+            padding: 2rem;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -619,7 +725,7 @@ export default function LearningTab({
 
           @media (max-width: 768px) {
             .catalog-hero-section {
-              padding: 2rem 1rem 1rem !important;
+              padding: 2rem 1.25rem 1.5rem !important;
             }
             .catalog-hero-section h1 {
               font-size: 1.75rem !important;
@@ -629,37 +735,43 @@ export default function LearningTab({
               margin-top: 0.75rem !important;
             }
             .catalog-filter-bar {
-              padding: 1rem 1rem 1.5rem !important;
-              gap: 10px !important;
+              padding: 1.5rem 1.25rem 1.5rem !important;
+              gap: 15px !important;
             }
             .catalog-grid-wrapper {
-              padding: 0 1rem 3rem !important;
+              padding: 0 1.25rem 3rem !important;
             }
             .catalog-grid {
               grid-template-columns: 1fr !important;
               gap: 1.5rem !important;
             }
             .catalog-card {
-              border-radius: 16px !important;
+              border-radius: 20px !important;
             }
             .catalog-card-banner {
               height: 180px !important;
             }
             .catalog-card-content {
-              padding: 1.25rem !important;
+              padding: 1.5rem !important;
             }
           }
         `}</style>
         
         <div className="catalog-hero-section">
+          {/* Decorative Elements */}
+          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '300px', height: '300px', background: 'rgba(212,175,55,0.05)', borderRadius: '50%', filter: 'blur(60px)' }}></div>
+          
           <button 
             onClick={() => setLmsView('welcome')}
             style={{ 
               background: 'white', border: '1px solid #e2e8f0', color: '#134E39', 
               padding: '0.6rem 1.2rem', borderRadius: '10px', fontSize: '0.75rem', 
               fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', 
-              gap: '8px', marginBottom: '1rem'
+              gap: '8px', marginBottom: '1.25rem', boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
+              transition: 'all 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
           >
             <ChevronLeft size={16} /> KEMBALI KE BERANDA
           </button>
@@ -669,7 +781,7 @@ export default function LearningTab({
               <Zap size={14} fill="#134E39" /> KURIKULUM TAARUF
             </div>
             
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '900', margin: 0, lineHeight: 1.1, color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '950', margin: 0, lineHeight: 1.1, color: '#134E39', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
               DAFTAR <span style={{ color: '#D4AF37' }}>KELAS</span> 
             </h1>
             <p style={{ fontSize: '1.25rem', color: '#64748b', marginTop: '0.75rem', maxWidth: '700px', lineHeight: 1.6, fontWeight: 500 }}>
@@ -679,76 +791,462 @@ export default function LearningTab({
         </div>
 
         {/* ⚪️ SEARCH & FILTER BAR ⚪️ */}
-        <div className="catalog-filter-bar">
-          <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-            <input 
-              type="text" 
-              placeholder="Cari kursus..." 
-              style={{ width: '100%', padding: '0.9rem 1rem 0.9rem 3.2rem', borderRadius: '14px', border: '1px solid #e2e8f0', background: 'white', fontSize: '0.9rem', fontWeight: '600', outline: 'none' }}
-            />
+        <div className="catalog-filter-bar" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: '280px', maxWidth: '400px' }}>
+              <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input 
+                type="text" 
+                placeholder="Cari kursus..." 
+                value={searchQuery || ''}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.9rem 1rem 0.9rem 3.2rem', 
+                  borderRadius: '14px', 
+                  border: '1.5px solid #E2E8F0', 
+                  background: 'white', 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  outline: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#134E39';
+                  e.target.style.boxShadow = '0 4px 12px rgba(19, 78, 57, 0.06)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#E2E8F0';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)';
+                }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { id: 'all', label: 'Semua Kelas' },
+                { id: 'enrolled', label: 'Sedang Diikuti' },
+                { id: 'completed', label: 'Selesai' }
+              ].map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '99px',
+                    border: 'none',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    background: activeFilter === filter.id ? '#134E39' : 'rgba(19, 78, 57, 0.05)',
+                    color: activeFilter === filter.id ? 'white' : '#134E39',
+                    boxShadow: activeFilter === filter.id ? '0 8px 16px rgba(19, 78, 57, 0.15)' : 'none',
+                    transform: activeFilter === filter.id ? 'scale(1.02)' : 'none'
+                  }}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <button style={{ background: '#134E39', color: 'white', padding: '0.9rem 2rem', borderRadius: '12px', border: 'none', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>
-            SEMUA
-          </button>
+
+          {/* Kategori & Level Pills */}
+          {categories.length > 0 && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              flexWrap: 'wrap',
+              gap: '1.75rem', 
+              width: '100%', 
+              borderTop: '1px solid #f1f5f9', 
+              paddingTop: '1.25rem', 
+              marginTop: '0.5rem',
+              textAlign: 'left'
+            }}>
+              {/* Kategori Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 auto', minWidth: '290px' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Kategori</span>
+                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                  <span style={{ fontWeight: '500', textTransform: 'none', color: '#cbd5e1' }}>Pilih bidang studi</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {['all', ...categories.map(c => c.name)].map(cat => {
+                    const isActive = selectedCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        style={{
+                          padding: '0.45rem 1.1rem',
+                          borderRadius: '99px',
+                          border: '1px solid ' + (isActive ? '#134E39' : '#e2e8f0'),
+                          fontWeight: '700',
+                          fontSize: '0.72rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          background: isActive ? '#134E39' : '#ffffff',
+                          color: isActive ? '#ffffff' : '#64748b',
+                          boxShadow: isActive ? '0 4px 12px rgba(19, 78, 57, 0.15)' : 'none',
+                        }}
+                        onMouseEnter={e => {
+                          if (!isActive) {
+                            e.currentTarget.style.borderColor = '#cbd5e1';
+                            e.currentTarget.style.background = '#f8fafc';
+                            e.currentTarget.style.color = '#1e293b';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!isActive) {
+                            e.currentTarget.style.borderColor = '#e2e8f0';
+                            e.currentTarget.style.background = '#ffffff';
+                            e.currentTarget.style.color = '#64748b';
+                          }
+                        }}
+                      >
+                        {cat === 'all' ? 'Semua Kategori' : cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Level Column */}
+              {levels.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 auto', minWidth: '220px' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Tingkatan</span>
+                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                    <span style={{ fontWeight: '500', textTransform: 'none', color: '#cbd5e1' }}>Pilih tingkat kesulitan</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {['all', ...levels.map(l => l.name)].map(lvl => {
+                      const isActive = selectedLevel === lvl;
+                      return (
+                        <button
+                          key={lvl}
+                          onClick={() => setSelectedLevel(lvl)}
+                          style={{
+                            padding: '0.45rem 1.1rem',
+                            borderRadius: '99px',
+                            border: '1px solid ' + (isActive ? '#475569' : '#e2e8f0'),
+                            fontWeight: '700',
+                            fontSize: '0.72rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                            background: isActive ? '#475569' : '#ffffff',
+                            color: isActive ? '#ffffff' : '#64748b',
+                            boxShadow: isActive ? '0 4px 12px rgba(71, 85, 105, 0.15)' : 'none',
+                          }}
+                          onMouseEnter={e => {
+                            if (!isActive) {
+                              e.currentTarget.style.borderColor = '#cbd5e1';
+                              e.currentTarget.style.background = '#f8fafc';
+                              e.currentTarget.style.color = '#1e293b';
+                            }
+                          }}
+                          onMouseLeave={e => {
+                            if (!isActive) {
+                              e.currentTarget.style.borderColor = '#e2e8f0';
+                              e.currentTarget.style.background = '#ffffff';
+                              e.currentTarget.style.color = '#64748b';
+                            }
+                          }}
+                        >
+                          {lvl === 'all' ? 'Semua Level' : lvl}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ⚪️ CLASS GRID ⚪️ */}
         <div className="catalog-grid-wrapper">
           <div className="catalog-grid">
-            {classes.map(cls => {
-              const clsLessonsCount = cls.modules.reduce((a, m) => a + m.items.length, 0);
-              const clsDoneCount = cls.modules.reduce((a, m) => a + m.items.filter(i => i.done).length, 0);
-              const isFinished = clsLessonsCount > 0 && clsLessonsCount === clsDoneCount;
-              
-              return (
-                <div key={cls.id} className="catalog-card" onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                  
-                  {/* Banner Image */}
-                  <div className="catalog-card-banner">
-                    <img src={cls.banner_url || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop"} alt={cls.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    {isFinished && (
-                      <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#D4AF37', color: 'white', padding: '6px 14px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.05em' }}>
-                        SELESAI
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Content Area */}
-                  <div className="catalog-card-content">
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#1e293b', marginBottom: '0.75rem' }}>{cls.title}</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: 1.5, flex: 1 }}>
-                      {cls.description || "Program intensif persiapan menuju keluarga sakinah mawaddah warahmah."}
-                    </p>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <button onClick={() => cls.isEnrolled ? selectClassForPlayer(cls) : enrollClass(cls.id)} style={{ width: '100%', background: '#134E39', color: 'white', padding: '0.9rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                        {isFinished ? <PlayCircle size={18} /> : (cls.isEnrolled ? (clsDoneCount > 0 ? <PlayCircle size={18} /> : <PlayCircle size={18} />) : <ArrowRight size={18} />)}
-                        {isFinished ? 'MULAI LAGI' : (cls.isEnrolled ? (clsDoneCount > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR') : 'IKUTI KELAS')}
-                      </button>
-                      
-                      {isFinished && (
-                        <button onClick={() => setActiveTab(`certificate/${cls.id}`)} style={{ width: '100%', background: 'white', color: '#D4AF37', padding: '0.8rem', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '800', border: '1.5px solid #D4AF37', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                          <Award size={18} /> DOWNLOAD SERTIFIKAT
-                        </button>
+            {filteredClasses.length > 0 ? (
+              filteredClasses.map(cls => {
+                const clsLessonsCount = cls.modules.reduce((a, m) => a + m.items.length, 0);
+                const clsDoneCount = cls.modules.reduce((a, m) => a + m.items.filter(i => i.done).length, 0);
+                const isFinished = clsLessonsCount > 0 && clsLessonsCount === clsDoneCount;
+                const pct = clsLessonsCount > 0 ? Math.round((clsDoneCount / clsLessonsCount) * 100) : 0;
+                
+                const totalModules = cls.modules.length;
+                
+                return (
+                  <div key={cls.id} className="catalog-card">
+                    {/* Banner Image */}
+                    <div className="catalog-card-banner">
+                      <img src={cls.banner_url || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop"} alt={cls.title} style={{ filter: cls.isSuspended ? 'grayscale(100%)' : 'none' }} />
+                      {cls.isSuspended ? (
+                        <div style={{ 
+                          position: 'absolute', top: '1rem', right: '1rem', 
+                          background: 'rgba(239, 68, 68, 0.95)', 
+                          backdropFilter: 'blur(8px)',
+                          color: 'white', padding: '6px 14px', borderRadius: '99px', 
+                          fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.05em',
+                          boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                          display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2
+                        }}>
+                          <AlertCircle size={12} fill="white" /> DITANGGUHKAN
+                        </div>
+                      ) : isFinished ? (
+                        <div style={{ 
+                          position: 'absolute', top: '1rem', right: '1rem', 
+                          background: 'rgba(212, 175, 55, 0.95)', 
+                          backdropFilter: 'blur(8px)',
+                          color: 'white', padding: '6px 14px', borderRadius: '99px', 
+                          fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.05em',
+                          boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
+                          display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2
+                        }}>
+                          <Award size={12} fill="white" /> SELESAI
+                        </div>
+                      ) : cls.isEnrolled && (
+                        <div style={{ 
+                          position: 'absolute', top: '1rem', right: '1rem', 
+                          background: 'rgba(19, 78, 57, 0.95)', 
+                          backdropFilter: 'blur(8px)',
+                          color: 'white', padding: '6px 14px', borderRadius: '99px', 
+                          fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.05em',
+                          boxShadow: '0 4px 15px rgba(19, 78, 57, 0.3)',
+                          display: 'flex', alignItems: 'center', gap: '4px', zIndex: 2
+                        }}>
+                          <PlayCircle size={12} fill="white" /> DIIKUTI
+                        </div>
                       )}
                     </div>
+                    
+                    {/* Content Area */}
+                    <div className="catalog-card-content">
+                      {/* Category, Modul & Materi badges */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)', color: '#1e40af', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                          {cls.category || 'Umum'}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: '800', background: 'rgba(71, 85, 105, 0.08)', color: '#475569', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(71, 85, 105, 0.15)' }}>
+                          {cls.level || 'Dasar'}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: '800', background: 'rgba(19, 78, 57, 0.06)', color: '#134E39', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                          {totalModules} Modul
+                        </span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: '800', background: 'rgba(212, 175, 55, 0.08)', color: '#B59220', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                          {clsLessonsCount} Materi
+                        </span>
+                      </div>
+
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', marginBottom: '0.75rem', lineHeight: 1.3, letterSpacing: '-0.01em' }}>{cls.title}</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem', lineHeight: 1.5, flex: 1, fontWeight: '500' }}>
+                        {cls.description || "Program intensif persiapan menuju keluarga sakinah mawaddah warahmah."}
+                      </p>
+                      
+                      {/* Progres Belajar for Enrolled Classes */}
+                      {cls.isEnrolled && !isFinished && (
+                        <div style={{ marginBottom: '1.5rem', background: '#F8FAF9', padding: '12px', borderRadius: '12px', border: '1px solid #E4EDE8' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>Progres Belajar</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39' }}>{pct}%</span>
+                          </div>
+                          <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '99px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #134E39 0%, #1e6b52 100%)', borderRadius: '99px', transition: 'width 0.8s ease' }} />
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
+                        <button 
+                          onClick={() => {
+                            if (cls.isSuspended) return;
+                            cls.isEnrolled ? selectClassForPlayer(cls) : enrollClass(cls.id);
+                          }} 
+                          disabled={cls.isSuspended}
+                          style={{ 
+                            width: '100%', 
+                            background: cls.isSuspended 
+                              ? '#e2e8f0' 
+                              : (isFinished ? 'rgba(19, 78, 57, 0.08)' : 'linear-gradient(135deg, #134E39 0%, #1e6b52 100%)'), 
+                            color: cls.isSuspended ? '#94a3b8' : (isFinished ? '#134E39' : 'white'), 
+                            padding: '0.95rem', 
+                            borderRadius: '14px', 
+                            fontSize: '0.85rem', 
+                            fontWeight: '900', 
+                            border: 'none', 
+                            cursor: cls.isSuspended ? 'not-allowed' : 'pointer', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            gap: '8px',
+                            boxShadow: cls.isSuspended ? 'none' : (isFinished ? 'none' : '0 6px 20px rgba(19, 78, 57, 0.15)'),
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                          onMouseEnter={e => {
+                            if (cls.isSuspended) return;
+                            if (!isFinished) {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 10px 25px rgba(19, 78, 57, 0.25)';
+                            } else {
+                              e.currentTarget.style.background = 'rgba(19, 78, 57, 0.12)';
+                            }
+                          }}
+                          onMouseLeave={e => {
+                            if (cls.isSuspended) return;
+                            if (!isFinished) {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 6px 20px rgba(19, 78, 57, 0.15)';
+                            } else {
+                              e.currentTarget.style.background = 'rgba(19, 78, 57, 0.08)';
+                            }
+                          }}
+                        >
+                          {cls.isSuspended ? <AlertCircle size={18} /> : (isFinished ? <PlayCircle size={18} /> : (cls.isEnrolled ? <PlayCircle size={18} /> : <ArrowRight size={18} />))}
+                          {cls.isSuspended ? 'AKSES DITANGGUHKAN' : (isFinished ? 'MULAI LAGI' : (cls.isEnrolled ? (clsDoneCount > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR') : 'IKUTI KELAS'))}
+                        </button>
+                        
+                        {isFinished && (
+                          <button 
+                            onClick={() => setActiveTab(`certificate/${cls.id}`)} 
+                            style={{ 
+                              width: '100%', 
+                              background: 'linear-gradient(135deg, #D4AF37 0%, #C59B27 100%)', 
+                              color: 'white', 
+                              padding: '0.95rem', 
+                              borderRadius: '14px', 
+                              fontSize: '0.85rem', 
+                              fontWeight: '900', 
+                              border: 'none', 
+                              cursor: 'pointer', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              gap: '8px',
+                              boxShadow: '0 6px 20px rgba(212, 175, 55, 0.2)',
+                              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 10px 25px rgba(212, 175, 55, 0.3)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 6px 20px rgba(212, 175, 55, 0.2)';
+                            }}
+                          >
+                            <Award size={18} /> DOWNLOAD SERTIFIKAT
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  {/* Bottom Yellow Shadow Accent */}
-                  <div ></div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '5rem 2rem', 
+                background: 'white', 
+                borderRadius: '24px', 
+                border: '2px dashed #E4EDE8',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '1rem'
+              }}>
+                <Search size={48} color="#94A3B8" style={{ opacity: 0.6 }} />
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: 0 }}>
+                  Tidak Ada Kelas Ditemukan
+                </h3>
+                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '600', maxWidth: '350px', margin: 0 }}>
+                  Afwan, kami tidak menemukan kelas yang sesuai dengan kata kunci atau filter pencarian Anda.
+                </p>
+                <button 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setActiveFilter('all');
+                  }}
+                  style={{
+                    background: '#134E39',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.8rem 2rem',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    marginTop: '0.5rem',
+                    boxShadow: '0 4px 12px rgba(19, 78, 57, 0.15)'
+                  }}
+                >
+                  Reset Pencarian
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
+
   // ============================
   // VIEW: PLAYER (FULLSCREEN STYLE)
   // ============================
+  if (activeClass?.isSuspended) {
+    const activeCs = (csContacts || []).filter(c => c.is_active);
+    const waMessage = `Assalamu'alaikum, saya ingin menanyakan status akses kelas "${activeClass.title}" saya.`;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '3rem 2rem', textAlign: 'center', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #fee2e2', margin: '2rem auto', maxWidth: '650px', animation: 'fadeIn 0.5s ease', boxShadow: 'none' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', marginBottom: '2rem', border: '1px solid #fca5a5' }}>
+          <AlertCircle size={36} />
+        </div>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#b91c1c', marginBottom: '1rem', letterSpacing: '-0.02em' }}>Akses Kelas Ditangguhkan</h2>
+        <p style={{ fontSize: '0.95rem', color: '#64748b', lineHeight: '1.7', maxWidth: '450px', margin: '0 auto 2rem', fontWeight: '600' }}>
+          Afwan, akses Anda untuk kelas <strong>{activeClass.title}</strong> sedang ditangguhkan oleh admin akademi. Silakan hubungi Customer Service untuk informasi selengkapnya.
+        </p>
+
+        {/* CS Contacts Section */}
+        {activeCs.length > 0 && (
+          <div style={{ width: '100%', maxWidth: '420px', marginBottom: '2rem' }}>
+            <p style={{ fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Hubungi Customer Service</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {activeCs.map(cs => (
+                <a
+                  key={cs.id}
+                  href={`https://wa.me/${cs.phone_number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(waMessage)}`}
+                  target="_blank" rel="noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '0.85rem 1.25rem', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                    color: 'white', textDecoration: 'none',
+                    transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(37,211,102,0.25)'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(37,211,102,0.35)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(37,211,102,0.25)'; }}
+                >
+                  <MessageCircle size={20} />
+                  <div style={{ flex: 1, textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>{cs.name}</div>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.85, fontWeight: '600' }}>{cs.phone_number} • {cs.label}</div>
+                  </div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.9, textTransform: 'uppercase' }}>Chat</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => setLmsView('dashboard')} style={{ background: '#134E39', color: '#ffffff', border: 'none', padding: '0.85rem 2.25rem', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', transition: 'background 0.2s' }}>Kembali ke Dashboard</button>
+      </div>
+    );
+  }
+
   return (
     <div className="lms-player" style={{ 
       height: isMobile ? 'calc(100dvh - 80px)' : 'calc(100vh - 100px)', 

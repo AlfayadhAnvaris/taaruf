@@ -5,10 +5,11 @@ import {
   MessageSquare, Settings, Sparkles, ChevronRight
 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
+import dynamic from 'next/dynamic';
 import CourseManagerTab from './CourseManagerTab';
-import AdminHomeTab from './AdminHomeTab';
+const AdminHomeTab = dynamic(() => import('./AdminHomeTab'), { ssr: false });
 import AdminMediateTab from './AdminMediateTab';
-import AdminFeedbackTab from './AdminFeedbackTab';
+const AdminFeedbackTab = dynamic(() => import('./AdminFeedbackTab'), { ssr: false });
 import AdminReviewsTab from './AdminReviewsTab';
 import AdminAccountTab from './AdminAccountTab';
 import AdminTestimonialsTab from './AdminTestimonialsTab';
@@ -36,7 +37,7 @@ export default function AdminDashboard({ activeTab }) {
   };
 
   return (
-    <div style={{ animation: 'dashboardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)', padding: '0.5rem' }}>
+    <div className="admin-dashboard-container" style={{ animation: 'dashboardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)', padding: '0.5rem' }}>
       {!isAdminAcademy && (
         <div className="admin-portal-header">
           <div style={{ animation: 'slideRight 0.8s ease' }}>
@@ -46,17 +47,16 @@ export default function AdminDashboard({ activeTab }) {
                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#134E39' }}>{getTabTitle().toUpperCase()}</span>
             </div>
             
-            <h2 className="admin-welcome-text">
-              Ahlan wa Sahlan, {adminName}
-            </h2>
-            <p className="admin-subtitle">
-              {activeTab === 'home' && 'Pantau ringkasan data, pertumbuhan kandidat, dan statistik pendaftar Separuh Agama secara real-time.'}
-              {activeTab === 'mediate' && 'Fasilitasi proses taaruf dengan memantau dan memoderasi ruang obrolan mediasi yang aktif.'}
-              {activeTab === 'feedback' && 'Evaluasi saran, masukan, dan ide pengembangan platform dari para pengguna.'}
-              {activeTab === 'reviews' && 'Pantau dan moderasi ulasan serta komentar yang diberikan antar kandidat untuk menjaga adab.'}
-              {activeTab === 'testimonials' && 'Kelola cerita sukses dan testimoni dari para kandidat yang telah berhasil melalui platform Separuh Agama.'}
-              {activeTab === 'admin' && 'Kelola identitas profil, kata sandi, dan parameter keamanan akun administrator Anda.'}
-            </p>
+            {activeTab === 'home' && (
+              <>
+                <h2 className="admin-welcome-text">
+                  Ahlan wa Sahlan, {adminName}
+                </h2>
+                <p className="admin-subtitle">
+                  Pantau ringkasan data, pertumbuhan kandidat, dan statistik pendaftar Separuh Agama secara real-time.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

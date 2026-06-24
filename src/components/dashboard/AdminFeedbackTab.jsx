@@ -1,8 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Star, Clock, Filter, Trash2, PieChart as PieChartIcon, Eye, XCircle, User } from 'lucide-react';
+import { MessageSquare, Star, Clock, Filter, Trash2, PieChart as PieChartIcon, Eye, XCircle, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+
+const getPageNumbers = (currentPage, totalPages) => {
+  const pages = [];
+  const maxVisiblePages = 5;
+  if (totalPages <= maxVisiblePages) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    pages.push(1);
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    if (currentPage <= 2) {
+      end = 4;
+    } else if (currentPage >= totalPages - 1) {
+      start = totalPages - 3;
+    }
+    if (start > 2) {
+      pages.push('...');
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    if (end < totalPages - 1) {
+      pages.push('...');
+    }
+    pages.push(totalPages);
+  }
+  return pages;
+};
 
 export default function AdminFeedbackTab() {
   const { setConfirmState, showAlert } = useAppContext();
@@ -11,6 +41,10 @@ export default function AdminFeedbackTab() {
   const [filter, setFilter] = useState('all');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
@@ -59,6 +93,12 @@ export default function AdminFeedbackTab() {
 
   const filteredFeedback = feedback.filter(f => filter === 'all' || f.category === filter);
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredFeedback.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredFeedback.length / itemsPerPage);
+
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '3rem' }}>Memuat data masukan...</div>;
   }
@@ -92,6 +132,14 @@ export default function AdminFeedbackTab() {
         }
         .feedback-compact-row:hover {
           border-color: #134E39;
+          transform: translateX(4px);
+        }
+        .feedback-compact-row-desktop {
+          transition: all 0.2s ease;
+        }
+        .feedback-compact-row-desktop:hover {
+          box-shadow: 0 4px 12px rgba(19, 78, 57, 0.05);
+          border-color: rgba(19, 78, 57, 0.15) !important;
           transform: translateX(4px);
         }
         .action-icon-btn {
@@ -175,7 +223,7 @@ export default function AdminFeedbackTab() {
             <Filter size={16} color="#94a3b8" />
             <select 
               value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={(e) => { setFilter(e.target.value); setCurrentPage(1); }}
               style={{ flex: isMobile ? 1 : 'unset', padding: '0.6rem 1rem', borderRadius: '10px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontSize: '0.85rem', fontWeight: '700', color: '#1e293b', outline: 'none' }}
             >
               <option value="all">Semua Kategori</option>
@@ -193,68 +241,271 @@ export default function AdminFeedbackTab() {
               <MessageSquare size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
               <p>Belum ada masukan.</p>
             </div>
-          ) : filteredFeedback.map(item => {
-            if (isMobile) {
-              return (
-                <div key={item.id} className="feedback-compact-row">
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>
-                        {item.profiles?.name?.charAt(0).toUpperCase() || '?'}
-                      </div>
-                      <div className="reviewer-info-text-mobile">
-                         <div style={{ fontSize: '0.55rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Oleh</div>
-                         <div style={{ fontWeight: '800', color: '#1e293b', fontSize: '0.9rem' }}>{item.profiles?.name || 'User Terhapus'}</div>
-                      </div>
-                   </div>
-
-                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="action-icon-btn" onClick={() => setSelectedFeedback(item)}>
-                        <Eye size={18} />
-                      </button>
-                      <button className="action-icon-btn" onClick={() => deleteItem(item.id)} style={{ color: '#ef4444', borderColor: '#fee2e2' }}>
-                        <Trash2 size={18} />
-                      </button>
-                   </div>
+          ) : (
+            <>
+              {/* Desktop Table Header */}
+              {!isMobile && (
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '1.2fr 0.8fr 2fr 0.8fr 0.8fr 1.2fr',
+                  padding: '0.75rem 1.25rem',
+                  background: '#f8fafc',
+                  border: '1px solid #E4EDE8',
+                  borderRadius: '10px',
+                  marginBottom: '0.5rem',
+                  gap: '1rem',
+                  fontSize: '0.7rem',
+                  fontWeight: '800',
+                  color: '#64748b',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  <div>Pengirim</div>
+                  <div>Rating</div>
+                  <div>Isi Masukan</div>
+                  <div>Tanggal</div>
+                  <div>Kategori</div>
+                  <div style={{ textAlign: 'right' }}>Aksi</div>
                 </div>
-              );
-            }
+              )}
 
-            // Desktop View
-            return (
-              <div key={item.id} className="feedback-card-desktop">
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: 44, height: 44, borderRadius: '10px', background: 'white', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#134E39', fontSize: '1.1rem' }}>
-                      {item.profiles?.name?.charAt(0) || '?'}
+              {currentItems.map(item => {
+                if (isMobile) {
+                  return (
+                    <div key={item.id} className="feedback-compact-row">
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem' }}>
+                            {item.profiles?.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div className="reviewer-info-text-mobile">
+                             <div style={{ fontSize: '0.55rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' }}>Oleh</div>
+                             <div style={{ fontWeight: '800', color: '#1e293b', fontSize: '0.9rem' }}>{item.profiles?.name || 'User Terhapus'}</div>
+                          </div>
+                       </div>
+
+                       <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="action-icon-btn" onClick={() => setSelectedFeedback(item)}>
+                            <Eye size={18} />
+                          </button>
+                          <button className="action-icon-btn" onClick={() => deleteItem(item.id)} style={{ color: '#ef4444', borderColor: '#fee2e2' }}>
+                            <Trash2 size={18} />
+                          </button>
+                       </div>
                     </div>
+                  );
+                }
+
+                // Desktop View: Compact Row
+                return (
+                  <div 
+                    key={item.id} 
+                    className="feedback-compact-row-desktop"
+                    style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: '1.2fr 0.8fr 2fr 0.8fr 0.8fr 1.2fr',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.25rem',
+                      background: 'white',
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderColor: '#E4EDE8',
+                      borderRadius: '12px',
+                      marginBottom: '0.5rem',
+                      gap: '1rem'
+                    }}
+                  >
+                    {/* 1. Pengirim */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                        <span style={{ fontWeight: '800', color: '#1e293b', fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                          {item.profiles?.name || 'User Terhapus'}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '750', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                          {item.profiles?.email}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 2. Rating */}
+                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star 
+                          key={s} 
+                          size={13} 
+                          color={item.rating >= s ? '#D4AF37' : '#e2e8f0'} 
+                          fill={item.rating >= s ? '#D4AF37' : 'transparent'} 
+                        />
+                      ))}
+                      <span style={{ fontSize: '0.75rem', fontWeight: '850', color: '#475569', marginLeft: '4px' }}>
+                        {item.rating}.0
+                      </span>
+                    </div>
+
+                    {/* 3. Isi Masukan (Truncated) */}
+                    <div 
+                      onClick={() => setSelectedFeedback(item)}
+                      style={{ 
+                        fontSize: '0.85rem', 
+                        color: '#475569', 
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        fontStyle: 'italic',
+                        paddingRight: '1rem'
+                      }}
+                      title="Klik untuk detail masukan"
+                    >
+                      "{item.content}"
+                    </div>
+
+                    {/* 4. Tanggal */}
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock size={12} />
+                      {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+
+                    {/* 5. Kategori Badge */}
                     <div>
-                      <div style={{ fontWeight: '900', fontSize: '1rem', color: '#1e293b' }}>{item.profiles?.name || 'User Terhapus'}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '500' }}>{item.profiles?.email}</div>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: '900',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        background: item.category === 'bug' ? '#fee2e2' : 'rgba(19,78,57,0.08)',
+                        color: item.category === 'bug' ? '#dc2626' : '#134E39',
+                        display: 'inline-block',
+                        textTransform: 'uppercase'
+                      }}>
+                        {item.category}
+                      </span>
+                    </div>
+
+                    {/* 6. Aksi */}
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => setSelectedFeedback(item)}
+                        style={{ 
+                          background: '#f8fafc',
+                          color: '#64748b',
+                          border: '1px solid #e2e8f0',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        title="Lihat Detail"
+                      >
+                        <Eye size={15} />
+                      </button>
+
+                      <button 
+                        onClick={() => deleteItem(item.id)}
+                        style={{ 
+                          background: '#fef2f2',
+                          color: '#ef4444',
+                          border: 'none',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        title="Hapus"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '2px', color: '#D4AF37', marginBottom: '0.25rem', justifyContent: 'flex-end' }}>
-                      {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={item.rating >= s ? '#D4AF37' : 'none'} color={item.rating >= s ? '#D4AF37' : '#e2e8f0'} />)}
-                    </div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end', fontWeight: '600' }}>
-                      <Clock size={12} /> {new Date(item.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', marginBottom: '1.25rem', border: '1px solid #f1f5f9', fontSize: '0.95rem', lineHeight: 1.6, color: '#334155' }}>
-                  "{item.content}"
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '8px', background: item.category === 'bug' ? '#fee2e2' : 'rgba(19,78,57,0.08)', color: item.category === 'bug' ? '#dc2626' : '#134E39', letterSpacing: '0.05em' }}>
-                    {item.category}
-                  </span>
-                  <button onClick={() => deleteItem(item.id)} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#cbd5e1'}>
-                    <Trash2 size={16} /> HAPUS
+                );
+              })}
+
+              {/* Pagination controls */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2rem', flexWrap: 'wrap' }}>
+                  <button 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    style={{ 
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: '38px', height: '38px', borderRadius: '8px', border: '1px solid #E4EDE8', 
+                      background: 'white', color: currentPage === 1 ? '#cbd5e1' : '#134E39', 
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer', transition: 'all 0.2s' 
+                    }}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  
+                  {getPageNumbers(currentPage, totalPages).map((page, idx) => {
+                    if (page === '...') {
+                      return (
+                        <span 
+                          key={`dots-${idx}`} 
+                          style={{ 
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            width: '38px', height: '38px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '800' 
+                          }}
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    const isActive = page === currentPage;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '38px', height: '38px', borderRadius: '8px', 
+                          border: isActive ? '1px solid #134E39' : '1px solid #E4EDE8',
+                          background: isActive ? '#134E39' : 'white',
+                          color: isActive ? 'white' : '#134E39',
+                          fontWeight: '800', fontSize: '0.85rem',
+                          cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = '#f4f7f5';
+                            e.currentTarget.style.borderColor = '#134E39';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = 'white';
+                            e.currentTarget.style.borderColor = '#E4EDE8';
+                          }
+                        }}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    style={{ 
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: '38px', height: '38px', borderRadius: '8px', border: '1px solid #E4EDE8', 
+                      background: 'white', color: currentPage === totalPages ? '#cbd5e1' : '#134E39', 
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', transition: 'all 0.2s' 
+                    }}
+                  >
+                    <ChevronRight size={18} />
                   </button>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </>
+          )}
         </div>
       </div>
 

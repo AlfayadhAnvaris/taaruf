@@ -1,12 +1,43 @@
+// Standardized pagination controls
 import React from 'react';
 import { 
-  Search, Users, Heart, MapPin, User, ChevronRight, 
+  Search, Users, Heart, MapPin, User, ChevronLeft, ChevronRight, 
   Sparkles, ShieldAlert, BadgeCheck
 } from 'lucide-react';
 import MyCvTab from './MyCvTab';
 
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
+
+const getPageNumbers = (currentPage, totalPages) => {
+  const pages = [];
+  const maxVisiblePages = 5;
+  if (totalPages <= maxVisiblePages) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    pages.push(1);
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    if (currentPage <= 2) {
+      end = 4;
+    } else if (currentPage >= totalPages - 1) {
+      start = totalPages - 3;
+    }
+    if (start > 2) {
+      pages.push('...');
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    if (end < totalPages - 1) {
+      pages.push('...');
+    }
+    pages.push(totalPages);
+  }
+  return pages;
+};
 
 export default function FindTab({ 
   cvs, myExistingCv, viewingCv, setViewingCv, 
@@ -21,6 +52,31 @@ export default function FindTab({
   
   const [filterCities, setFilterCities] = React.useState([]);
   const [isFetchingCities, setIsFetchingCities] = React.useState(false);
+
+  const filteredCandidates = React.useMemo(() => {
+    if (!cvs) return [];
+    return cvs
+      .filter(cv => cv.status === 'approved' && cv.user_id !== user?.id && cv.gender !== user?.gender && !takenUserIds?.has(cv.user_id))
+      .filter(cv => {
+        const query = searchQuery?.toLowerCase() || '';
+        const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
+        const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
+        const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
+        const matchSuku = !filters.suku || cv.suku === filters.suku;
+        const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
+        const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
+        const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
+        const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
+        return matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
+      })
+      .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+  }, [cvs, user, takenUserIds, searchQuery, filters, bookmarks]);
+
+  const currentCandidates = React.useMemo(() => {
+    return filteredCandidates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [filteredCandidates, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredCandidates.length / itemsPerPage);
 
   React.useEffect(() => {
     if (filters.province && provinces.length > 0) {
@@ -43,14 +99,26 @@ export default function FindTab({
     }
   }, [filters.province, provinces]);
   return (
-    <div key="tab-find" className="dashboard-tab-container" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+    <div key="tab-find" className={`dashboard-tab-container ${viewingCv ? 'viewing-cv' : ''}`} style={{ animation: 'fadeInUp 0.5s ease-out' }}>
       <style>{`
         .dashboard-tab-container {
-          padding: 1.25rem;
+          padding: 0;
+        }
+        .dashboard-tab-container.viewing-cv {
+          padding: 0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          overflow: hidden;
         }
         @media (max-width: 768px) {
           .dashboard-tab-container {
-            padding: ${viewingCv ? '0px !important' : '1rem !important'};
+            padding: 0 !important;
+          }
+          .dashboard-tab-container.viewing-cv {
+            padding: 0px !important;
+            height: 100%;
           }
         }
       `}</style>
@@ -62,7 +130,7 @@ export default function FindTab({
             <button onClick={() => setActiveTab('my_cv')} style={{ background: '#134E39', color: 'white', border: 'none', borderRadius: '10px', padding: '1rem 3rem', fontWeight: '800', cursor: 'pointer' }}>Buat CV Sekarang</button>
           </div>
         ) : viewingCv ? (
-          <div style={{ width: '100%', margin: '0', position: 'relative' }}>
+          <div style={{ width: '100%', height: '100%', margin: '0', position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <MyCvTab 
               user={user}
               targetCv={viewingCv}
@@ -245,23 +313,7 @@ export default function FindTab({
             </div>
  
             <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-               {cvs
-                .filter(cv => cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id))
-                .filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
-                  return matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                })
-                .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
-                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                .map(cv => (
+               {currentCandidates.map(cv => (
                     <div key={cv.id} className="card" style={{ 
                       padding: '1.75rem', borderRadius: '12px', cursor: 'pointer', 
                       transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 
@@ -345,84 +397,78 @@ export default function FindTab({
             </div>
 
             {/* Main Pagination */}
-            {cvs.filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
-
-                  return cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id) && matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                }).length > itemsPerPage && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2rem', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={currentPage === 1}
-                  style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: '700', color: currentPage === 1 ? '#cbd5e1' : '#134E39', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '38px', height: '38px', borderRadius: '8px', border: '1px solid #e2e8f0', 
+                    background: 'white', color: currentPage === 1 ? '#cbd5e1' : '#134E39', 
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer', transition: 'all 0.2s' 
+                  }}
                 >
-                  Sebelumnya
+                  <ChevronLeft size={18} />
                 </button>
-                <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.9rem' }}>
-                  Halaman {currentPage} dari {Math.ceil(cvs.filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
+                
+                {getPageNumbers(currentPage, totalPages).map((page, idx) => {
+                  if (page === '...') {
+                    return (
+                      <span 
+                        key={`dots-${idx}`} 
+                        style={{ 
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '38px', height: '38px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '800' 
+                        }}
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  const isActive = page === currentPage;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: '38px', height: '38px', borderRadius: '8px', 
+                        border: isActive ? '1px solid #134E39' : '1px solid #e2e8f0',
+                        background: isActive ? '#134E39' : 'white',
+                        color: isActive ? 'white' : '#134E39',
+                        fontWeight: '800', fontSize: '0.85rem',
+                        cursor: 'pointer', transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = '#f4f7f5';
+                          e.currentTarget.style.borderColor = '#134E39';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'white';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
+                        }
+                      }}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
 
-                  return cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id) && matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                }).length / itemsPerPage)}
-                </span>
                 <button 
-                  onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  disabled={currentPage >= Math.ceil(cvs.filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
-
-                  return cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id) && matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                }).length / itemsPerPage)}
-                  style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: '700', color: currentPage >= Math.ceil(cvs.filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
-
-                  return cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id) && matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                }).length / itemsPerPage) ? '#cbd5e1' : '#134E39', cursor: currentPage >= Math.ceil(cvs.filter(cv => {
-                  const query = searchQuery.toLowerCase();
-                  const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
-                  const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
-                  const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
-                  const matchSuku = !filters.suku || cv.suku === filters.suku;
-                  const matchMinAge = !filters.minAge || cv.age >= parseInt(filters.minAge);
-                  const matchMaxAge = !filters.maxAge || cv.age <= parseInt(filters.maxAge);
-                  const matchEdu = !filters.education || (cv.education && cv.education.includes(filters.education));
-                  const matchBookmark = !filters.onlyBookmarked || bookmarks.some(b => b.target_id === cv.user_id);
-
-                  return cv.status === 'approved' && cv.user_id !== user.id && cv.gender !== user.gender && !takenUserIds.has(cv.user_id) && matchQuery && matchProvince && matchCity && matchSuku && matchMinAge && matchMaxAge && matchEdu && matchBookmark;
-                }).length / itemsPerPage) ? 'not-allowed' : 'pointer' }}
+                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === totalPages}
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '38px', height: '38px', borderRadius: '8px', border: '1px solid #e2e8f0', 
+                    background: 'white', color: currentPage === totalPages ? '#cbd5e1' : '#134E39', 
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', transition: 'all 0.2s' 
+                  }}
                 >
-                  Selanjutnya
+                  <ChevronRight size={18} />
                 </button>
               </div>
             )}

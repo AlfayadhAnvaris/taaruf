@@ -353,8 +353,8 @@ button {
   gap: 0.6rem;
   padding: 0.4rem 0.75rem 0.4rem 0.4rem;
   border-radius: 12px;
-  background: rgba(44, 95, 77, 0.04);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   cursor: pointer;
   transition: var(--transition);
   color: var(--text-main);
@@ -362,8 +362,7 @@ button {
 }
 
 .profile-card-btn:hover {
-  background: rgba(44, 95, 77, 0.08);
-  border-color: rgba(44, 95, 77, 0.2);
+  background: rgba(44, 95, 77, 0.05);
 }
 
 .profile-card-avatar {
@@ -665,8 +664,8 @@ button {
   gap: 0.6rem;
   padding: 0.4rem 0.75rem 0.4rem 0.4rem;
   border-radius: 12px;
-  background: rgba(44, 95, 77, 0.04);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   cursor: pointer;
   transition: var(--transition);
   color: var(--text-main);
@@ -674,8 +673,7 @@ button {
 }
 
 .profile-card-btn:hover {
-  background: rgba(44, 95, 77, 0.08);
-  border-color: rgba(44, 95, 77, 0.2);
+  background: rgba(44, 95, 77, 0.05);
 }
 
 .profile-card-avatar {
@@ -1044,23 +1042,11 @@ button {
   overflow: hidden;
 }
 
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 4px;
-  background: var(--primary);
-  opacity: 0;
-  transition: var(--transition);
-}
-
 /* Subtle lift on card hover — gentle, not jarring */
 .card:not(.card-no-hover):hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
   background: rgba(255, 255, 255, 0.95);
-}
-.card:not(.card-no-hover):hover::before {
-  opacity: 0.6;
 }
 
 .card-title {

@@ -49,12 +49,37 @@ export default function CertificateTab({ activeClass, allClasses = [] }) {
 
   // Logic to find completed classes if none selected
   const completedClasses = (allClasses || []).filter(cls => {
+    if (cls.isSuspended) return false;
     const clsLessons = (cls.modules || []).flatMap(m => m.items || []);
     return clsLessons.length > 0 && clsLessons.every(l => l.done);
   });
 
   // Use selected class or first completed one
-  const displayClass = activeClass || completedClasses[0];
+  const displayClass = (activeClass && !activeClass.isSuspended) ? activeClass : completedClasses[0];
+
+  if (activeClass && activeClass.isSuspended) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', animation: 'fadeIn 0.5s ease' }}>
+        <div style={{ padding: '4rem 5%', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', padding: '2.5rem 1.5rem', background: 'white', borderRadius: '20px', border: '1px solid #fee2e2', maxWidth: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+            <div style={{ width: '100px', height: '100px', borderRadius: '16px', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#ef4444' }}>
+              <Award size={54} color="#ef4444" strokeWidth={1.5} />
+            </div>
+            <h3 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#b91c1c', marginBottom: '1rem' }}>Sertifikat Ditangguhkan</h3>
+            <p style={{ color: '#64748B', maxWidth: '450px', margin: '0 auto 1.5rem', lineHeight: '1.7', fontSize: '1.1rem', fontWeight: 500 }}>
+              Afwan, akses sertifikat Anda untuk kelas <strong>{activeClass.title}</strong> sedang ditangguhkan. Silakan hubungi admin untuk informasi lebih lanjut.
+            </p>
+            <button 
+              onClick={() => router.push('/dashboard/materi/dashboard')} 
+              style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.25rem 3rem', borderRadius: '10px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)', transition: 'all 0.3s' }}
+            >
+              KEMBALI KE DASHBOARD
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!displayClass) {
     return (

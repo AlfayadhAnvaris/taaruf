@@ -23,7 +23,7 @@ export default function HomeTab({
     <div key="tab-container-home" className="home-content">
       <style>{`
         .home-content {
-          padding: 1.25rem;
+          padding: 0;
         }
         .home-hero-card {
           background: white;
