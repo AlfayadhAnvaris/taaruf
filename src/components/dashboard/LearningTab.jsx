@@ -304,7 +304,8 @@ export default function LearningTab({
           color: '#134E39',
           position: 'relative',
           overflow: 'hidden',
-          borderBottom: '1px solid #E4EDE8'
+          borderBottom: '1px solid #E4EDE8',
+          flexShrink: 0
         }}>
           {/* Decorative Elements */}
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '300px', height: '300px', background: 'rgba(212,175,55,0.08)', borderRadius: '50%', filter: 'blur(60px)' }}></div>
@@ -666,6 +667,7 @@ export default function LearningTab({
             border-bottom: 1px solid #E4EDE8;
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
           }
           .catalog-filter-bar {
             padding: 2rem 5% 1.5rem;
@@ -674,10 +676,11 @@ export default function LearningTab({
             align-items: center;
             background: white;
             flex-wrap: wrap;
+            flex-shrink: 0;
           }
           .catalog-grid-wrapper {
             padding: 0 5% 4rem;
-            flex: 1;
+            flex: 1 0 auto;
             background: white;
           }
           .catalog-grid {

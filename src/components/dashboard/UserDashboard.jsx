@@ -137,6 +137,7 @@ export default function UserDashboard({ activeTab, subId }) {
   const [lmsLoading, setLmsLoading] = useState(true);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [progressList, setProgressList] = useState([]);
 
   // Sync myCv if data exists
   useEffect(() => {
@@ -187,7 +188,8 @@ export default function UserDashboard({ activeTab, subId }) {
       const { data: lessonsData } = await supabase.from('lessons').select('*').order('order_index');
       const { data: quizData } = await supabase.from('quiz_questions').select('*').order('order_index');
 
-      const { data: progressData } = await supabase.from('user_lesson_progress').select('lesson_id, completed, score').eq('user_id', user.id);
+      const { data: progressData } = await supabase.from('user_lesson_progress').select('lesson_id, completed, score, completed_at').eq('user_id', user.id);
+      setProgressList(progressData || []);
       const doneSet = new Set((progressData || []).filter(p => p.completed).map(p => p.lesson_id));
 
       const { data: enrollmentData } = await supabase.from('course_enrollments').select('*').eq('user_id', user.id);
@@ -249,9 +251,14 @@ export default function UserDashboard({ activeTab, subId }) {
       }))
     } : cls));
     try {
-      await supabase.from('user_lesson_progress').upsert({
+      const newCompletion = {
         user_id: user.id, lesson_id: lessonId, completed: true, score: score, completed_at: new Date().toISOString()
-      }, { onConflict: 'user_id,lesson_id' });
+      };
+      await supabase.from('user_lesson_progress').upsert(newCompletion, { onConflict: 'user_id,lesson_id' });
+      setProgressList(prev => {
+        const filtered = prev.filter(p => p.lesson_id !== lessonId);
+        return [...filtered, newCompletion];
+      });
       
       const lessonsInThisClass = curriculum.flatMap(m => m.items);
       const doneCount = lessonsInThisClass.filter(l => l.done).length + 1;
@@ -429,16 +436,42 @@ export default function UserDashboard({ activeTab, subId }) {
     const days = chartFilter === '7_hari' ? 7 : (chartFilter === '1_bulan' ? 30 : 180);
     const step = chartFilter === '6_bulan' ? 15 : 1;
     
+    // Group user's progress completions by date (local timezone date string)
+    const completedDates = {};
+    (progressList || []).forEach(p => {
+      if (p.completed && p.completed_at) {
+        try {
+          const dateStr = new Date(p.completed_at).toDateString();
+          completedDates[dateStr] = (completedDates[dateStr] || 0) + 1;
+        } catch (e) {
+          console.warn("Invalid completed_at date", p.completed_at);
+        }
+      }
+    });
+    
     for (let i = days; i >= 0; i -= step) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
+      
+      let count = 0;
+      if (step === 1) {
+        count = completedDates[d.toDateString()] || 0;
+      } else {
+        // Sum up completions inside the step interval (e.g. 15 days)
+        for (let j = 0; j < step; j++) {
+          const tempDate = new Date(d);
+          tempDate.setDate(tempDate.getDate() - j);
+          count += completedDates[tempDate.toDateString()] || 0;
+        }
+      }
+      
       data.push({
         name: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-        aktivitas: Math.floor(Math.random() * 50) + 10 // Mock data for now
+        aktivitas: count
       });
     }
     return data;
-  }, [chartFilter]);
+  }, [chartFilter, progressList]);
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();

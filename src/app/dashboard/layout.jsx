@@ -214,7 +214,8 @@ function DashboardLayoutContent({ children }) {
             padding: '1rem 4%', position: 'sticky', top: 0, 
             zIndex: 1000, borderBottom: '1px solid #f1f5f9',
             boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-            gap: '15px'
+            gap: '15px',
+            flexShrink: 0
           }}>
             {/* Left: Navigation Items */}
             <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
