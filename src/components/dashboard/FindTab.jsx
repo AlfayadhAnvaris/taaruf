@@ -48,7 +48,7 @@ export default function FindTab({
   handleAjukanTaaruf,
   setActiveTab
 }) {
-  const { user, bookmarks, setBookmarks, academyLevels, getAcademyBadge, setReportModalState } = useAppContext();
+  const { user, bookmarks, setBookmarks, academyLevels, getAcademyBadge, setReportModalState, getBadgeCount } = useAppContext();
   
   const [filterCities, setFilterCities] = React.useState([]);
   const [isFetchingCities, setIsFetchingCities] = React.useState(false);
@@ -287,14 +287,19 @@ export default function FindTab({
                            <div style={{ background: '#134E39', color: 'white', fontSize: '0.65rem', fontWeight: '900', padding: '4px 10px', borderRadius: '99px' }}>LOKASI SAMA</div>
                            <div style={{ color: '#D4AF37' }}><MapPin size={14} /></div>
                         </div>
-                         <div style={{ fontWeight: '900', fontSize: '1.1rem', color: '#134E39', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           {cv.alias}
-                           {getAcademyBadge(academyLevels[String(cv.user_id)]) && (
-                             <div title={getAcademyBadge(academyLevels[String(cv.user_id)]).label} style={{ color: getAcademyBadge(academyLevels[String(cv.user_id)]).color }}>
-                               {getAcademyBadge(academyLevels[String(cv.user_id)]).icon}
-                             </div>
-                           )}
-                         </div>
+                          <div style={{ fontWeight: '900', fontSize: '1.1rem', color: '#134E39', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {cv.alias}
+                            {(() => {
+                              const badgeCount = getBadgeCount ? getBadgeCount(cv.user_id) : (academyLevels?.[String(cv.user_id)] || 0);
+                              const badge = getAcademyBadge ? getAcademyBadge(badgeCount) : null;
+                              if (!badge) return null;
+                              return (
+                                <div title={badge.label} style={{ color: badge.color }}>
+                                  {badge.icon}
+                                </div>
+                              );
+                            })()}
+                          </div>
                         <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700', marginBottom: '0.75rem' }}>{cv.age} THN • {cv.location}</div>
                         <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.5, margin: 0, height: '3.6em', overflow: 'hidden' }}>{cv.karakter_positif || cv.marriage_vision || cv.about || '—'}</p>
                       </div>
@@ -376,11 +381,16 @@ export default function FindTab({
                       <div>
                          <div style={{ fontWeight: '900', fontSize: '1.15rem', color: '#134E39', display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '80px', flexWrap: 'wrap' }}>
                            {cv.alias}
-                           {getAcademyBadge(academyLevels[String(cv.user_id)]) && (
-                             <div title={getAcademyBadge(academyLevels[String(cv.user_id)]).label} style={{ color: getAcademyBadge(academyLevels[String(cv.user_id)]).color }}>
-                               {getAcademyBadge(academyLevels[String(cv.user_id)]).icon}
-                             </div>
-                           )}
+                           {(() => {
+                              const badgeCount = getBadgeCount ? getBadgeCount(cv.user_id) : (academyLevels?.[String(cv.user_id)] || 0);
+                              const badge = getAcademyBadge ? getAcademyBadge(badgeCount) : null;
+                              if (!badge) return null;
+                              return (
+                                <div title={badge.label} style={{ color: badge.color }}>
+                                  {badge.icon}
+                                </div>
+                              );
+                            })()}
                          </div>
                          <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                            <MapPin size={12} color="#D4AF37" /> {cv.location?.split(',')[0]} • {cv.age} THN

@@ -6,9 +6,7 @@ import { Star, Award } from 'lucide-react';
 // eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext();
 
-if (typeof globalThis !== 'undefined') {
-  globalThis.globalSessionPromise = globalThis.globalSessionPromise || null;
-}
+
 
 if (typeof window !== 'undefined') {
   // 0. Synchronously remove simulator pre-loader if present to prevent hydration mismatch
@@ -94,6 +92,7 @@ export const AppContextProvider = ({ children }) => {
   });
   const [lmsView, setLmsView] = useState('welcome');
   const [csContacts, setCsContacts] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const showAlert = (title, message, type = 'info') => {
     setModalState({ isOpen: true, title, message, type });
@@ -131,6 +130,30 @@ export const AppContextProvider = ({ children }) => {
       setNotifications(prev => [newNotif, ...prev]);
     }
   };
+
+  const fetchLeaderboard = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('academy_leaderboard')
+        .select('*')
+        .order('completed_lessons_count', { ascending: false })
+        .order('last_completed_at', { ascending: true });
+      if (!error && data) {
+        setLeaderboard(data);
+      }
+    } catch (err) {
+      console.warn("AppContext: fetchLeaderboard warning:", err);
+    }
+  }, []);
+
+  const getBadgeCount = useCallback((userId) => {
+    if (!userId) return 0;
+    if (user && userId === user.id) {
+      return academyLevels[user.id] || 0;
+    }
+    const found = leaderboard.find(item => item.user_id === userId);
+    return found ? found.completed_lessons_count : 0;
+  }, [user, academyLevels, leaderboard]);
 
   const fetchAllData = useCallback(async () => {
     try {
@@ -287,10 +310,13 @@ export const AppContextProvider = ({ children }) => {
       } catch (err) {
         console.warn('cs_contacts table not available yet:', err);
       }
+
+      // 9. Fetch Leaderboard
+      await fetchLeaderboard();
     } catch (err) {
       console.error('AppContext: fetchAllData error:', err);
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, fetchLeaderboard]);
 
   useEffect(() => {
     if (user) fetchAllData();
@@ -338,22 +364,31 @@ export const AppContextProvider = ({ children }) => {
     let mounted = true;
     const initSession = async () => {
       try {
-        if (!globalThis.globalSessionPromise) {
-          globalThis.globalSessionPromise = supabase.auth.getSession().catch(err => {
-            console.warn('Session init caught:', err);
-            return { data: { session: null }, error: err };
-          });
-        }
-        const { data: { session }, error: sessionError } = await globalThis.globalSessionPromise;
+        // Fetch session with a 3-second timeout to prevent getting stuck on load
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 3000))
+        ]).catch(err => {
+          console.warn('Session init caught/timeout:', err);
+          return { data: { session: null }, error: err };
+        });
+
+        const { data: { session }, error: sessionError } = sessionResult;
         
         if (sessionError) {
-          console.warn('Session Warning (Ignored in Dev):', sessionError.message);
-          // If the refresh token is invalid / not found, standard signOut might throw an exception.
-          // In that case, we fall back to a local-only signout so the client is cleared properly.
+          console.warn('Session Warning (Ignored in Dev):', sessionError.message || sessionError);
+          // If the refresh token is invalid / not found, local signout
           await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
           setUser(null);
         } else if (session) {
-          await fetchSessionUser(session.user);
+          // Fetch user profile with a 3-second timeout
+          await Promise.race([
+            fetchSessionUser(session.user),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Profile fetch timeout')), 3000))
+          ]).catch(err => {
+            console.warn('fetchSessionUser caught/timeout:', err);
+            setUser(session.user); // Fallback to auth user
+          });
         } else {
           setUser(null);
         }
@@ -412,6 +447,7 @@ export const AppContextProvider = ({ children }) => {
         modalState, setModalState, confirmState, isInitializing,
         lmsView, setLmsView, handleLogout, unreadCount, markNotificationsAsRead,
         reportModalState, setReportModalState, csContacts, setCsContacts,
+        leaderboard, fetchLeaderboard, getBadgeCount,
         getAcademyBadge: (completedCount, iconSize = 14) => {
           const count = Number(completedCount) || 0;
           if (count < 1) return null;

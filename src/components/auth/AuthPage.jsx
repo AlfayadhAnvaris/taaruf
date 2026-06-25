@@ -183,9 +183,48 @@ export default function AuthPage({ initialIsLogin = true }) {
   };
 
   if (isInitializing) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-       <div style={{ width: '30px', height: '30px', border: '3px solid #f1f5f9', borderTopColor: '#134E39', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      background: '#FFFFFF',
+      animation: 'fadeIn 0.5s ease-out'
+    }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '1.5rem',
+        animation: 'pulseGently 2s infinite ease-in-out'
+      }}>
+        <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '90px', height: '90px' }} />
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>
+            Separuh <span style={{ color: '#D4AF37' }}>Agama</span>
+          </h2>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Platform Taaruf Syar'i
+          </p>
+        </div>
+      </div>
+      <div style={{ 
+        marginTop: '2.5rem', 
+        width: '40px', 
+        height: '40px', 
+        borderRadius: '50%', 
+        border: '3px solid rgba(19, 78, 57, 0.08)', 
+        borderTopColor: '#D4AF37', 
+        animation: 'spin 0.8s linear infinite' 
+      }} />
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGently {
+          0%, 100% { transform: scale(1); opacity: 0.95; }
+          50% { transform: scale(1.03); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 

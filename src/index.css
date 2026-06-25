@@ -2304,7 +2304,8 @@ select.form-control {
 }
 .testi-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+  border-color: #cbd5e1;
 }
 .testi-text {
   font-size: 1rem;

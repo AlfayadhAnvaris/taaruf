@@ -215,16 +215,16 @@ export default function AdminTestimonialsTab() {
           position: relative;
           transition: all 0.2s;
         }
-        .testi-compact-row:hover {
-          border-color: #134E39;
+         .testi-compact-row:hover {
+          border-color: #cbd5e1;
           transform: translateX(4px);
         }
         .testi-compact-row-desktop {
           transition: all 0.2s ease;
         }
         .testi-compact-row-desktop:hover {
-          box-shadow: 0 4px 12px rgba(19, 78, 57, 0.05);
-          border-color: rgba(19, 78, 57, 0.15) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+          border-color: #cbd5e1 !important;
           transform: translateX(4px);
         }
         .action-icon-btn {
@@ -323,7 +323,6 @@ export default function AdminTestimonialsTab() {
             if (isMobile) {
               return (
                 <div key={item.id} className="testi-compact-row">
-                   {!item.is_published && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }} />}
                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: item.is_published ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: item.is_published ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
                         {item.name.charAt(0).toUpperCase()}
@@ -378,9 +377,6 @@ export default function AdminTestimonialsTab() {
                   borderWidth: '1px',
                   borderStyle: 'solid',
                   borderColor: '#E4EDE8',
-                  borderLeftWidth: '4px',
-                  borderLeftStyle: 'solid',
-                  borderLeftColor: isPublished ? '#134E39' : '#ef4444',
                   borderRadius: '12px',
                   marginBottom: '0.5rem',
                   gap: '1rem',
@@ -619,54 +615,125 @@ export default function AdminTestimonialsTab() {
         </div>
       )}
 
-      {/* DETAIL MODAL (Mobile) */}
+      {/* DETAIL MODAL */}
       {selectedTesti && (
-        <div className="modal-overlay" onClick={() => setSelectedTesti(null)}>
-           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '95%', padding: 0 }}>
-              <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                 <div>
-                    <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '900' }}>Detail Testimoni</h3>
-                    <p style={{ margin: '4px 0 0', fontSize: '0.75rem', opacity: 0.8 }}>ID: #{selectedTesti.id.substring(0,8)}</p>
+        <div 
+          className="modal-overlay" 
+          onClick={() => setSelectedTesti(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+           <div 
+             className="modal-content" 
+             onClick={e => e.stopPropagation()} 
+             style={{ 
+               maxWidth: '520px', 
+               width: '100%', 
+               padding: 0,
+               background: 'white',
+               borderRadius: '16px',
+               overflow: 'hidden',
+               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+               border: '1px solid #f1f5f9',
+               animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+             }}
+           >
+              <div style={{ padding: '2rem', background: '#f0fdf4', borderBottom: '1px solid #dcfce7', position: 'relative' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
+                    <Quote size={20} color="#166534" />
+                    <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Detail Testimoni</span>
                  </div>
-                 <button onClick={() => setSelectedTesti(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+                 <h2 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#134E39', margin: 0 }}>Ulasan Sukses Kandidat</h2>
+                 <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>ID: #{selectedTesti.id.substring(0,8)}</p>
+                 
+                 <button 
+                   onClick={() => setSelectedTesti(null)} 
+                   style={{ 
+                     position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                     background: 'rgba(22, 101, 52, 0.08)', border: 'none', 
+                     width: 36, height: 36, borderRadius: '8px', 
+                     display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                     color: '#166534', cursor: 'pointer', transition: 'background 0.2s' 
+                   }}
+                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(22, 101, 52, 0.15)'}
+                   onMouseLeave={e => e.currentTarget.style.background = 'rgba(22, 101, 52, 0.08)'}
+                 >
+                   <X size={20} />
+                 </button>
               </div>
 
               <div style={{ padding: '2rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'rgba(19,78,57,0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'rgba(19, 78, 57, 0.05)', color: '#134E39', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: '900', border: '1px solid rgba(19, 78, 57, 0.1)' }}>
                        {selectedTesti.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                       <div style={{ fontWeight: '900', color: '#1e293b', fontSize: '1.1rem' }}>{selectedTesti.name}</div>
-                       <div style={{ color: '#64748b', fontWeight: '600', fontSize: '0.85rem' }}>{selectedTesti.role || 'Kandidat'}</div>
+                       <div style={{ fontWeight: '950', color: '#1e293b', fontSize: '1.1rem' }}>{selectedTesti.name}</div>
+                       <div style={{ color: '#64748b', fontWeight: '750', fontSize: '0.85rem', marginTop: '2px' }}>{selectedTesti.role || 'Kandidat'}</div>
                     </div>
                  </div>
 
                  <div style={{ marginBottom: '2rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                       <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Isi Testimoni & Rating</div>
-                       <div style={{ display: 'flex', gap: '4px' }}>
-                          {[1,2,3,4,5].map(v => <Star key={v} size={16} fill={v <= selectedTesti.rating ? '#D4AF37' : 'none'} color={v <= selectedTesti.rating ? '#D4AF37' : '#e2e8f0'} />)}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                       <span style={{ fontSize: '0.7rem', fontWeight: '850', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Isi Ulasan & Rating</span>
+                       <div style={{ display: 'flex', gap: '2px' }}>
+                          {[1,2,3,4,5].map(v => <Star key={v} size={15} fill={v <= selectedTesti.rating ? '#D4AF37' : 'none'} color={v <= selectedTesti.rating ? '#D4AF37' : '#e2e8f0'} />)}
                        </div>
                     </div>
-                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '1rem', color: '#334155', lineHeight: 1.7, fontStyle: 'italic' }}>
-                       "{selectedTesti.content}"
+                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #f1f5f9', fontSize: '0.95rem', color: '#334155', lineHeight: 1.7, fontStyle: 'italic', fontWeight: '500' }}>
+                       "{selectedTesti.content.replace(/^"+|"+$/g, '')}"
                     </div>
                  </div>
 
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>
-                       <Clock size={14} /> {new Date(selectedTesti.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748b', fontWeight: '750' }}>
+                       <Clock size={14} color="#94a3b8" /> {new Date(selectedTesti.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
-                    <div style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', background: selectedTesti.is_published ? '#dcfce7' : '#fee2e2', color: selectedTesti.is_published ? '#166534' : '#991b1b' }}>
+                    <span style={{ 
+                      padding: '4px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em',
+                      background: selectedTesti.is_published ? '#dcfce7' : '#fee2e2', 
+                      color: selectedTesti.is_published ? '#15803d' : '#ef4444' 
+                    }}>
                        {selectedTesti.is_published ? 'PUBLIK' : 'DRAFT'}
-                    </div>
+                    </span>
                  </div>
               </div>
 
-              <div style={{ padding: '1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                 <button className="btn btn-outline" onClick={() => setSelectedTesti(null)} style={{ borderRadius: '8px' }}>Tutup</button>
-                 <button className="btn btn-primary" onClick={() => { togglePublish(selectedTesti.id, selectedTesti.is_published); setSelectedTesti(null); }} style={{ borderRadius: '8px' }}>
+              <div style={{ padding: '1.5rem 2rem', background: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                 <button 
+                   onClick={() => setSelectedTesti(null)}
+                   style={{ 
+                     background: 'white', color: '#475569', border: '1.5px solid #cbd5e1', 
+                     padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: '800', 
+                     fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' 
+                   }}
+                   onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                   onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                 >
+                   Tutup
+                 </button>
+                 <button 
+                   onClick={() => { togglePublish(selectedTesti.id, selectedTesti.is_published); setSelectedTesti(null); }}
+                   style={{ 
+                     background: selectedTesti.is_published ? '#ef4444' : '#134E39', 
+                     color: 'white', border: 'none', 
+                     padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: '900', 
+                     fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s',
+                     boxShadow: selectedTesti.is_published ? '0 6px 16px rgba(239, 68, 68, 0.15)' : '0 6px 16px rgba(19, 78, 57, 0.15)'
+                   }}
+                   onMouseEnter={e => e.currentTarget.style.background = selectedTesti.is_published ? '#dc2626' : '#0e3a2a'}
+                   onMouseLeave={e => e.currentTarget.style.background = selectedTesti.is_published ? '#ef4444' : '#134E39'}
+                 >
                     {selectedTesti.is_published ? 'Set Draft' : 'Publikasikan'}
                  </button>
               </div>
@@ -676,79 +743,199 @@ export default function AdminTestimonialsTab() {
 
       {/* FORM MODAL (Add/Edit) */}
       {showModal && (
-        <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%', padding: 0 }}>
-            <div style={{ background: '#134E39', color: 'white', padding: '1.5rem', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900' }}>{form.id ? 'Edit Testimoni' : 'Testimoni Baru'}</h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><XCircle size={20} /></button>
+        <div 
+          className="modal-overlay" 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            animation: 'fadeIn 0.2s ease'
+          }} 
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="modal-content" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              maxWidth: '520px', 
+              width: '100%', 
+              padding: 0,
+              background: 'white',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              border: '1px solid #f1f5f9',
+              animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+          >
+            <div style={{ padding: '2rem', background: '#f0fdf4', borderBottom: '1px solid #dcfce7', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
+                <Quote size={20} color="#166534" />
+                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Editor Testimoni</span>
+              </div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#134E39', margin: 0 }}>
+                {form.id ? 'Edit Testimoni' : 'Testimoni Baru'}
+              </h2>
+              <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>
+                Tuliskan ulasan keberhasilan taaruf atau pembelajaran akademi.
+              </p>
+              
+              <button 
+                onClick={() => setShowModal(false)} 
+                style={{ 
+                  position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                  background: 'rgba(22, 101, 52, 0.08)', border: 'none', 
+                  width: 36, height: 36, borderRadius: '8px', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  color: '#166534', cursor: 'pointer', transition: 'background 0.2s' 
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(22, 101, 52, 0.15)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(22, 101, 52, 0.08)'}
+              >
+                <X size={20} />
+              </button>
             </div>
+            
             <form onSubmit={handleSave} style={{ padding: '2rem' }}>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: '800', color: '#134E39' }}>Nama Lengkap</label>
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label" style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>Nama Lengkap</label>
                 <input 
                   type="text" 
                   className="form-control" 
                   value={form.name || ''} 
                   onChange={e => setForm({...form, name: e.target.value})} 
-                  placeholder="Contoh: Hamba Allah"
+                  placeholder="Contoh: Ihsanul Khair"
                   required
-                  style={{ borderRadius: '8px', padding: '0.8rem' }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.8rem 1rem', 
+                    borderRadius: '10px', 
+                    border: '1.5px solid #cbd5e1', 
+                    fontSize: '0.9rem', 
+                    fontWeight: '600', 
+                    color: '#1e293b', 
+                    outline: 'none',
+                    background: 'white'
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = '#134E39'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#cbd5e1'}
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: '800', color: '#134E39' }}>Status/Role</label>
+              
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label" style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>Status / Peran</label>
                 <input 
                   type="text" 
                   className="form-control" 
                   value={form.role || ''} 
                   onChange={e => setForm({...form, role: e.target.value})} 
-                  placeholder="Contoh: Akhwat, Menikah 2025"
-                  style={{ borderRadius: '8px', padding: '0.8rem' }}
+                  placeholder="Contoh: Ikhwan, Menikah 2025"
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.8rem 1rem', 
+                    borderRadius: '10px', 
+                    border: '1.5px solid #cbd5e1', 
+                    fontSize: '0.9rem', 
+                    fontWeight: '600', 
+                    color: '#1e293b', 
+                    outline: 'none',
+                    background: 'white'
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = '#134E39'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#cbd5e1'}
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: '800', color: '#134E39' }}>Isi Testimoni</label>
+              
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label" style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>Isi Testimoni</label>
                 <textarea 
                   className="form-control" 
                   rows={4} 
                   value={form.content || ''} 
                   onChange={e => setForm({...form, content: e.target.value})} 
-                  placeholder="Ceritakan pengalaman sukses..."
+                  placeholder="Ceritakan kisah sukses taaruf atau ulasan pembelajaran akademi di sini..."
                   required
-                  style={{ borderRadius: '12px', padding: '1rem', lineHeight: '1.6' }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.8rem 1rem', 
+                    borderRadius: '10px', 
+                    border: '1.5px solid #cbd5e1', 
+                    fontSize: '0.9rem', 
+                    fontWeight: '500', 
+                    color: '#1e293b', 
+                    outline: 'none', 
+                    resize: 'none',
+                    fontFamily: 'inherit',
+                    lineHeight: '1.6'
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = '#134E39'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#cbd5e1'}
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: '800', color: '#134E39' }}>Rating</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
+              
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label" style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>Rating Testimoni</label>
+                <div style={{ display: 'flex', gap: '8px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #f1f5f9', width: 'fit-content' }}>
                   {[1,2,3,4,5].map(v => (
                     <button 
                       type="button"
                       key={v}
                       onClick={() => setForm({...form, rating: v})}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                     >
-                      <Star size={28} fill={v <= form.rating ? '#D4AF37' : 'none'} color={v <= form.rating ? '#D4AF37' : '#e2e8f0'} />
+                      <Star size={24} fill={v <= form.rating ? '#D4AF37' : 'none'} color={v <= form.rating ? '#D4AF37' : '#e2e8f0'} />
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+              
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #f1f5f9', marginBottom: '2rem' }}>
                 <input 
                   type="checkbox" 
                   id="notif-pub"
                   checked={form.is_published} 
                   onChange={e => setForm({...form, is_published: e.target.checked})}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#134E39' }}
                 />
-                <label htmlFor="notif-pub" style={{ fontSize: '0.85rem', fontWeight: '700', color: '#134E39', cursor: 'pointer' }}>
-                  Publikasikan di Landing Page
+                <label htmlFor="notif-pub" style={{ fontSize: '0.85rem', fontWeight: '750', color: '#334155', cursor: 'pointer', userSelect: 'none' }}>
+                  Terbitkan Testimoni ini di Landing Page
                 </label>
               </div>
-              <div style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem' }}>
-                <button type="button" className="btn btn-outline" style={{ flex: 1, padding: '0.8rem', borderRadius: '8px' }} onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '0.8rem', borderRadius: '8px' }} disabled={saving}>
-                  {saving ? <Loader className="spin" size={18} /> : <Save size={18} />} Simpan Testimoni
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)}
+                  style={{ 
+                    flex: 1, background: 'white', color: '#475569', border: '1.5px solid #cbd5e1', 
+                    padding: '0.85rem', borderRadius: '10px', fontWeight: '800', 
+                    fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' 
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={saving}
+                  style={{ 
+                    flex: 2, background: '#134E39', color: 'white', border: 'none', 
+                    padding: '0.85rem', borderRadius: '10px', fontWeight: '900', 
+                    fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s',
+                    boxShadow: '0 8px 20px rgba(19, 78, 57, 0.15)'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#0e3a2a'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#134E39'}
+                >
+                  {saving ? <Loader className="spin" size={18} /> : <Save size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />} 
+                  <span style={{ verticalAlign: 'middle' }}>Simpan Testimoni</span>
                 </button>
               </div>
             </form>

@@ -30,14 +30,15 @@ export default function MyCvTab({
   onBack = null,
   provinces = EMPTY_ARRAY
 }) {
-  const { userReviews, setUserReviews, showAlert, showToast, bookmarks, setBookmarks, setReportModalState } = useAppContext();
+  const { userReviews, setUserReviews, showAlert, showToast, bookmarks, setBookmarks, setReportModalState, academyLevels, getAcademyBadge, getBadgeCount } = useAppContext();
   const [fullViewItem, setFullViewItem] = useState(null);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [activeViewTab, setActiveViewTab] = useState('profil_fisik'); // 'profil_fisik', 'latar_belakang', 'agama_nikah', 'kriteria', 'reviews'
+  const [activeViewTab, setActiveViewTab] = useState('profil_fisik'); // 'profil_fisik', 'latar_belakang', 'agama_nikah', 'kriteria'
   const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showReviewsListModal, setShowReviewsListModal] = useState(false);
   
   // Section-based editing
   const [activeEditSection, setActiveEditSection] = useState(null);
@@ -421,9 +422,6 @@ export default function MyCvTab({
               <option value="latar_belakang">LATAR BELAKANG</option>
               <option value="agama_nikah">AGAMA & PERNIKAHAN</option>
               <option value="kriteria">KRITERIA PASANGAN</option>
-              <option value="reviews">
-                REVIEW & KESAN ({userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length})
-              </option>
             </select>
             <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#134E39', display: 'flex', alignItems: 'center' }}>
               <ChevronDown size={18} />
@@ -434,7 +432,7 @@ export default function MyCvTab({
         {/* Scroll Tab Navigation for Desktop */}
         <div className="cv-tabs-scroll" style={{ 
           display: 'grid', 
-          gridTemplateColumns: '150px 1fr 150px',
+          gridTemplateColumns: '170px 1fr 170px',
           alignItems: 'center',
           borderBottom: '1.5px solid rgba(226, 232, 240, 0.8)', 
           marginBottom: '0', 
@@ -487,8 +485,7 @@ export default function MyCvTab({
                { id: 'profil_fisik', label: 'PROFIL & FISIK' },
                { id: 'latar_belakang', label: 'LATAR BELAKANG' },
                { id: 'agama_nikah', label: 'AGAMA & PERNIKAHAN' },
-               { id: 'kriteria', label: 'KRITERIA PASANGAN' },
-               { id: 'reviews', label: 'REVIEW & KESAN', badge: userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length }
+               { id: 'kriteria', label: 'KRITERIA PASANGAN' }
              ].map((tab) => (
                <button 
                  key={tab.id}
@@ -512,28 +509,12 @@ export default function MyCvTab({
                  }}
                >
                  {tab.label}
-                 {tab.id === 'reviews' && tab.badge > 0 && (
-                   <span style={{ 
-                     background: activeViewTab === 'reviews' ? '#134E39' : '#f1f5f9', 
-                     color: activeViewTab === 'reviews' ? 'white' : '#64748b', 
-                     width: '20px',
-                     height: '20px',
-                     borderRadius: '50%', 
-                     fontSize: '0.65rem', 
-                     fontWeight: '900',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center'
-                   }}>
-                       {tab.badge}
-                   </span>
-                 )}
                </button>
              ))}
           </div>
 
-          {/* Right Column: Spacer */}
-          <div />
+          {/* Right Column: Empty spacer */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}></div>
         </div>
 
         <div className="cv-full-container">
@@ -598,8 +579,34 @@ export default function MyCvTab({
                  )}
               </div>
               
-              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: '900', color: '#134E39', margin: '0 0 1rem', lineHeight: 1.1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{displayCv?.alias}</h1>
+              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: '900', color: '#134E39', margin: '0 0 0.5rem', lineHeight: 1.1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{displayCv?.alias}</h1>
               
+              {(() => {
+                const badgeCount = getBadgeCount ? getBadgeCount(displayCv?.user_id) : (academyLevels?.[String(displayCv?.user_id)] || 0);
+                const badge = getAcademyBadge ? getAcademyBadge(badgeCount, 14) : null;
+                if (!badge) return null;
+                return (
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: `${badge.color}15`,
+                    color: badge.color,
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '0.72rem',
+                    fontWeight: '900',
+                    border: `1px solid ${badge.color}30`,
+                    marginBottom: '1rem',
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    letterSpacing: '0.01em'
+                  }} title={badge.label}>
+                    {badge.icon}
+                    <span>{badge.label}</span>
+                  </div>
+                );
+              })()}
+
               <div style={{ width: '100%', marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                  <div className="cv-stat-card-small"><i><MapPin size={16} /></i> {displayCv?.location}</div>
                  <div className="cv-stat-card-small"><i><Clock size={16} /></i> {displayCv?.age} Tahun</div>
@@ -884,75 +891,89 @@ export default function MyCvTab({
                       <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#475569', fontWeight: '500', margin: 0, whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_non_fisik || displayCv?.criteria || '—'}</p>
                     </div>
                   </div>
+                  
+                  {/* Reviews list removed from main tab body */}
                 </div>
               )}
 
-              {activeViewTab === 'reviews' && (
-                <div style={{ animation: 'fadeInUp 0.4s ease' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                          <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.12)' }}>
-                            <Star size={24} fill="#D4AF37" />
-                          </div>
-                          <div>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#134E39', margin: 0 }}>Review & Kesan</h3>
-                            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem', fontWeight: '600' }}>Pendapat jujur dari kandidat lainnya</p>
-                          </div>
-                      </div>
-                      {isViewingOther && (
-                        <button 
-                          onClick={() => setShowReviewModal(true)}
-                          style={{ 
-                            background: '#134E39', color: 'white', border: 'none', 
-                            padding: '0.75rem 1.25rem', borderRadius: '10px', 
-                            fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px',
-                            boxShadow: '0 8px 20px rgba(19,78,57,0.15)',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                          <Plus size={16} /> BERIKAN KESAN
-                        </button>
-                      )}
+              {/* ═══ DEDICATED REVIEW & KESAN BUTTON (bottom of right panel) ═══ */}
+              <div style={{
+                marginTop: '2rem',
+                padding: '1.75rem',
+                border: '2px dashed rgba(212, 175, 55, 0.35)',
+                borderRadius: '20px',
+                background: 'linear-gradient(135deg, rgba(212,175,55,0.03) 0%, rgba(19,78,57,0.02) 100%)',
+                textAlign: 'center',
+                animation: 'fadeIn 0.5s ease'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '0.75rem' }}>
+                  <div style={{
+                    width: '42px', height: '42px', borderRadius: '12px',
+                    background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '1px solid rgba(212,175,55,0.15)'
+                  }}>
+                    <Star size={20} color="#D4AF37" fill="#D4AF37" />
                   </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                     {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
-                       <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'white', borderRadius: '20px', border: '2px dashed #f1f5f9', gridColumn: '1 / -1' }}>
-                          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-                             <Quote size={32} color="#cbd5e1" />
-                          </div>
-                          <h4 style={{ color: '#134E39', fontWeight: '900', fontSize: '1.1rem', margin: '0 0 0.4rem' }}>Belum Ada Kesan</h4>
-                          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', fontWeight: '500' }}>Jadilah yang pertama memberikan kesan</p>
-                       </div>
-                     ) : (
-                       userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
-                         <div key={review.id} style={{ background: 'white', padding: '1.75rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: '900', color: 'white' }}>
-                                   {review.reviewer?.name?.charAt(0)}
-                                </div>
-                                <div>
-                                   <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.95rem', display: 'block' }}>{review.reviewer?.name}</span>
-                                   <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '600' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                                </div>
-                             </div>
-                             <div style={{ display: 'flex', gap: '3px', background: 'rgba(212,175,55,0.05)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
-                               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} color={s <= review.rating ? '#D4AF37' : '#e2e8f0'} fill={s <= review.rating ? '#D4AF37' : 'transparent'} />)}
-                             </div>
-                           </div>
-                           <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
-                              <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: 1.75, fontWeight: '500', fontStyle: 'italic' }}>"{review.comment}"</p>
-                           </div>
-                         </div>
-                       ))
-                     )}
+                  <div style={{ textAlign: 'left' }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Review & Kesan Kandidat</h4>
+                    <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8', fontWeight: '600' }}>Lihat pendapat jujur dari kandidat lainnya</p>
                   </div>
                 </div>
-              )}
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setShowReviewsListModal(true)}
+                    style={{
+                      flex: 1, minWidth: '180px', maxWidth: '280px',
+                      padding: '0.85rem 1.5rem', borderRadius: '14px',
+                      background: 'white', color: '#D4AF37',
+                      border: '1.5px solid rgba(212,175,55,0.3)',
+                      fontWeight: '900', fontSize: '0.78rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      boxShadow: '0 4px 15px rgba(212,175,55,0.08)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      letterSpacing: '0.03em'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(212,175,55,0.15)';
+                      e.currentTarget.style.borderColor = '#D4AF37';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(212,175,55,0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(212,175,55,0.3)';
+                    }}
+                  >
+                    <Eye size={16} /> LIHAT REVIEW & KESAN
+                  </button>
+                  {isViewingOther && (
+                    <button
+                      onClick={() => setShowReviewModal(true)}
+                      style={{
+                        flex: 1, minWidth: '180px', maxWidth: '280px',
+                        padding: '0.85rem 1.5rem', borderRadius: '14px',
+                        background: '#134E39', color: 'white',
+                        border: 'none',
+                        fontWeight: '900', fontSize: '0.78rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        boxShadow: '0 6px 20px rgba(19,78,57,0.2)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        letterSpacing: '0.03em'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(19,78,57,0.25)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(19,78,57,0.2)';
+                      }}
+                    >
+                      <Quote size={16} /> BERIKAN KESAN
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
         </div>
 
@@ -1051,7 +1072,85 @@ export default function MyCvTab({
             </div>
           </div>
         )}
+
+        {/* 📋 REVIEWS LIST MODAL 📋 */}
+        {showReviewsListModal && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={() => setShowReviewsListModal(false)}>
+            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '24px', maxWidth: '680px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+               <button onClick={() => setShowReviewsListModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#f8fafc', border: 'none', width: '40px', height: '40px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                 <X size={20} color={C.primary} />
+               </button>
+               
+               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '1.5rem', textAlign: 'left' }}>
+                   <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.12)', flexShrink: 0 }}>
+                     <Star size={24} fill="#D4AF37" color="#D4AF37" />
+                   </div>
+                   <div>
+                     <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: 0 }}>Review & Kesan</h3>
+                     <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem', fontWeight: '600' }}>Pendapat jujur dari kandidat lainnya untuk {displayCv?.alias}</p>
+                   </div>
+               </div>
+
+               <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', marginBottom: '1rem' }} className="custom-scrollbar">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+                     {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
+                       <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #e2e8f0' }}>
+                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid #f1f5f9' }}>
+                             <Quote size={26} color="#cbd5e1" />
+                          </div>
+                          <h4 style={{ color: '#134E39', fontWeight: '900', fontSize: '1.05rem', margin: '0 0 0.4rem' }}>Belum Ada Kesan</h4>
+                          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.82rem', fontWeight: '500' }}>Jadilah yang pertama memberikan kesan</p>
+                       </div>
+                     ) : (
+                       userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
+                         <div key={review.id} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>
+                                   {review.reviewer?.name?.charAt(0)}
+                                </div>
+                                <div>
+                                   <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.95rem', display: 'block' }}>{review.reviewer?.name}</span>
+                                   <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                </div>
+                             </div>
+                             <div style={{ display: 'flex', gap: '3px', background: 'rgba(212,175,55,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
+                               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} color={s <= review.rating ? '#D4AF37' : '#e2e8f0'} fill={s <= review.rating ? '#D4AF37' : 'transparent'} />)}
+                             </div>
+                           </div>
+                           <div style={{ padding: '0.85rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: '#334155', lineHeight: 1.7, fontWeight: '500', fontStyle: 'italic' }}>"{review.comment}"</p>
+                           </div>
+                         </div>
+                       ))
+                     )}
+                  </div>
+               </div>
+
+               {isViewingOther && (
+                 <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                   <button 
+                     onClick={() => setShowReviewModal(true)}
+                     style={{ 
+                       background: '#134E39', color: 'white', border: 'none', 
+                       padding: '0.75rem 1.5rem', borderRadius: '12px', 
+                       fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer',
+                       display: 'flex', alignItems: 'center', gap: '8px',
+                       boxShadow: '0 8px 20px rgba(19,78,57,0.15)',
+                       transition: 'all 0.2s',
+                       width: '100%',
+                       justifyContent: 'center'
+                     }}
+                   >
+                     <Plus size={16} /> BERIKAN KESAN
+                   </button>
+                 </div>
+               )}
+            </div>
+          </div>
+        )}
       </div>
+
     );
   }
 

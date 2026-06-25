@@ -14,6 +14,7 @@ import FeedbackTab from './FeedbackTab';
 const HomeTab = dynamic(() => import('./HomeTab'), { ssr: false });
 import FindTab from './FindTab';
 import StatusTab from './StatusTab';
+const LeaderboardTab = dynamic(() => import('./LeaderboardTab'), { ssr: false });
 
 const RenderLockedState = ({ isProfileComplete, isCvComplete, router }) => {
   return (
@@ -326,7 +327,7 @@ export default function UserDashboard({ activeTab, subId }) {
         }
       }
       
-      const { error: cvError } = await supabase.from('cv_profiles').upsert(cvFields);
+      const { error: cvError } = await supabase.from('cv_profiles').upsert(cvFields, { onConflict: 'user_id' });
       if (cvError) throw cvError;
       
       const profileFields = {
@@ -633,6 +634,9 @@ export default function UserDashboard({ activeTab, subId }) {
           allClasses={classes}
           activeClass={classes?.find(c => c.id.toString() === subId?.toString())}
         />
+      )}
+      {activeTab === 'leaderboard' && (
+        <LeaderboardTab setActiveTab={(t) => router.push(`/dashboard/${t}`)} />
       )}
       {activeTab === 'feedback' && <FeedbackTab user={user} showAlert={showAlert} />}
       {activeTab === 'account' && <AccountTab user={user} />}

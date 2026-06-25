@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Search, Activity, FileText, UserCheck, Star, 
   Quote, MessageSquare, GraduationCap, Menu, Bell, X, Trash2, 
   CheckCircle, ChevronDown, Settings, LogOut, Shield, AlertCircle, ShieldAlert, Heart, BookOpen,
-  Zap, Lock, ArrowLeft, Tag, MessageCircle, Phone
+  Zap, Lock, ArrowLeft, Tag, MessageCircle, Phone, Award
 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
@@ -36,11 +36,12 @@ function DashboardLayoutContent({ children }) {
     csContacts
   } = useAppContext();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showCsPopup, setShowCsPopup] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   const toggleNotifications = () => {
     const nextState = !showNotifications;
@@ -54,16 +55,17 @@ function DashboardLayoutContent({ children }) {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
-      // On mobile, start with sidebar closed
       if (mobile) setIsMobileMenuOpen(false);
+      else setIsMobileMenuOpen(true);
     };
     checkMobile();
+    setHasMounted(true);
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const activeTab = pathname.split('/')[2] || 'home';
-  const isAcademyMode = activeTab === 'materi' || activeTab === 'courses';
+  const isAcademyMode = activeTab === 'materi' || activeTab === 'courses' || activeTab === 'leaderboard';
   const isAccountMode = activeTab === 'account' || activeTab === 'admin';
   const hideSidebar = isAcademyMode || isAccountMode;
   const subTab = searchParams.get('sub') || 'curriculum';
@@ -97,9 +99,48 @@ function DashboardLayoutContent({ children }) {
   }, [user, isInitializing, router]);
 
   if (isInitializing) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
-       <div style={{ width: '40px', height: '40px', border: '3px solid #f1f5f9', borderTopColor: '#134E39', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      background: '#FFFFFF',
+      animation: 'fadeIn 0.5s ease-out'
+    }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '1.5rem',
+        animation: 'pulseGently 2s infinite ease-in-out'
+      }}>
+        <img src="/assets/logo.svg" alt="Separuh Agama Logo" style={{ width: '90px', height: '90px' }} />
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '950', color: '#134E39', letterSpacing: '-0.02em' }}>
+            Separuh <span style={{ color: '#D4AF37' }}>Agama</span>
+          </h2>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Platform Taaruf Syar'i
+          </p>
+        </div>
+      </div>
+      <div style={{ 
+        marginTop: '2.5rem', 
+        width: '40px', 
+        height: '40px', 
+        borderRadius: '50%', 
+        border: '3px solid rgba(19, 78, 57, 0.08)', 
+        borderTopColor: '#D4AF37', 
+        animation: 'spin 0.8s linear infinite' 
+      }} />
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGently {
+          0%, 100% { transform: scale(1); opacity: 0.95; }
+          50% { transform: scale(1.03); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 
@@ -184,8 +225,9 @@ function DashboardLayoutContent({ children }) {
               <>
                 <SidebarLink icon={<FileText size={20}/>} label="Review CV" active={activeTab === 'cv_review'} onClick={() => navigateTo('cv_review')} />
                 <SidebarLink icon={<Activity size={20}/>} label="Mediasi Taaruf" active={activeTab === 'mediate'} onClick={() => navigateTo('mediate')} />
-                <SidebarLink icon={<Star size={20}/>} label="Log Review" active={activeTab === 'reviews'} onClick={() => navigateTo('reviews')} />
+                <SidebarLink icon={<Star size={20}/>} label="Review Kandidat" active={activeTab === 'reviews'} onClick={() => navigateTo('reviews')} />
                 <SidebarLink icon={<ShieldAlert size={20}/>} label="Laporan" active={activeTab === 'reports'} onClick={() => navigateTo('reports')} />
+                <SidebarLink icon={<Quote size={20}/>} label="Testimoni" active={activeTab === 'testimonials'} onClick={() => navigateTo('testimonials')} />
               </>
             )}
             <SidebarLink icon={<MessageSquare size={20}/>} label="Saran & Masukan" active={activeTab === 'feedback'} onClick={() => navigateTo('feedback')} />
@@ -211,14 +253,14 @@ function DashboardLayoutContent({ children }) {
           <header className="academy-header" style={{
             height: 'auto', minHeight: '80px', background: 'white', 
             display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) auto minmax(150px, 1fr)', alignItems: 'center',
-            padding: '1rem 4%', position: 'sticky', top: 0, 
+            padding: '1rem 2%', position: 'sticky', top: 0, 
             zIndex: 1000, borderBottom: '1px solid #f1f5f9',
             boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-            gap: '15px',
+            gap: '12px',
             flexShrink: 0
           }}>
             {/* Left: Navigation Items */}
-            <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
               <div className="academy-nav-group" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {!isAdmin ? (
                 <>
@@ -227,13 +269,13 @@ function DashboardLayoutContent({ children }) {
                       setLmsView('dashboard');
                       router.push('/dashboard/materi');
                     }}
-                    className={`academy-nav-btn ${lmsView === 'dashboard' ? 'active' : ''}`}
+                    className={`academy-nav-btn ${lmsView === 'dashboard' && activeTab === 'materi' ? 'active' : ''}`}
                     style={{ 
-                      background: lmsView === 'dashboard' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
-                      color: lmsView === 'dashboard' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      background: lmsView === 'dashboard' && activeTab === 'materi' ? '#134E39' : 'none', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
+                      color: lmsView === 'dashboard' && activeTab === 'materi' ? 'white' : '#64748b', 
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
@@ -244,17 +286,33 @@ function DashboardLayoutContent({ children }) {
                       setLmsView('catalog');
                       router.push('/dashboard/materi');
                     }}
-                    className={`academy-nav-btn ${lmsView === 'catalog' ? 'active' : ''}`}
+                    className={`academy-nav-btn ${lmsView === 'catalog' && activeTab === 'materi' ? 'active' : ''}`}
                     style={{ 
-                      background: lmsView === 'catalog' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
-                      color: lmsView === 'catalog' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      background: lmsView === 'catalog' && activeTab === 'materi' ? '#134E39' : 'none', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
+                      color: lmsView === 'catalog' && activeTab === 'materi' ? 'white' : '#64748b', 
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
                     <BookOpen size={18} /> <span className="hide-on-tablet">DAFTAR KELAS</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      router.push('/dashboard/leaderboard');
+                    }}
+                    className={`academy-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                    style={{ 
+                      background: activeTab === 'leaderboard' ? '#134E39' : 'none', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
+                      color: activeTab === 'leaderboard' ? 'white' : '#64748b', 
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Award size={18} /> <span className="hide-on-tablet">PERINGKAT BELAJAR</span>
                   </button>
                 </>
               ) : (
@@ -264,10 +322,10 @@ function DashboardLayoutContent({ children }) {
                     className={`academy-nav-btn ${subTab === 'curriculum' ? 'active' : ''}`}
                     style={{ 
                       background: subTab === 'curriculum' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
                       color: subTab === 'curriculum' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
@@ -278,10 +336,10 @@ function DashboardLayoutContent({ children }) {
                     className={`academy-nav-btn ${subTab === 'enrollment' ? 'active' : ''}`}
                     style={{ 
                       background: subTab === 'enrollment' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
                       color: subTab === 'enrollment' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
@@ -292,10 +350,10 @@ function DashboardLayoutContent({ children }) {
                     className={`academy-nav-btn ${subTab === 'progress' ? 'active' : ''}`}
                     style={{ 
                       background: subTab === 'progress' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
                       color: subTab === 'progress' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
@@ -306,30 +364,45 @@ function DashboardLayoutContent({ children }) {
                     className={`academy-nav-btn ${subTab === 'category' ? 'active' : ''}`}
                     style={{ 
                       background: subTab === 'category' ? '#134E39' : 'none', 
-                      border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
                       color: subTab === 'category' ? 'white' : '#64748b', 
-                      padding: '0.6rem 1rem', borderRadius: '10px',
-                      fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
                       flexShrink: 0
                     }}
                   >
                     <Tag size={18} /> <span className="hide-on-tablet">KATEGORI</span>
                   </button>
+                  <button 
+                    onClick={() => router.push('/dashboard/courses?sub=leaderboard')}
+                    className={`academy-nav-btn ${subTab === 'leaderboard' ? 'active' : ''}`}
+                    style={{ 
+                      background: subTab === 'leaderboard' ? '#134E39' : 'none', 
+                      border: 'none', display: 'flex', alignItems: 'center', gap: '6px', 
+                      color: subTab === 'leaderboard' ? 'white' : '#64748b', 
+                      padding: '0.5rem 0.75rem', borderRadius: '10px',
+                      fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Award size={18} /> <span className="hide-on-tablet">KELOLA PERINGKAT</span>
+                  </button>
                 </>
               )}
               </div>
               
-              <div className="hide-on-mobile" style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 5px', flexShrink: 0 }}></div>
+              <div className="hide-on-mobile" style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 3px', flexShrink: 0 }}></div>
 
               <button 
                 onClick={() => {
                   setLmsView('welcome');
                   router.push('/dashboard/home');
                 }} 
+                className="academy-nav-btn"
                 style={{ 
                   background: '#f0fdf4', color: '#134E39', border: '1px solid #dcfce7', 
-                  padding: '0.6rem 1rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800', 
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '0.5rem 0.75rem', borderRadius: '10px', fontSize: '0.7rem', fontWeight: '800', 
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
                   flexShrink: 0
                 }}
               >

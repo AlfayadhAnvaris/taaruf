@@ -2220,7 +2220,8 @@ select.form-control {
 }
 .testi-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+  border-color: #cbd5e1;
 }
 .testi-text {
   font-size: 1rem;
@@ -3193,9 +3194,12 @@ pre, code {
 }
 
 /* Responsive Hide Utilities */
-@media (max-width: 1024px) {
+@media (max-width: 1250px) {
   .hide-on-tablet {
     display: none !important;
+  }
+  .academy-nav-btn {
+    padding: 0.5rem 0.6rem !important;
   }
 }
 
@@ -3947,6 +3951,11 @@ pre, code {
 .main-content:has(.cv-root),
 .main-content:has(.viewing-cv) {
   padding: 0 !important;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.filter-scroll-strip::-webkit-scrollbar {
+  display: none;
 }
 
 

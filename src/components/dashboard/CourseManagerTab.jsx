@@ -9,6 +9,7 @@ import {
   Activity, Zap, Upload, GripVertical, Search, RefreshCw, Eye, XCircle, Tag
 } from 'lucide-react';
 import AdminEnrollmentTab from './AdminEnrollmentTab';
+import AdminLeaderboardTab from './AdminLeaderboardTab';
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -845,6 +846,8 @@ export default function CourseManagerTab() {
         <div style={{ animation: 'fadeIn 0.3s ease' }}>
           {subTab === 'enrollment' ? (
              <AdminEnrollmentTab showAlert={(t, m, s) => showToast(m, s)} />
+           ) : subTab === 'leaderboard' ? (
+             <AdminLeaderboardTab />
            ) : subTab === 'category' ? (
              <div style={{ padding: isMobile ? '1rem' : '2rem 4%', display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', boxSizing: 'border-box' }}>
                {/* Sub-tab Toggle Bar */}

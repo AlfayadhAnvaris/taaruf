@@ -15,6 +15,7 @@ import AdminAccountTab from './AdminAccountTab';
 import AdminTestimonialsTab from './AdminTestimonialsTab';
 import AdminReviewTab from './AdminReviewTab';
 import AdminReportsTab from './AdminReportsTab';
+import AdminLeaderboardTab from './AdminLeaderboardTab';
 
 export default function AdminDashboard({ activeTab }) {
   const { user, showAlert } = useAppContext();
@@ -32,6 +33,7 @@ export default function AdminDashboard({ activeTab }) {
       case 'reports': return 'Laporan Pelanggaran';
       case 'testimonials': return 'Manajemen Testimoni';
       case 'admin': return 'Pengaturan Admin';
+      case 'leaderboard': return 'Kelola Peringkat';
       default: return 'Portal Admin';
     }
   };
@@ -70,6 +72,7 @@ export default function AdminDashboard({ activeTab }) {
         {activeTab === 'reviews' && <AdminReviewsTab />}
         {activeTab === 'reports' && <AdminReportsTab showAlert={showAlert} />}
         {activeTab === 'testimonials' && <AdminTestimonialsTab />}
+        {activeTab === 'leaderboard' && <AdminLeaderboardTab />}
         {activeTab === 'admin' && <AdminAccountTab />}
       </div>
     </div>

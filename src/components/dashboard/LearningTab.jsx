@@ -18,7 +18,14 @@ export default function LearningTab({
   markLessonDone,
   setActiveTab, enrollClass, selectClassForPlayer, lmsLoading
 }) {
-  const { user, csContacts } = useAppContext();
+  const { user, csContacts, leaderboard, fetchLeaderboard, getAcademyBadge } = useAppContext();
+  const [dashboardTab, setDashboardTab] = useState('classes'); // 'classes' or 'leaderboard'
+
+  React.useEffect(() => {
+    if (dashboardTab === 'leaderboard' && fetchLeaderboard) {
+      fetchLeaderboard();
+    }
+  }, [dashboardTab, fetchLeaderboard]);
 
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -249,6 +256,9 @@ export default function LearningTab({
             : [])
         ];
 
+    const currentUserRank = (leaderboard || []).findIndex(item => item.user_id === user?.id) + 1 || null;
+    const currentUserData = (leaderboard || []).find(item => item.user_id === user?.id) || null;
+
     return (
       <div key="academy-dashboard" className="academy-dashboard-container">
         <style>{`
@@ -462,117 +472,378 @@ export default function LearningTab({
                </div>
             </div>
  
-            {/* DAFTAR KELAS SECTION */}
+            {/* DAFTAR KELAS & LEADERBOARD SECTION */}
             <div style={{ 
               background: 'white', borderRadius: '16px', padding: 'clamp(1.5rem, 5vw, 3rem)', 
               border: '1px solid #E4EDE8', boxShadow: '0 20px 40px rgba(19, 78, 57, 0.015)' 
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 'clamp(1.25rem, 3vw, 1.65rem)', fontWeight: '950', color: '#134E39', letterSpacing: '-0.01em' }}>Daftar Kelas Anda</h3>
-                  <p style={{ margin: '0.4rem 0 0', color: '#64748B', fontSize: '0.85rem', fontWeight: 600 }}>Lanjutkan materi yang belum Anda selesaikan.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem', borderBottom: '1px solid #E4EDE8', paddingBottom: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                  <button 
+                    onClick={() => setDashboardTab('classes')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      borderBottom: dashboardTab === 'classes' ? '3px solid #134E39' : '3px solid transparent',
+                      color: dashboardTab === 'classes' ? '#134E39' : '#94A3B8',
+                      paddingBottom: '0.5rem',
+                      fontWeight: '900',
+                      fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontFamily: "'Plus Jakarta Sans', sans-serif"
+                    }}
+                  >
+                    Kelas Saya
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('leaderboard')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      borderBottom: dashboardTab === 'leaderboard' ? '3px solid #134E39' : '3px solid transparent',
+                      color: dashboardTab === 'leaderboard' ? '#134E39' : '#94A3B8',
+                      paddingBottom: '0.5rem',
+                      fontWeight: '900',
+                      fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontFamily: "'Plus Jakarta Sans', sans-serif"
+                    }}
+                  >
+                    Peringkat Belajar
+                  </button>
                 </div>
-                <button 
-                  onClick={() => setLmsView('catalog')}
-                  style={{ 
-                    background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', 
-                    padding: '0.8rem 1.5rem', borderRadius: '14px', fontWeight: '900', 
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                    fontSize: '0.8rem', transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = 'rgba(19,78,57,0.1)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'rgba(19,78,57,0.05)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <Search size={16} /> JELAJAHI KELAS
-                </button>
+                
+                {dashboardTab === 'classes' && (
+                  <button 
+                    onClick={() => setLmsView('catalog')}
+                    style={{ 
+                      background: 'rgba(19,78,57,0.05)', color: '#134E39', border: 'none', 
+                      padding: '0.8rem 1.5rem', borderRadius: '14px', fontWeight: '900', 
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                      fontSize: '0.8rem', transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(19,78,57,0.1)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(19,78,57,0.05)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    <Search size={16} /> JELAJAHI KELAS
+                  </button>
+                )}
               </div>
  
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {classes.filter(c => c.isEnrolled).length > 0 ? (
-                  classes.filter(c => c.isEnrolled).map(cls => {
-                    const clsLessons = cls.modules.flatMap(m => m.items);
-                    const clsDone = clsLessons.filter(l => l.done).length;
-                    const clsTotal = clsLessons.length;
-                    const pct = clsTotal > 0 ? Math.round((clsDone / clsTotal) * 100) : 0;
-                    return (
-                      <div key={cls.id} className="class-item-card" style={{ opacity: cls.isSuspended ? 0.85 : 1 }}>
-                        <div style={{ width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
-                          <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: cls.isSuspended ? 'grayscale(100%)' : 'none' }} />
-                        </div>
-                        <div style={{ flex: '1 1 200px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)', color: '#1e40af', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(59, 130, 246, 0.15)', flexShrink: 0 }}>
-                              {cls.category || 'Umum'}
-                            </span>
-                            <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(71, 85, 105, 0.08)', color: '#475569', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(71, 85, 105, 0.15)', flexShrink: 0 }}>
-                              {cls.level || 'Dasar'}
-                            </span>
-                            <div style={{ fontWeight: '950', fontSize: '1.25rem', color: cls.isSuspended ? '#64748b' : '#134E39', letterSpacing: '-0.01em' }}>{cls.title}</div>
-                            {cls.isSuspended && (
-                              <span style={{ fontSize: '0.65rem', fontWeight: '800', background: '#fee2e2', color: '#b91c1c', padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Akses Ditangguhkan</span>
-                            )}
+              {dashboardTab === 'classes' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {classes.filter(c => c.isEnrolled).length > 0 ? (
+                    classes.filter(c => c.isEnrolled).map(cls => {
+                      const clsLessons = cls.modules.flatMap(m => m.items);
+                      const clsDone = clsLessons.filter(l => l.done).length;
+                      const clsTotal = clsLessons.length;
+                      const pct = clsTotal > 0 ? Math.round((clsDone / clsTotal) * 100) : 0;
+                      return (
+                        <div key={cls.id} className="class-item-card" style={{ opacity: cls.isSuspended ? 0.85 : 1 }}>
+                          <div style={{ width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid #E4EDE8', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
+                            <img src={cls.banner_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=200&auto=format&fit=crop"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: cls.isSuspended ? 'grayscale(100%)' : 'none' }} />
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', opacity: cls.isSuspended ? 0.5 : 1 }}>
-                            <div style={{ flex: 1, height: '8px', background: '#F1F5F9', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #134E39 0%, #1e6b52 100%)', borderRadius: '99px', transition: 'width 0.8s ease' }} />
+                          <div style={{ flex: '1 1 200px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)', color: '#1e40af', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(59, 130, 246, 0.15)', flexShrink: 0 }}>
+                                {cls.category || 'Umum'}
+                              </span>
+                              <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(71, 85, 105, 0.08)', color: '#475569', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em', border: '1px solid rgba(71, 85, 105, 0.15)', flexShrink: 0 }}>
+                                {cls.level || 'Dasar'}
+                              </span>
+                              <div style={{ fontWeight: '950', fontSize: '1.25rem', color: cls.isSuspended ? '#64748b' : '#134E39', letterSpacing: '-0.01em' }}>{cls.title}</div>
+                              {cls.isSuspended && (
+                                <span style={{ fontSize: '0.65rem', fontWeight: '800', background: '#fee2e2', color: '#b91c1c', padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Akses Ditangguhkan</span>
+                              )}
                             </div>
-                            <span style={{ fontSize: '0.9rem', fontWeight: '900', color: '#134E39', minWidth: '45px', textAlign: 'right' }}>{pct}%</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', opacity: cls.isSuspended ? 0.5 : 1 }}>
+                              <div style={{ flex: 1, height: '8px', background: '#F1F5F9', borderRadius: '99px', overflow: 'hidden' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #134E39 0%, #1e6b52 100%)', borderRadius: '99px', transition: 'width 0.8s ease' }} />
+                              </div>
+                              <span style={{ fontSize: '0.9rem', fontWeight: '900', color: '#134E39', minWidth: '45px', textAlign: 'right' }}>{pct}%</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if (cls.isSuspended) return;
+                              if (pct === 100) setActiveTab(`certificate/${cls.id}`);
+                              else selectClassForPlayer(cls);
+                            }}
+                            disabled={cls.isSuspended}
+                            style={{ 
+                              background: cls.isSuspended ? '#e2e8f0' : (pct === 100 ? '#D4AF37' : '#134E39'), 
+                              color: cls.isSuspended ? '#94a3b8' : (pct === 100 ? '#134E39' : 'white'), 
+                              border: 'none', padding: '0.9rem 1.75rem', 
+                              borderRadius: '14px', fontWeight: '900', 
+                              fontSize: '0.85rem', cursor: cls.isSuspended ? 'not-allowed' : 'pointer', 
+                              boxShadow: cls.isSuspended ? 'none' : (pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)'), 
+                              transition: 'all 0.2s',
+                              minWidth: '160px',
+                              textAlign: 'center'
+                            }}
+                            onMouseEnter={e => {
+                              if (cls.isSuspended) return;
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = pct === 100 ? '0 12px 25px rgba(212,175,55,0.35)' : '0 12px 25px rgba(19,78,57,0.25)';
+                            }}
+                            onMouseLeave={e => {
+                              if (cls.isSuspended) return;
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)';
+                            }}
+                          >
+                            {cls.isSuspended ? 'DITANGGUHKAN' : (pct === 100 ? 'SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR'))}
+                          </button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#F8FAF9', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
+                       <BookOpen size={64} color="#CBD5E1" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
+                       <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#134E39', marginBottom: '1rem' }}>Belum Ada Kelas</h3>
+                       <p style={{ color: '#64748B', fontWeight: '600', maxWidth: '400px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>Anda belum terdaftar di kelas manapun. Silakan pilih kelas dari daftar kelas kami untuk memulai.</p>
+                       <button onClick={() => setLmsView('catalog')} style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 3rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>LIHAT DAFTAR KELAS</button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ animation: 'fadeIn 0.35s ease', width: '100%' }}>
+                  <style>{`
+                    .rank-row {
+                      display: grid;
+                      grid-template-columns: 80px 1fr 200px 120px;
+                      align-items: center;
+                      padding: 1.25rem 1.5rem;
+                      border-bottom: 1px solid #f1f5f9;
+                      transition: all 0.2s;
+                    }
+                    .rank-row:hover {
+                      background: #F8FAF9;
+                    }
+                    .rank-badge {
+                      width: 32px;
+                      height: 32px;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-weight: 900;
+                      font-size: 0.85rem;
+                    }
+                    @media (max-width: 768px) {
+                      .rank-row {
+                        grid-template-columns: 50px 1fr 100px;
+                        padding: 1rem 0.75rem;
+                        gap: 8px;
+                      }
+                      .rank-badge-col {
+                        display: none !important;
+                      }
+                    }
+                  `}</style>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                    {leaderboard.length > 0 ? (
+                      <div style={{ border: '1px solid #E4EDE8', borderRadius: '16px', overflow: 'hidden', background: 'white' }}>
+                        {/* Header Row */}
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: '80px 1fr 200px 120px', 
+                          background: '#F8FAF9', 
+                          padding: '1rem 1.5rem', 
+                          borderBottom: '1px solid #E4EDE8',
+                          fontWeight: '800',
+                          color: '#134E39',
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }} className="rank-row">
+                          <div>Posisi</div>
+                          <div>Kandidat / Siswa</div>
+                          <div className="rank-badge-col">Lencana Keilmuan</div>
+                          <div style={{ textAlign: 'right' }}>Materi Selesai</div>
+                        </div>
+
+                        {/* Leaderboard Rows */}
+                        {leaderboard.slice(0, 50).map((item, idx) => {
+                          const rank = idx + 1;
+                          const isSelf = item.user_id === user?.id;
+                          const badge = getAcademyBadge ? getAcademyBadge(item.completed_lessons_count) : null;
+                          const totalLessonsCount = classes.reduce((acc, cls) => acc + (cls.isSuspended ? 0 : cls.modules.flatMap(m => m.items).length), 0);
+                          
+                          // Rank styling
+                          let rankBg = '#f1f5f9';
+                          let rankColor = '#475569';
+                          if (rank === 1) { rankBg = 'linear-gradient(135deg, #FDE047 0%, #EAB308 100%)'; rankColor = 'white'; }
+                          else if (rank === 2) { rankBg = 'linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%)'; rankColor = 'white'; }
+                          else if (rank === 3) { rankBg = 'linear-gradient(135deg, #FFEDD5 0%, #D97706 100%)'; rankColor = 'white'; }
+
+                          return (
+                            <div key={`${item.user_id}-${idx}`} className="rank-row" style={{ 
+                              background: isSelf ? '#F0FDF4' : 'transparent',
+                              borderLeft: isSelf ? '4px solid #134E39' : '4px solid transparent'
+                            }}>
+                              {/* Rank */}
+                              <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div className="rank-badge" style={{ background: rankBg, color: rankColor }}>
+                                  {rank}
+                                </div>
+                              </div>
+
+                              {/* User profile */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                {item.foto_url ? (
+                                  <img 
+                                    src={item.foto_url} 
+                                    alt="" 
+                                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #E4EDE8' }} 
+                                  />
+                                ) : (
+                                  <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    borderRadius: '50%', 
+                                    background: item.gender === 'akhwat' ? '#FDF2F8' : '#F0FDF4', 
+                                    color: item.gender === 'akhwat' ? '#DB2777' : '#16A34A', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    fontWeight: '800',
+                                    fontSize: '0.8rem',
+                                    border: '1px dashed ' + (item.gender === 'akhwat' ? '#FBCFE8' : '#BBF7D0')
+                                  }}>
+                                    {item.alias ? item.alias.substring(0, 2).toUpperCase() : 'SA'}
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={{ fontWeight: '800', color: '#134E39', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {item.alias}
+                                    {isSelf && <span style={{ fontSize: '0.65rem', background: '#134E39', color: 'white', padding: '1px 6px', borderRadius: '4px', fontWeight: '900' }}>ANDA</span>}
+                                  </div>
+                                  <div style={{ fontSize: '0.72rem', color: '#64748B', textTransform: 'capitalize', fontWeight: '600', marginTop: '2px' }}>
+                                    {item.gender}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Badge */}
+                              <div className="rank-badge-col">
+                                {badge ? (
+                                  <div style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: `${badge.color}12`,
+                                    color: badge.color,
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: '800',
+                                    border: `1.5px solid ${badge.color}25`
+                                  }}>
+                                    {badge.icon}
+                                    <span>{badge.label.split(' ')[0]}</span>
+                                  </div>
+                                ) : (
+                                  <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontStyle: 'italic', fontWeight: '500' }}>Belum memiliki badge</span>
+                                )}
+                              </div>
+
+                              {/* completed lessons */}
+                              <div style={{ textAlign: 'right', fontWeight: '900', color: '#134E39', fontSize: '0.9rem' }}>
+                                {item.completed_lessons_count} <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: '700' }}>/ {totalLessonsCount}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#F8FAF9', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
+                         <Award size={64} color="#CBD5E1" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
+                         <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#134E39', marginBottom: '1rem' }}>Belum Ada Peringkat</h3>
+                         <p style={{ color: '#64748B', fontWeight: '600', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>Jadilah orang pertama yang menyelesaikan kelas dan menduduki peringkat teratas belajar akademi!</p>
+                      </div>
+                    )}
+
+                    {/* Current User rank banner */}
+                    {currentUserRank && currentUserData && (
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', 
+                        color: 'white', 
+                        padding: '1.25rem 2rem', 
+                        borderRadius: '16px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxShadow: '0 10px 25px rgba(19, 78, 57, 0.15)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        marginTop: '0.5rem',
+                        flexWrap: 'wrap',
+                        gap: '1rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <div style={{ 
+                            width: '44px', 
+                            height: '44px', 
+                            borderRadius: '50%', 
+                            background: 'rgba(255, 255, 255, 0.15)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            fontWeight: '900',
+                            fontSize: '1.1rem',
+                            border: '1px solid rgba(255,255,255,0.25)',
+                            color: '#D4AF37'
+                          }}>
+                            #{currentUserRank}
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900' }}>Posisi Belajar Anda</h4>
+                            <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
+                              Terus tingkatkan progres belajar Anda untuk menduduki posisi puncak.
+                            </p>
                           </div>
                         </div>
-                        <button 
-                          onClick={() => {
-                            if (cls.isSuspended) return;
-                            if (pct === 100) setActiveTab(`certificate/${cls.id}`);
-                            else selectClassForPlayer(cls);
-                          }}
-                          disabled={cls.isSuspended}
-                          style={{ 
-                            background: cls.isSuspended ? '#e2e8f0' : (pct === 100 ? '#D4AF37' : '#134E39'), 
-                            color: cls.isSuspended ? '#94a3b8' : (pct === 100 ? '#134E39' : 'white'), 
-                            border: 'none', padding: '0.9rem 1.75rem', 
-                            borderRadius: '14px', fontWeight: '900', 
-                            fontSize: '0.85rem', cursor: cls.isSuspended ? 'not-allowed' : 'pointer', 
-                            boxShadow: cls.isSuspended ? 'none' : (pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)'), 
-                            transition: 'all 0.2s',
-                            minWidth: '160px',
-                            textAlign: 'center'
-                          }}
-                          onMouseEnter={e => {
-                            if (cls.isSuspended) return;
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = pct === 100 ? '0 12px 25px rgba(212,175,55,0.35)' : '0 12px 25px rgba(19,78,57,0.25)';
-                          }}
-                          onMouseLeave={e => {
-                            if (cls.isSuspended) return;
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = pct === 100 ? '0 8px 20px rgba(212,175,55,0.25)' : '0 8px 20px rgba(19,78,57,0.15)';
-                          }}
-                        >
-                          {cls.isSuspended ? 'DITANGGUHKAN' : (pct === 100 ? 'SERTIFIKAT' : (pct > 0 ? 'LANJUTKAN' : 'MULAI BELAJAR'))}
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                          {getAcademyBadge && getAcademyBadge(currentUserData.completed_lessons_count) && (
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: 'rgba(255,255,255,0.1)',
+                              color: '#D4AF37',
+                              padding: '6px 14px',
+                              borderRadius: '8px',
+                              fontSize: '0.75rem',
+                              fontWeight: '900',
+                              border: '1px solid rgba(255,255,255,0.15)'
+                            }}>
+                              {getAcademyBadge(currentUserData.completed_lessons_count).icon}
+                              <span>{getAcademyBadge(currentUserData.completed_lessons_count).label.split(' ')[0]}</span>
+                            </div>
+                          )}
+                          <div style={{ fontSize: '1.25rem', fontWeight: '950', color: '#D4AF37' }}>
+                            {currentUserData.completed_lessons_count} <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', fontWeight: '700' }}>/ {totalLessonsCount} Materi</span>
+                          </div>
+                        </div>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#F8FAF9', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
-                     <BookOpen size={64} color="#CBD5E1" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
-                     <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#134E39', marginBottom: '1rem' }}>Belum Ada Kelas</h3>
-                     <p style={{ color: '#64748B', fontWeight: '600', maxWidth: '400px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>Anda belum terdaftar di kelas manapun. Silakan pilih kelas dari daftar kelas kami untuk memulai.</p>
-                     <button onClick={() => setLmsView('catalog')} style={{ background: '#134E39', color: 'white', border: 'none', padding: '1.2rem 3rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 20px rgba(19,78,57,0.2)' }}>LIHAT DAFTAR KELAS</button>
+                    )}
                   </div>
-                )}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
   // ============================
   // VIEW: WELCOME / INTRO
@@ -855,27 +1126,32 @@ export default function LearningTab({
             </div>
           </div>
 
-          {/* Kategori & Level Pills */}
+          {/* Kategori & Level Filters — Mobile-optimized horizontal scroll strips */}
           {categories.length > 0 && (
             <div style={{ 
               display: 'flex', 
-              flexDirection: 'row', 
-              flexWrap: 'wrap',
-              gap: '1.75rem', 
+              flexDirection: 'column', 
+              gap: '12px', 
               width: '100%', 
               borderTop: '1px solid #f1f5f9', 
               paddingTop: '1.25rem', 
-              marginTop: '0.5rem',
-              textAlign: 'left'
+              marginTop: '0.5rem'
             }}>
-              {/* Kategori Column */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 auto', minWidth: '290px' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>Kategori</span>
-                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                  <span style={{ fontWeight: '500', textTransform: 'none', color: '#cbd5e1' }}>Pilih bidang studi</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {/* Kategori Row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', overflow: 'hidden' }}>
+                <span style={{ 
+                  fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8', 
+                  textTransform: 'uppercase', letterSpacing: '0.1em', 
+                  flexShrink: 0, whiteSpace: 'nowrap'
+                }}>
+                  Kategori
+                </span>
+                <div className="filter-scroll-strip" style={{ 
+                  display: 'flex', gap: '6px', overflowX: 'auto', 
+                  scrollbarWidth: 'none', msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  paddingBottom: '2px', flex: 1, minWidth: 0
+                }}>
                   {['all', ...categories.map(c => c.name)].map(cat => {
                     const isActive = selectedCategory === cat;
                     return (
@@ -883,48 +1159,43 @@ export default function LearningTab({
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
                         style={{
-                          padding: '0.45rem 1.1rem',
+                          padding: '6px 14px',
                           borderRadius: '99px',
-                          border: '1px solid ' + (isActive ? '#134E39' : '#e2e8f0'),
+                          border: isActive ? '1.5px solid #134E39' : '1px solid #e2e8f0',
                           fontWeight: '700',
-                          fontSize: '0.72rem',
+                          fontSize: '0.7rem',
                           cursor: 'pointer',
                           transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                           background: isActive ? '#134E39' : '#ffffff',
                           color: isActive ? '#ffffff' : '#64748b',
-                          boxShadow: isActive ? '0 4px 12px rgba(19, 78, 57, 0.15)' : 'none',
-                        }}
-                        onMouseEnter={e => {
-                          if (!isActive) {
-                            e.currentTarget.style.borderColor = '#cbd5e1';
-                            e.currentTarget.style.background = '#f8fafc';
-                            e.currentTarget.style.color = '#1e293b';
-                          }
-                        }}
-                        onMouseLeave={e => {
-                          if (!isActive) {
-                            e.currentTarget.style.borderColor = '#e2e8f0';
-                            e.currentTarget.style.background = '#ffffff';
-                            e.currentTarget.style.color = '#64748b';
-                          }
+                          boxShadow: isActive ? '0 4px 10px rgba(19, 78, 57, 0.12)' : 'none',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0
                         }}
                       >
-                        {cat === 'all' ? 'Semua Kategori' : cat}
+                        {cat === 'all' ? 'Semua' : cat}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Level Column */}
+              {/* Level Row */}
               {levels.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 auto', minWidth: '220px' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>Tingkatan</span>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                    <span style={{ fontWeight: '500', textTransform: 'none', color: '#cbd5e1' }}>Pilih tingkat kesulitan</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', overflow: 'hidden' }}>
+                  <span style={{ 
+                    fontSize: '0.65rem', fontWeight: '900', color: '#94a3b8', 
+                    textTransform: 'uppercase', letterSpacing: '0.1em', 
+                    flexShrink: 0, whiteSpace: 'nowrap'
+                  }}>
+                    Tingkatan
+                  </span>
+                  <div className="filter-scroll-strip" style={{ 
+                    display: 'flex', gap: '6px', overflowX: 'auto', 
+                    scrollbarWidth: 'none', msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingBottom: '2px', flex: 1, minWidth: 0
+                  }}>
                     {['all', ...levels.map(l => l.name)].map(lvl => {
                       const isActive = selectedLevel === lvl;
                       return (
@@ -932,33 +1203,21 @@ export default function LearningTab({
                           key={lvl}
                           onClick={() => setSelectedLevel(lvl)}
                           style={{
-                            padding: '0.45rem 1.1rem',
+                            padding: '6px 14px',
                             borderRadius: '99px',
-                            border: '1px solid ' + (isActive ? '#475569' : '#e2e8f0'),
+                            border: isActive ? '1.5px solid #475569' : '1px solid #e2e8f0',
                             fontWeight: '700',
-                            fontSize: '0.72rem',
+                            fontSize: '0.7rem',
                             cursor: 'pointer',
                             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                             background: isActive ? '#475569' : '#ffffff',
                             color: isActive ? '#ffffff' : '#64748b',
-                            boxShadow: isActive ? '0 4px 12px rgba(71, 85, 105, 0.15)' : 'none',
-                          }}
-                          onMouseEnter={e => {
-                            if (!isActive) {
-                              e.currentTarget.style.borderColor = '#cbd5e1';
-                              e.currentTarget.style.background = '#f8fafc';
-                              e.currentTarget.style.color = '#1e293b';
-                            }
-                          }}
-                          onMouseLeave={e => {
-                            if (!isActive) {
-                              e.currentTarget.style.borderColor = '#e2e8f0';
-                              e.currentTarget.style.background = '#ffffff';
-                              e.currentTarget.style.color = '#64748b';
-                            }
+                            boxShadow: isActive ? '0 4px 10px rgba(71, 85, 105, 0.12)' : 'none',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
                           }}
                         >
-                          {lvl === 'all' ? 'Semua Level' : lvl}
+                          {lvl === 'all' ? 'Semua' : lvl}
                         </button>
                       );
                     })}
@@ -1252,7 +1511,7 @@ export default function LearningTab({
 
   return (
     <div className="lms-player" style={{ 
-      height: isMobile ? 'calc(100dvh - 80px)' : 'calc(100vh - 100px)', 
+      height: isMobile ? 'calc(100dvh - 64px)' : 'calc(100vh - 100px)', 
       display: 'flex', 
       background: '#fff', 
       position: 'relative',
@@ -1477,13 +1736,23 @@ export default function LearningTab({
               {activeLesson && activeLesson.type !== 'quiz' && (
                 <div style={{ 
                   display: 'flex', 
-                  flexDirection: isMobile ? 'column-reverse' : 'row',
+
                   justifyContent: 'space-between', 
                   alignItems: isMobile ? 'stretch' : 'center', 
-                  marginTop: '4rem', 
-                  padding: '2.5rem 0',
+                  marginTop: isMobile ? '2rem' : '4rem', 
+                  padding: isMobile ? '1.5rem 0' : '2.5rem 0',
                   borderTop: '1px solid #F1F5F9',
-                  gap: '1.25rem'
+                  gap: '1.25rem',
+                  ...(isMobile && {
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'white',
+                    zIndex: 20,
+                    boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+                    padding: '1rem'
+                  })
                 }}>
                   <div style={{ display: 'flex', flex: isMobile ? 1 : 'none' }}>
                     {currentLessonIdx > 0 && (
