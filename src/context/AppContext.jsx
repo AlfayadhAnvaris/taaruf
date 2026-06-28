@@ -48,7 +48,15 @@ if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
     const msg = event.reason?.message || '';
     const name = event.reason?.name || '';
-    if (name === 'AbortError' || name === 'AuthRetryableFetchError' || msg.includes('steal') || msg.includes('Failed to fetch')) {
+    if (
+      name === 'AbortError' || 
+      name === 'AuthRetryableFetchError' || 
+      msg.includes('steal') || 
+      msg.includes('Failed to fetch') || 
+      msg.includes('refresh_token') || 
+      msg.includes('Refresh Token') ||
+      msg.includes('refresh token')
+    ) {
       event.preventDefault(); // Mute Next.js dev overlay
     }
   });
@@ -58,8 +66,17 @@ if (typeof window !== 'undefined') {
   console.error = (...args) => {
     const firstArg = args[0];
     if (firstArg) {
-      const isAuthError = (typeof firstArg === 'object' && firstArg.name === 'AuthRetryableFetchError') ||
-                          (typeof firstArg === 'string' && (firstArg.includes('AuthRetryableFetchError') || firstArg.includes('Failed to fetch') || firstArg.includes('Lock')));
+      const msgStr = typeof firstArg === 'string' ? firstArg : (firstArg.message || '');
+      const isAuthError = 
+        (typeof firstArg === 'object' && (firstArg.name === 'AuthRetryableFetchError' || msgStr.includes('Refresh Token') || msgStr.includes('refresh_token') || msgStr.includes('refresh token'))) ||
+        (typeof firstArg === 'string' && (
+          firstArg.includes('AuthRetryableFetchError') || 
+          firstArg.includes('Failed to fetch') || 
+          firstArg.includes('Lock') || 
+          firstArg.includes('refresh_token') || 
+          firstArg.includes('Refresh Token') || 
+          firstArg.includes('refresh token')
+        ));
       if (isAuthError) return; // Mute
     }
     originalConsoleError(...args);
@@ -375,9 +392,30 @@ export const AppContextProvider = ({ children }) => {
 
         const { data: { session }, error: sessionError } = sessionResult;
         
+        const clearLocalAuthData = () => {
+          if (typeof window !== 'undefined') {
+            try {
+              const params = new URLSearchParams(window.location.search);
+              const sid = params.get('sid');
+              // Remove tokens with current sid prefix or global auth-tokens
+              for (let i = window.localStorage.length - 1; i >= 0; i--) {
+                const key = window.localStorage.key(i);
+                if (key && (key.startsWith('sb-') || key.includes('auth-token'))) {
+                  if (!sid || key.includes(sid) || !key.includes('-')) {
+                    window.localStorage.removeItem(key);
+                  }
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to clear local auth data:', e);
+            }
+          }
+        };
+
         if (sessionError) {
           console.warn('Session Warning (Ignored in Dev):', sessionError.message || sessionError);
-          // If the refresh token is invalid / not found, local signout
+          // If the refresh token is invalid / not found, local signout and clear local storage
+          clearLocalAuthData();
           await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
           setUser(null);
         } else if (session) {
@@ -394,6 +432,16 @@ export const AppContextProvider = ({ children }) => {
         }
       } catch (err) {
         console.warn('AppContext: initSession warning (Ignored in Dev):', err.message || err);
+        if (typeof window !== 'undefined') {
+          try {
+            for (let i = window.localStorage.length - 1; i >= 0; i--) {
+              const key = window.localStorage.key(i);
+              if (key && (key.startsWith('sb-') || key.includes('auth-token'))) {
+                window.localStorage.removeItem(key);
+              }
+            }
+          } catch {}
+        }
         await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
         setUser(null);
       } finally {

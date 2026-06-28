@@ -434,7 +434,7 @@ export default function AdminMediateTab() {
           <Search size={18} color="#94A3B8" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
           <input 
             type="text" 
-            placeholder="Cari berdasarkan nama atau ID mediasi..." 
+            placeholder="Cari berdasarkan nama..." 
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             className="search-input-mediate"
@@ -480,7 +480,7 @@ export default function AdminMediateTab() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}>
-                <div>ID & Tanggal</div>
+                <div>Tanggal</div>
                 <div>Pasangan Taaruf</div>
                 <div>Status Tahapan</div>
                 <div>Aksi Mediasi</div>
@@ -511,20 +511,32 @@ export default function AdminMediateTab() {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '850', color: '#94a3b8' }}>
-                        #{req.id.substring(0, 8).toUpperCase()}
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>
+                        {new Date(req.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
-                      <span style={{ 
-                        fontSize: '0.7rem', 
-                        fontWeight: '850', 
-                        padding: '2px 8px', 
-                        borderRadius: '6px', 
-                        background: config.bg, 
-                        color: config.text,
-                        border: `1px solid ${config.text}20`
-                      }}>
-                        {config.label}
-                      </span>
+                      <select
+                        value={req.status}
+                        onChange={(e) => updateTaarufStatus(req.id, e.target.value)}
+                        style={{ 
+                          fontSize: '0.7rem', 
+                          fontWeight: '850', 
+                          padding: '2px 8px', 
+                          borderRadius: '6px', 
+                          background: config.bg, 
+                          color: config.text,
+                          border: `1px solid ${config.text}20`,
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="pending_target" style={{ background: 'white', color: '#1e293b' }}>Menunggu Persetujuan</option>
+                        <option value="pending_admin" style={{ background: 'white', color: '#1e293b' }}>Verifikasi Ustadz</option>
+                        <option value="qna" style={{ background: 'white', color: '#1e293b' }}>Sesi Q&A</option>
+                        <option value="wali_process" style={{ background: 'white', color: '#1e293b' }}>Proses Wali</option>
+                        <option value="meet" style={{ background: 'white', color: '#1e293b' }}>Nadzhor/Pertemuan</option>
+                        <option value="completed" style={{ background: 'white', color: '#1e293b' }}>Berhasil/Nikah</option>
+                        <option value="rejected" style={{ background: 'white', color: '#1e293b' }}>Dibatalkan</option>
+                      </select>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: '750', color: '#1e293b' }}>
@@ -639,13 +651,10 @@ export default function AdminMediateTab() {
                     position: 'relative'
                   }}
                 >
-                  {/* 1. ID & Tanggal */}
+                  {/* 1. Tanggal */}
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '850', color: '#1e293b' }}>
-                      #{req.id.substring(0, 8).toUpperCase()}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>
-                      {new Date(req.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                    <span style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: '750' }}>
+                      {new Date(req.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
 
@@ -662,17 +671,38 @@ export default function AdminMediateTab() {
 
                   {/* 3. Status Badge */}
                   <div>
-                    <span style={{ 
-                      fontSize: '0.7rem', 
-                      fontWeight: '900', 
-                      padding: '4px 10px', 
-                      borderRadius: '6px', 
-                      background: config.bg, 
-                      color: config.text,
-                      border: `1px solid ${config.text}20`
-                    }}>
-                      {config.label}
-                    </span>
+                    <select
+                      value={req.status}
+                      onChange={(e) => updateTaarufStatus(req.id, e.target.value)}
+                      style={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: '900', 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        background: config.bg, 
+                        color: config.text,
+                        border: `1px solid ${config.text}20`,
+                        outline: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.filter = 'brightness(0.95)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.filter = 'none';
+                        e.currentTarget.style.transform = 'none';
+                      }}
+                    >
+                      <option value="pending_target" style={{ background: 'white', color: '#1e293b' }}>Menunggu Persetujuan</option>
+                      <option value="pending_admin" style={{ background: 'white', color: '#1e293b' }}>Verifikasi Ustadz</option>
+                      <option value="qna" style={{ background: 'white', color: '#1e293b' }}>Sesi Q&A</option>
+                      <option value="wali_process" style={{ background: 'white', color: '#1e293b' }}>Proses Wali</option>
+                      <option value="meet" style={{ background: 'white', color: '#1e293b' }}>Nadzhor/Pertemuan</option>
+                      <option value="completed" style={{ background: 'white', color: '#1e293b' }}>Berhasil/Nikah</option>
+                      <option value="rejected" style={{ background: 'white', color: '#1e293b' }}>Dibatalkan</option>
+                    </select>
                   </div>
 
                   {/* 4. Aksi Mediasi */}

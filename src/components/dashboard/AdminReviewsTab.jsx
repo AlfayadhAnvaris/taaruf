@@ -307,7 +307,6 @@ export default function AdminReviewsTab() {
                 if (isMobile) {
                   return (
                     <div key={review.id} className="review-compact-row-mobile" style={{ opacity: isActive ? 1 : 0.8 }}>
-                       {!isActive && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: '#ef4444', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }} />}
                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: isActive ? 'rgba(19,78,57,0.05)' : '#fee2e2', color: isActive ? '#134E39' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1rem', flexShrink: 0 }}>
                             {review.reviewer?.name?.charAt(0).toUpperCase()}
@@ -365,9 +364,6 @@ export default function AdminReviewsTab() {
                       borderWidth: '1px',
                       borderStyle: 'solid',
                       borderColor: '#E4EDE8',
-                      borderLeftWidth: '4px',
-                      borderLeftStyle: 'solid',
-                      borderLeftColor: isActive ? '#134E39' : '#ef4444',
                       borderRadius: '12px',
                       marginBottom: '0.5rem',
                       gap: '1rem',

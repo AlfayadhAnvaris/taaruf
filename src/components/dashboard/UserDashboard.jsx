@@ -155,7 +155,7 @@ export default function UserDashboard({ activeTab, subId }) {
 
   // ── Filters & Locations ──
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({ province: '', city: '', suku: '', minAge: '', maxAge: '', education: '' });
+  const [filters, setFilters] = useState({ province: '', city: '', suku: '', minAge: '', maxAge: '', education: '', hobi: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [provinces, setProvinces] = useState([]);

@@ -66,7 +66,7 @@ function DashboardLayoutContent({ children }) {
 
   const activeTab = pathname.split('/')[2] || 'home';
   const isAcademyMode = activeTab === 'materi' || activeTab === 'courses' || activeTab === 'leaderboard';
-  const isAccountMode = activeTab === 'account' || activeTab === 'admin' || activeTab === 'reviews';
+  const isAccountMode = activeTab === 'account' || activeTab === 'admin' || (activeTab === 'reviews' && pathname.split('/').length > 3);
   const hideSidebar = isAcademyMode || isAccountMode;
   const subTab = searchParams.get('sub') || 'curriculum';
 

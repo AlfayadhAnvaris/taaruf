@@ -53,13 +53,30 @@ export default function FindTab({
   const [filterCities, setFilterCities] = React.useState([]);
   const [isFetchingCities, setIsFetchingCities] = React.useState(false);
 
+  const popularHobbies = React.useMemo(() => {
+    if (!cvs) return [];
+    const counts = {};
+    cvs.forEach(cv => {
+      if (cv.hobi) {
+        const list = cv.hobi.split(/[,;\n]/).map(h => h.trim().toLowerCase()).filter(h => h.length > 1);
+        list.forEach(h => {
+          counts[h] = (counts[h] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(entry => entry[0]);
+  }, [cvs]);
+
   const filteredCandidates = React.useMemo(() => {
     if (!cvs) return [];
     return cvs
       .filter(cv => cv.status === 'approved' && cv.user_id !== user?.id && cv.gender !== user?.gender && !takenUserIds?.has(cv.user_id))
       .filter(cv => {
         const query = searchQuery?.toLowerCase() || '';
-        const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query);
+        const matchQuery = cv.alias?.toLowerCase().includes(query) || cv.location?.toLowerCase().includes(query) || cv.job?.toLowerCase().includes(query) || cv.hobi?.toLowerCase().includes(query);
         const matchProvince = !filters.province || cv.location?.toLowerCase().includes(filters.province.toLowerCase());
         const matchCity = !filters.city || cv.location?.toLowerCase().includes(filters.city.toLowerCase());
         const matchSuku = !filters.suku || cv.suku === filters.suku;
@@ -204,6 +221,30 @@ export default function FindTab({
                     value={searchQuery || ''} onChange={e => setSearchQuery(e.target.value)} 
                   />
                 </div>
+                {popularHobbies.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: '800' }}>Saran:</span>
+                    {popularHobbies.map(hobby => (
+                      <span 
+                        key={hobby} 
+                        onClick={() => setSearchQuery(hobby)}
+                        style={{ 
+                          cursor: 'pointer', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px', 
+                          fontSize: '0.65rem', 
+                          background: searchQuery?.toLowerCase() === hobby ? '#134E39' : '#f1f5f9',
+                          color: searchQuery?.toLowerCase() === hobby ? 'white' : '#475569',
+                          border: '1px solid ' + (searchQuery?.toLowerCase() === hobby ? '#134E39' : '#e2e8f0'),
+                          transition: 'all 0.2s',
+                          textTransform: 'capitalize'
+                        }}
+                      >
+                        {hobby}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -397,6 +438,23 @@ export default function FindTab({
                          </div>
                       </div>
                     </div>
+                    {cv.hobi && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '1rem', marginTop: '-0.5rem' }}>
+                        {cv.hobi.split(/[,;\n]/).map(h => h.trim()).filter(Boolean).slice(0, 3).map((h, idx) => (
+                          <span key={idx} style={{ 
+                            background: 'rgba(19,78,57,0.05)', 
+                            color: '#134E39', 
+                            fontSize: '0.7rem', 
+                            fontWeight: '700', 
+                            padding: '2px 8px', 
+                            borderRadius: '4px',
+                            border: '1px solid rgba(19,78,57,0.1)'
+                          }}>
+                            #{h}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '4.8em', fontWeight: '500' }}>{cv.karakter_positif || cv.marriage_vision || cv.about || '—'}</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f8fafc', paddingTop: '1rem' }}>
                       <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cv.education}</span>
