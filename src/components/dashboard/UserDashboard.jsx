@@ -504,11 +504,7 @@ export default function UserDashboard({ activeTab, subId }) {
     try {
       const { error } = await supabase.from('taaruf_requests').insert({
         sender_id: user.id,
-        receiver_id: targetCv.user_id,
-        sender_alias: myExistingCv.alias,
-        target_alias: targetCv.alias,
-        sender_email: user.email,
-        target_email: targetCv.user_email || '', // Assuming this exists or profile has it
+        target_user_id: targetCv.user_id,
         target_cv_id: targetCv.id,
         status: 'pending_target',
         created_at: new Date().toISOString(),

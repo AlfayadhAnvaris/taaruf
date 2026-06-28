@@ -28,9 +28,19 @@ export default function MyCvTab({
   cvStep, setCvStep, myCv, setMyCv, isSubmittingCv, handleCvSubmit, 
   targetCv = null,
   onBack = null,
-  provinces = EMPTY_ARRAY
+  provinces = EMPTY_ARRAY,
+  onAjukanTaaruf = null
 }) {
-  const { userReviews, setUserReviews, showAlert, showToast, bookmarks, setBookmarks, setReportModalState, academyLevels, getAcademyBadge, getBadgeCount } = useAppContext();
+  const { userReviews, setUserReviews, showAlert, showToast, bookmarks, setBookmarks, setReportModalState, academyLevels, getAcademyBadge, getBadgeCount, taarufRequests } = useAppContext();
+  
+  const hasActiveRequestWithTarget = React.useMemo(() => {
+    if (!targetCv || !taarufRequests) return false;
+    return taarufRequests.some(r => 
+      ((r.senderId === user?.id && r.receiverId === targetCv.user_id) || 
+       (r.receiverId === user?.id && r.senderId === targetCv.user_id)) &&
+      !['completed', 'rejected'].includes(r.status)
+    );
+  }, [targetCv, taarufRequests, user]);
   const [fullViewItem, setFullViewItem] = useState(null);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -656,21 +666,51 @@ export default function MyCvTab({
                 </div>
               )}
 
-               {!isViewingOther && (
-                 <button 
-                   onClick={() => setIsEditingCv(true)}
-                   style={{ 
-                     width: '100%', padding: '1rem', borderRadius: '12px', background: '#134E39', 
-                     color: 'white', border: 'none', fontWeight: '900', fontSize: '0.8rem', 
-                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                     marginBottom: '1.25rem', boxShadow: '0 10px 20px rgba(19,78,57,0.15)', transition: 'all 0.3s'
-                   }}
-                   onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                   onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                 >
-                   <Settings size={16} /> EDIT PROFIL CV
-                 </button>
-               )}
+                {!isViewingOther ? (
+                  <button 
+                    onClick={() => setIsEditingCv(true)}
+                    style={{ 
+                      width: '100%', padding: '1rem', borderRadius: '12px', background: '#134E39', 
+                      color: 'white', border: 'none', fontWeight: '900', fontSize: '0.8rem', 
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      marginBottom: '1.25rem', boxShadow: '0 10px 20px rgba(19,78,57,0.15)', transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <Settings size={16} /> EDIT PROFIL CV
+                  </button>
+                ) : (
+                  onAjukanTaaruf && (
+                    hasActiveRequestWithTarget ? (
+                      <button 
+                        disabled
+                        style={{ 
+                          width: '100%', padding: '1rem', borderRadius: '12px', background: '#cbd5e1', 
+                          color: '#64748b', border: 'none', fontWeight: '900', fontSize: '0.8rem', 
+                          cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                          marginBottom: '1.25rem'
+                        }}
+                      >
+                        DALAM PROSES TAARUF
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => onAjukanTaaruf(targetCv)}
+                        style={{ 
+                          width: '100%', padding: '1rem', borderRadius: '12px', background: '#134E39', 
+                          color: 'white', border: 'none', fontWeight: '900', fontSize: '0.8rem', 
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                          marginBottom: '1.25rem', boxShadow: '0 10px 20px rgba(19,78,57,0.15)', transition: 'all 0.3s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        AJUKAN TAARUF
+                      </button>
+                    )
+                  )
+                )}
             </div>
 
             {/* 📄 RIGHT PANEL (DETAILED CONTENTS BY TABS) 📄 */}

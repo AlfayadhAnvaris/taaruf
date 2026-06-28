@@ -48,7 +48,7 @@ export default function FindTab({
   handleAjukanTaaruf,
   setActiveTab
 }) {
-  const { user, bookmarks, setBookmarks, academyLevels, getAcademyBadge, setReportModalState, getBadgeCount } = useAppContext();
+  const { user, bookmarks, setBookmarks, academyLevels, getAcademyBadge, setReportModalState, getBadgeCount, taarufRequests } = useAppContext();
   
   const [filterCities, setFilterCities] = React.useState([]);
   const [isFetchingCities, setIsFetchingCities] = React.useState(false);
@@ -456,10 +456,87 @@ export default function FindTab({
                       </div>
                     )}
                     <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '4.8em', fontWeight: '500' }}>{cv.karakter_positif || cv.marriage_vision || cv.about || '—'}</p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f8fafc', paddingTop: '1rem' }}>
-                      <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cv.education}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#134E39', display: 'flex', alignItems: 'center', gap: '4px' }}>Lihat Profil <ChevronRight size={14} /></span>
-                    </div>
+                     <div style={{ borderTop: '1px solid #f8fafc', paddingTop: '1rem' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                         <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cv.education || '—'}</span>
+                       </div>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                         {(() => {
+                           const hasActive = taarufRequests?.some(r => 
+                             ((r.senderId === user?.id && r.receiverId === cv.user_id) || 
+                              (r.receiverId === user?.id && r.senderId === cv.user_id)) &&
+                             !['completed', 'rejected'].includes(r.status)
+                           );
+                           return hasActive ? (
+                             <button 
+                               disabled
+                               style={{
+                                 background: '#e2e8f0',
+                                 color: '#94a3b8',
+                                 border: 'none',
+                                 padding: '0.5rem 1rem',
+                                 borderRadius: '8px',
+                                 fontSize: '0.75rem',
+                                 fontWeight: '800',
+                                 cursor: 'not-allowed',
+                                 width: '100%',
+                                 textAlign: 'center'
+                               }}
+                             >
+                               Dalam Proses
+                             </button>
+                           ) : (
+                             <button 
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 handleAjukanTaaruf(cv);
+                               }}
+                               style={{
+                                 background: '#134E39',
+                                 color: 'white',
+                                 border: 'none',
+                                 padding: '0.5rem 1rem',
+                                 borderRadius: '8px',
+                                 fontSize: '0.75rem',
+                                 fontWeight: '800',
+                                 cursor: 'pointer',
+                                 boxShadow: '0 4px 10px rgba(19, 78, 57, 0.1)',
+                                 transition: 'all 0.2s',
+                                 width: '100%',
+                                 textAlign: 'center'
+                               }}
+                               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                             >
+                               Ajukan Taaruf
+                             </button>
+                           );
+                         })()}
+                         <button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             setViewingCv(cv);
+                           }}
+                           style={{
+                             background: 'white',
+                             color: '#134E39',
+                             border: '1.5px solid #134E39',
+                             padding: '0.5rem 1rem',
+                             borderRadius: '8px',
+                             fontSize: '0.75rem',
+                             fontWeight: '850',
+                             cursor: 'pointer',
+                             width: '100%',
+                             textAlign: 'center',
+                             transition: 'all 0.2s'
+                           }}
+                           onMouseEnter={e => { e.currentTarget.style.background = '#f4f7f5'; }}
+                           onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+                         >
+                           Lihat Profil
+                         </button>
+                       </div>
+                     </div>
                   </div>
                ))}
             </div>

@@ -1,19 +1,27 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config({ path: '.env' });
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-async function checkConstraints() {
-  // Query information_schema via RPC or raw query if we have an RPC, 
-  // or query a simple taaruf_request to see if we can read it.
-  // Wait, let's query a sample of taaruf_requests to see what columns they have.
-  const { data, error } = await supabase.from('taaruf_requests').select('*').limit(5);
-  if (error) {
-    console.error('Error fetching taaruf_requests:', error);
-  } else {
-    console.log('Sample taaruf_requests:', data);
+const fs = require('fs');
+const envContent = fs.readFileSync('d:/taaruf/.env', 'utf8');
+const env = {};
+envContent.split('\n').forEach(line => {
+  const parts = line.split('=');
+  if (parts.length >= 2) {
+    env[parts[0].trim()] = parts.slice(1).join('=').trim();
   }
-}
+});
 
-checkConstraints();
+const supabaseUrl = env['NEXT_PUBLIC_SUPABASE_URL'];
+const supabaseServiceKey = env['SUPABASE_SERVICE_ROLE_KEY'] || env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+async function check() {
+  console.log('supabaseUrl:', supabaseUrl);
+  // Let's inspect active triggers on table taaruf_requests or similar by executing an SQL statement.
+  // Wait, does Supabase have SQL query endpoint? No, but let's query via RPC or check if there's any trigger error.
+  // Wait! Let's insert a duplicate row or run a query using standard select.
+  // Let's print table names and descriptions if possible.
+  // Wait, let's try to query public tables using supabase.from.
+  const { data, error } = await supabase.from('taaruf_requests').select('*');
+  console.log('taaruf_requests data count:', data?.length, 'error:', error);
+}
+check();

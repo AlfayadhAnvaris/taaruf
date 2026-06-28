@@ -1,0 +1,10 @@
+const fs = require('fs');
+const buf = fs.readFileSync('d:/taaruf/src/components/dashboard/MyCvTab.jsx');
+console.log('Buffer length:', buf.length);
+console.log('First 100 bytes:', buf.slice(0, 100));
+const utf8Str = buf.toString('utf8');
+const utf16Str = buf.toString('utf16le');
+console.log('UTF-8 includes ajukan:', utf8Str.toLowerCase().includes('ajukan'));
+console.log('UTF-16includes ajukan:', utf16Str.toLowerCase().includes('ajukan'));
+console.log('UTF-8 includes taaruf:', utf8Str.toLowerCase().includes('taaruf'));
+console.log('UTF-16 includes taaruf:', utf16Str.toLowerCase().includes('taaruf'));

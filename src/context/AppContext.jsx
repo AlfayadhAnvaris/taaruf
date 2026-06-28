@@ -202,7 +202,7 @@ export const AppContextProvider = ({ children }) => {
         mappedReqs = reqData.map(req => ({
           ...req,
           senderId: req.sender_id,
-          receiverId: req.receiver_id,
+          receiverId: req.target_user_id,
           senderAlias: req.sender_alias || allVisibleCvs.find(c => c.user_id === req.sender_id)?.alias || 'Kandidat',
           targetAlias: req.target_alias || allVisibleCvs.find(c => c.id === req.target_cv_id)?.alias || 'Kandidat',
           senderEmail: req.sender_email || 'Email Tidak Tersedia',
