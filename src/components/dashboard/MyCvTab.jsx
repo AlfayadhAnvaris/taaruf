@@ -201,10 +201,10 @@ export default function MyCvTab({
             padding: 1.25rem 2rem;
           }
           .cv-side-id {
-            width: 280px; flex-shrink: 0; background: white; 
-            padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center;
+            width: 300px; flex-shrink: 0; background: white; 
+            padding: 1.75rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center;
             height: 100%; max-height: 100%; overflow-y: auto; align-self: stretch;
-            border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: none;
+            border-radius: 18px; border: 1px solid #E4EDE8; box-shadow: 0 4px 15px rgba(0,0,0,0.01);
           }
           .cv-side-id::-webkit-scrollbar { width: 4px; }
           .cv-side-id::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -242,29 +242,29 @@ export default function MyCvTab({
           }
           
           .cv-card-premium {
-            background: white; border-radius: 24px; border: 1px solid #f1f5f9; padding: 1.75rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.01);
+            background: white; border-radius: 18px; border: 1px solid #E4EDE8; padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.01);
             position: relative; overflow: hidden;
             display: flex; flex-direction: column; height: 100%;
           }
           
           .cv-card-title {
-            display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 1.1rem;
           }
           
           .cv-card-icon {
-            width: 48px; height: 48px; border-radius: 12px; background: rgba(19,78,57,0.05);
+            width: 40px; height: 40px; border-radius: 10px; background: rgba(19,78,57,0.05);
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
           }
           
           .cv-card-title h3 {
-            font-size: 1.25rem; font-weight: 900; color: #134E39; margin: 0;
+            font-size: 1.15rem; font-weight: 900; color: #134E39; margin: 0;
           }
           
           .cv-info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1.25rem 1rem;
+            gap: 1.1rem 1rem;
           }
           
           .cv-info-field {
@@ -272,15 +272,15 @@ export default function MyCvTab({
           }
           
           .cv-info-field label {
-            font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
+            font-size: 0.72rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
           }
           
           .cv-info-field span {
-            font-size: 0.95rem; font-weight: 600; color: #1e293b;
+            font-size: 0.92rem; font-weight: 600; color: #1e293b;
           }
           
           .cv-q-box {
-            background: white; padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;
+            background: #f8fafc; padding: 1.1rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0;
             box-shadow: none; transition: all 0.2s;
             text-align: left;
           }
@@ -422,6 +422,7 @@ export default function MyCvTab({
               <option value="latar_belakang">LATAR BELAKANG</option>
               <option value="agama_nikah">AGAMA & PERNIKAHAN</option>
               <option value="kriteria">KRITERIA PASANGAN</option>
+              <option value="reviews">REVIEW & KESAN</option>
             </select>
             <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#134E39', display: 'flex', alignItems: 'center' }}>
               <ChevronDown size={18} />
@@ -485,7 +486,8 @@ export default function MyCvTab({
                { id: 'profil_fisik', label: 'PROFIL & FISIK' },
                { id: 'latar_belakang', label: 'LATAR BELAKANG' },
                { id: 'agama_nikah', label: 'AGAMA & PERNIKAHAN' },
-               { id: 'kriteria', label: 'KRITERIA PASANGAN' }
+               { id: 'kriteria', label: 'KRITERIA PASANGAN' },
+               { id: 'reviews', label: 'REVIEW & KESAN' }
              ].map((tab) => (
                <button 
                  key={tab.id}
@@ -614,10 +616,45 @@ export default function MyCvTab({
                  {displayCv?.suku && (
                    <div className="cv-stat-card-small"><i><User size={16} /></i> Suku {displayCv.suku}</div>
                  )}
-                 {displayCv?.education && (
+              {displayCv?.education && (
                    <div className="cv-stat-card-small"><i><GraduationCap size={16} /></i> Pendidikan {displayCv.education}</div>
                  )}
               </div>
+
+              {displayCv?.hobi && (
+                <div style={{ 
+                  marginTop: '0.25rem', 
+                  marginBottom: '1.25rem',
+                  width: '100%', 
+                  borderTop: '1px solid #f1f5f9', 
+                  paddingTop: '1rem', 
+                  textAlign: 'left' 
+                }}>
+                  <span style={{ 
+                    display: 'block', 
+                    fontSize: '0.7rem', 
+                    fontWeight: '800', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.05em', 
+                    marginBottom: '8px' 
+                  }}>
+                    Hobi & Kegemaran
+                  </span>
+                  <div style={{ 
+                    background: '#f8fafc', 
+                    padding: '0.75rem 1rem', 
+                    borderRadius: '10px', 
+                    border: '1px solid #e2e8f0', 
+                    fontSize: '0.85rem', 
+                    color: '#134E39', 
+                    fontWeight: '800',
+                    lineHeight: '1.5'
+                  }}>
+                    {displayCv.hobi}
+                  </div>
+                </div>
+              )}
 
                {!isViewingOther && (
                  <button 
@@ -639,343 +676,380 @@ export default function MyCvTab({
             {/* 📄 RIGHT PANEL (DETAILED CONTENTS BY TABS) 📄 */}
             <div className="cv-main-body">
               {activeViewTab === 'profil_fisik' && (
-                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
-                  {/* Card: 1. Profil */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><User size={22} color="#134E39" /></div>
-                       <h3>Profil Dasar</h3>
+                <div className="cv-card-premium" style={{ animation: 'fadeIn 0.35s ease', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Row 1: Profil Dasar & Gambaran Fisik */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+                    {/* Left: Profil Dasar */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><User size={20} color="#134E39" /></div>
+                         <h3>Profil Dasar</h3>
+                      </div>
+                      <div className="cv-info-grid">
+                         <div className="cv-info-field">
+                           <label>Jenis Kelamin</label>
+                           <span style={{ textTransform: 'capitalize' }}>{displayCv?.gender || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Suku Bangsa</label>
+                           <span>{displayCv?.suku || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Provinsi Domisili</label>
+                           <span>{displayCv?.domisili_provinsi || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Kota Domisili</label>
+                           <span>{displayCv?.domisili_kota || '—'}</span>
+                         </div>
+                         <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
+                           <label>Alamat Lengkap</label>
+                           <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.address || '—'}</span>
+                         </div>
+                      </div>
                     </div>
-                    <div className="cv-info-grid">
-                       <div className="cv-info-field">
-                         <label>Jenis Kelamin</label>
-                         <span style={{ textTransform: 'capitalize' }}>{displayCv?.gender || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Suku Bangsa</label>
-                         <span>{displayCv?.suku || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Provinsi Domisili</label>
-                         <span>{displayCv?.domisili_provinsi || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Kota Domisili</label>
-                         <span>{displayCv?.domisili_kota || '—'}</span>
-                       </div>
-                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
-                         <label>Alamat Lengkap</label>
-                         <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.address || '—'}</span>
-                       </div>
+
+                    {/* Right: Gambaran Fisik */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Target size={20} color="#134E39" /></div>
+                         <h3>Gambaran Fisik</h3>
+                      </div>
+                      <div className="cv-info-grid">
+                         <div className="cv-info-field">
+                           <label>Tinggi Badan</label>
+                           <span>{displayCv?.tinggi_badan ? `${displayCv.tinggi_badan} cm` : displayCv?.tinggi_berat?.split('/')?.[0]?.trim() || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Berat Badan</label>
+                           <span>{displayCv?.berat_badan ? `${displayCv.berat_badan} kg` : displayCv?.tinggi_berat?.split('/')?.[1]?.trim() || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Kondisi Kesehatan</label>
+                           <span>{displayCv?.kesehatan || 'Sehat'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Bentuk Fisik & Ciri Khas</label>
+                           <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.ciri_fisik || '—'}</span>
+                         </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Card: 3. Gambaran Fisik */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Target size={22} color="#134E39" /></div>
-                       <h3>Gambaran Fisik</h3>
-                    </div>
-                    <div className="cv-info-grid">
-                       <div className="cv-info-field">
-                         <label>Tinggi Badan</label>
-                         <span>{displayCv?.tinggi_badan ? `${displayCv.tinggi_badan} cm` : displayCv?.tinggi_berat?.split('/')?.[0]?.trim() || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Berat Badan</label>
-                         <span>{displayCv?.berat_badan ? `${displayCv.berat_badan} kg` : displayCv?.tinggi_berat?.split('/')?.[1]?.trim() || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Kondisi Kesehatan</label>
-                         <span>{displayCv?.kesehatan || 'Sehat'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Bentuk Fisik & Ciri Khas</label>
-                         <span style={{ fontSize: '0.9rem', lineHeight: '1.5', fontWeight: '500' }}>{displayCv?.ciri_fisik || '—'}</span>
-                       </div>
-                    </div>          
-                  </div>
+                  {/* Divider */}
+                  <div style={{ height: '1px', background: '#E2E8F0' }}></div>
 
-                  {/* Card: 4. Gambaran Diri (Full Width) */}
-                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Smile size={22} color="#134E39" /></div>
-                       <h3>Gambaran Diri & Karakter</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Karakter Positif</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.karakter_positif || displayCv?.karakter || '—'}</p>
+                  {/* Row 2: Gambaran Diri & Kebiasaan */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+                    {/* Left: Gambaran Diri & Karakter */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Smile size={20} color="#134E39" /></div>
+                         <h3>Gambaran Diri & Karakter</h3>
                       </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Karakter Negatif</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.karakter_negatif || '—'}</p>
-                      </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hal-hal yang Disukai</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.hal_disukai || '—'}</p>
-                      </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hal-hal yang Tidak Disukai</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.hal_benci || '—'}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Karakter Positif</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.karakter_positif || displayCv?.karakter || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Karakter Negatif</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.karakter_negatif || '—'}</p>
+                        </div>
                       </div>
                     </div>
-                    <div style={{ marginTop: '1.5rem' }} className="cv-info-field">
-                      <label>Hobi & Kegemaran</label>
-                      <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#134E39' }}>{displayCv?.hobi || '—'}</span>
+
+                    {/* Right: Kebiasaan & Preferensi */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Heart size={20} color="#134E39" /></div>
+                         <h3>Kebiasaan & Preferensi</h3>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Hal-hal yang Disukai</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.hal_disukai || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Hal-hal yang Tidak Disukai</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.hal_benci || '—'}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {activeViewTab === 'latar_belakang' && (
-                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
-                  {/* Card: 5. Gambaran Keluarga */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Users2 size={22} color="#134E39" /></div>
-                       <h3>Gambaran Keluarga</h3>
+                <div className="cv-card-premium" style={{ animation: 'fadeIn 0.35s ease', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Row 1: Info Fields (Gambaran Keluarga & Pendidikan/Pekerjaan) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+                    {/* Left Column: Gambaran Keluarga */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Users2 size={20} color="#134E39" /></div>
+                         <h3>Gambaran Keluarga</h3>
+                      </div>
+                      <div className="cv-info-grid">
+                         <div className="cv-info-field">
+                           <label>Anak Ke / Bersaudara</label>
+                           <span>{displayCv?.anak_ke_dari || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Pekerjaan Orang Tua</label>
+                           <span>{displayCv?.pekerjaan_ortu || '—'}</span>
+                         </div>
+                      </div>
                     </div>
-                    <div className="cv-info-grid">
-                       <div className="cv-info-field">
-                         <label>Anak Ke / Bersaudara</label>
-                         <span>{displayCv?.anak_ke_dari || '—'}</span>
-                       </div>
-                       <div className="cv-info-field">
-                         <label>Pekerjaan Orang Tua</label>
-                         <span>{displayCv?.pekerjaan_ortu || '—'}</span>
-                       </div>
-                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
-                         <label>Kondisi Agama / Sosial Keluarga</label>
-                         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.kondisi_keluarga || '—'}</p>
-                       </div>
+
+                    {/* Right Column: Pendidikan & Pekerjaan */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><GraduationCap size={20} color="#134E39" /></div>
+                         <h3>Pendidikan & Pekerjaan</h3>
+                      </div>
+                      <div className="cv-info-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
+                         <div className="cv-info-field">
+                           <label>Pendidikan Terakhir</label>
+                           <span>{displayCv?.education || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Pekerjaan Saat Ini</label>
+                           <span>{displayCv?.job || '—'}</span>
+                         </div>
+                         <div className="cv-info-field">
+                           <label>Estimasi Gaji</label>
+                           <span>{displayCv?.salary || '—'}</span>
+                         </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Card: 6. Pendidikan */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><GraduationCap size={22} color="#134E39" /></div>
-                       <h3>Pendidikan</h3>
-                    </div>
-                    <div className="cv-info-grid">
-                       <div className="cv-info-field">
-                         <label>Pendidikan Terakhir</label>
-                         <span>{displayCv?.education || '—'}</span>
-                       </div>
-                       <div className="cv-info-field" style={{ gridColumn: '1 / -1' }}>
-                         <label>Detail Riwayat Pendidikan</label>
-                         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.riwayat_pendidikan || '—'}</p>
-                       </div>
-                    </div>
-                  </div>
+                  {/* Divider */}
+                  <div style={{ height: '1px', background: '#E2E8F0' }}></div>
 
-                  {/* Card: 7. Pengalaman (Full Width) */}
-                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Briefcase size={22} color="#134E39" /></div>
-                       <h3>Pekerjaan & Pengalaman</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                      <div className="cv-info-field">
-                        <label>Pekerjaan Saat Ini</label>
-                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.job || '—'}</span>
-                      </div>
-                      <div className="cv-info-field">
-                        <label>Estimasi Gaji Bulanan</label>
-                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.salary || '—'}</span>
-                      </div>
-                    </div>
+                  {/* Row 2: Q&A Boxes */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {/* Full Width Q&A: Kondisi Agama & Sosial Keluarga */}
                     <div className="cv-q-box">
-                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Pengalaman Kerja / Organisasi</label>
-                      <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.pengalaman_kerja || '—'}</p>
+                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Kondisi Agama / Sosial Keluarga</label>
+                      <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', fontWeight: '500' }}>{displayCv?.kondisi_keluarga || '—'}</p>
+                    </div>
+
+                    {/* Side-by-Side Q&A: Riwayat Pendidikan & Pengalaman Kerja */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Detail Riwayat Pendidikan</label>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155', fontWeight: '500' }}>{displayCv?.riwayat_pendidikan || '—'}</p>
+                      </div>
+                      <div className="cv-q-box">
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Pengalaman Kerja / Organisasi</label>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155', fontWeight: '500' }}>{displayCv?.pengalaman_kerja || '—'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {activeViewTab === 'agama_nikah' && (
-                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
-                  {/* Card: 8. Ibadah */}
-                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><BookOpen size={22} color="#134E39" /></div>
-                       <h3>Ibadah & Pemahaman Agama</h3>
+                <div className="cv-card-premium" style={{ animation: 'fadeIn 0.35s ease', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Row 1: Ibadah & Persiapan Pernikahan */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+                    {/* Left: Ibadah & Pemahaman Agama */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><BookOpen size={20} color="#134E39" /></div>
+                         <h3>Ibadah & Pemahaman Agama</h3>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Ketaatan Ibadah Wajib</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.worship_wajib || displayCv?.worship || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Rutinitas Ibadah Sunnah</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.worship_sunnah || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Kemampuan Membaca Al-Qur'an</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.baca_quran || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Kajian yang Sering Diikuti</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155' }}>{displayCv?.kajian || '—'}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Ketaatan Ibadah Wajib</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.worship_wajib || displayCv?.worship || '—'}</p>
+
+                    {/* Right: Persiapan Pernikahan */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><HeartHandshake size={20} color="#134E39" /></div>
+                         <h3>Persiapan Pernikahan</h3>
                       </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Rutinitas Ibadah Sunnah</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.worship_sunnah || '—'}</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div className="cv-info-field">
+                          <label>Target Menikah</label>
+                          <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{displayCv?.target_menikah || '—'}</span>
+                        </div>
+                        <div className="cv-info-field">
+                          <label>Poligami</label>
+                          <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{displayCv?.poligami || 'Tidak Bersedia'}</span>
+                        </div>
                       </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Kemampuan Membaca Al-Qur'an</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.baca_quran || '—'}</p>
-                      </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Kajian yang Sering Diikuti</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.6, color: '#334155' }}>{displayCv?.kajian || '—'}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Visi Pernikahan</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.marriage_vision || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Hak & Tanggung Jawab</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.role_view || '—'}</p>
+                        </div>
+                        <div className="cv-q-box">
+                          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Rencana Nafkah & Keuangan</label>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.rencana_nafkah || '—'}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card: 9. Persiapan Pernikahan */}
-                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><HeartHandshake size={22} color="#134E39" /></div>
-                       <h3>Persiapan Pernikahan</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                      <div className="cv-info-field">
-                        <label>Target Waktu Menikah</label>
-                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.target_menikah || '—'}</span>
-                      </div>
-                      <div className="cv-info-field">
-                        <label>Pandangan Terhadap Poligami</label>
-                        <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>{displayCv?.poligami || 'Tidak Bersedia'}</span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Visi Pernikahan</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.marriage_vision || '—'}</p>
-                      </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Hak & Tanggung Jawab Pasangan</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.role_view || '—'}</p>
-                      </div>
-                      <div className="cv-q-box">
-                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Rencana Nafkah & Pengelolaan Keuangan</label>
-                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.rencana_nafkah || '—'}</p>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Divider */}
+                  <div style={{ height: '1px', background: '#E2E8F0' }}></div>
 
-                  {/* Card: 10. Harapan */}
-                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                  {/* Row 2: Harapan Setelah Menikah */}
+                  <div>
                     <div className="cv-card-title">
-                       <div className="cv-card-icon"><Compass size={22} color="#134E39" /></div>
+                       <div className="cv-card-icon"><Compass size={20} color="#134E39" /></div>
                        <h3>Harapan Setelah Menikah</h3>
                     </div>
                     <div className="cv-q-box">
-                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#D4AF37', textTransform: 'uppercase', marginBottom: '8px' }}>Harapan Tempat Tinggal, Karir, Pendidikan Pasangan, dll.</label>
-                      <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.harapan_pasangan || '—'}</p>
+                      <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Harapan Tempat Tinggal, Karir, Pendidikan Pasangan, dll.</label>
+                      <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.harapan_pasangan || '—'}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {activeViewTab === 'kriteria' && (
-                <div className="cv-grid-layout" style={{ alignItems: 'start', animation: 'fadeIn 0.35s ease' }}>
-                  {/* Card: 11. Kriteria Fisik */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Target size={22} color="#134E39" /></div>
-                       <h3>Kriteria Fisik</h3>
+                <div className="cv-card-premium" style={{ animation: 'fadeIn 0.35s ease', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+                    {/* Left: Kriteria Fisik */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Target size={20} color="#134E39" /></div>
+                         <h3>Kriteria Fisik</h3>
+                      </div>
+                      <div className="cv-q-box" style={{ minHeight: '120px' }}>
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Kriteria Tinggi, Berat, Warna Kulit, dll.</label>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_fisik || '—'}</p>
+                      </div>
                     </div>
-                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.25rem 1.5rem', border: '1px solid #f1f5f9', minHeight: '120px' }}>
-                      <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#475569', fontWeight: '500', margin: 0, whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_fisik || '—'}</p>
-                    </div>
-                  </div>
 
-                  {/* Card: 12. Kriteria Non Fisik */}
-                  <div className="cv-card-premium">
-                    <div className="cv-card-title">
-                       <div className="cv-card-icon"><Shield size={22} color="#134E39" /></div>
-                       <h3>Kriteria Non-Fisik</h3>
-                    </div>
-                    <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.25rem 1.5rem', border: '1px solid #f1f5f9', minHeight: '120px' }}>
-                      <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#475569', fontWeight: '500', margin: 0, whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_non_fisik || displayCv?.criteria || '—'}</p>
+                    {/* Right: Kriteria Non-Fisik */}
+                    <div>
+                      <div className="cv-card-title">
+                         <div className="cv-card-icon"><Smile size={20} color="#134E39" /></div>
+                         <h3>Kriteria Non-Fisik</h3>
+                      </div>
+                      <div className="cv-q-box" style={{ minHeight: '120px' }}>
+                        <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Kriteria Domisili, Suku, Pendidikan, Keagamaan, dll.</label>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155', whiteSpace: 'pre-wrap' }}>{displayCv?.kriteria_non_fisik || displayCv?.criteria || '—'}</p>
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Reviews list removed from main tab body */}
                 </div>
               )}
 
-              {/* ═══ DEDICATED REVIEW & KESAN BUTTON (bottom of right panel) ═══ */}
-              <div style={{
-                marginTop: '2rem',
-                padding: '1.75rem',
-                border: '2px dashed rgba(212, 175, 55, 0.35)',
-                borderRadius: '20px',
-                background: 'linear-gradient(135deg, rgba(212,175,55,0.03) 0%, rgba(19,78,57,0.02) 100%)',
-                textAlign: 'center',
-                animation: 'fadeIn 0.5s ease'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '0.75rem' }}>
-                  <div style={{
-                    width: '42px', height: '42px', borderRadius: '12px',
-                    background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: '1px solid rgba(212,175,55,0.15)'
-                  }}>
-                    <Star size={20} color="#D4AF37" fill="#D4AF37" />
-                  </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#134E39' }}>Review & Kesan Kandidat</h4>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8', fontWeight: '600' }}>Lihat pendapat jujur dari kandidat lainnya</p>
+              {activeViewTab === 'reviews' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.35s ease' }}>
+                  <div className="cv-card-premium" style={{ gridColumn: '1 / -1' }}>
+                    <div className="cv-card-title">
+                       <div className="cv-card-icon"><Star size={22} color="#134E39" fill="#D4AF37" /></div>
+                       <h3>Review & Kesan Kandidat</h3>
+                    </div>
+
+                    {/* Stats Header */}
+                    <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1.5rem' }}>
+                      <div style={{ background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center', minWidth: '120px' }}>
+                        <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39' }}>
+                          {(() => {
+                            const revs = userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false);
+                            if (revs.length === 0) return '0.0';
+                            return (revs.reduce((acc, r) => acc + r.rating, 0) / revs.length).toFixed(1);
+                          })()}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '800', marginTop: '4px' }}>RATING RATA-RATA</div>
+                      </div>
+                      <div style={{ background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center', minWidth: '120px' }}>
+                        <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#134E39' }}>
+                          {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '800', marginTop: '4px' }}>TOTAL ULASAN</div>
+                      </div>
+                      {isViewingOther && (
+                        <button
+                          onClick={() => setShowReviewModal(true)}
+                          style={{
+                            marginLeft: 'auto',
+                            alignSelf: 'center',
+                            background: '#134E39',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.85rem 1.5rem',
+                            borderRadius: '12px',
+                            fontWeight: '800',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: '0 4px 15px rgba(19, 78, 57, 0.15)'
+                          }}
+                        >
+                          <Plus size={16} /> Berikan Kesan
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Review List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      {userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '3rem 1.5rem', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
+                           <Quote size={24} color="#cbd5e1" style={{ marginBottom: '0.75rem' }} />
+                           <h4 style={{ color: '#134E39', fontWeight: '800', margin: '0 0 4px' }}>Belum Ada Kesan</h4>
+                           <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem' }}>Jadilah yang pertama memberikan kesan</p>
+                        </div>
+                      ) : (
+                        userReviews.filter(r => r.target_id === displayCv.user_id && r.is_active !== false).map(review => (
+                          <div key={review.id} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '14px', border: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: '900', color: 'white' }}>
+                                    {review.reviewer?.name?.charAt(0).toUpperCase()}
+                                 </div>
+                                 <div>
+                                    <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.9rem', display: 'block' }}>{review.reviewer?.name}</span>
+                                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                 </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '2px', background: 'rgba(212,175,55,0.05)', padding: '3px 6px', borderRadius: '5px', border: '1px solid rgba(212,175,55,0.08)' }}>
+                                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={11} color={s <= review.rating ? '#D4AF37' : '#e2e8f0'} fill={s <= review.rating ? '#D4AF37' : 'transparent'} />)}
+                              </div>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, fontStyle: 'italic', paddingLeft: '8px', borderLeft: '2px solid #D4AF37' }}>
+                              "{review.comment}"
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => setShowReviewsListModal(true)}
-                    style={{
-                      flex: 1, minWidth: '180px', maxWidth: '280px',
-                      padding: '0.85rem 1.5rem', borderRadius: '14px',
-                      background: 'white', color: '#D4AF37',
-                      border: '1.5px solid rgba(212,175,55,0.3)',
-                      fontWeight: '900', fontSize: '0.78rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      boxShadow: '0 4px 15px rgba(212,175,55,0.08)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      letterSpacing: '0.03em'
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(212,175,55,0.15)';
-                      e.currentTarget.style.borderColor = '#D4AF37';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(212,175,55,0.08)';
-                      e.currentTarget.style.borderColor = 'rgba(212,175,55,0.3)';
-                    }}
-                  >
-                    <Eye size={16} /> LIHAT REVIEW & KESAN
-                  </button>
-                  {isViewingOther && (
-                    <button
-                      onClick={() => setShowReviewModal(true)}
-                      style={{
-                        flex: 1, minWidth: '180px', maxWidth: '280px',
-                        padding: '0.85rem 1.5rem', borderRadius: '14px',
-                        background: '#134E39', color: 'white',
-                        border: 'none',
-                        fontWeight: '900', fontSize: '0.78rem', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                        boxShadow: '0 6px 20px rgba(19,78,57,0.2)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        letterSpacing: '0.03em'
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(19,78,57,0.25)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(19,78,57,0.2)';
-                      }}
-                    >
-                      <Quote size={16} /> BERIKAN KESAN
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+              )}
+
         </div>
+      </div>
 
         {/* Full Detail View Modal */}
         {fullViewItem && (

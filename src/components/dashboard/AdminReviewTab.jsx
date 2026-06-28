@@ -816,7 +816,11 @@ export default function AdminReviewTab() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowReviewsModal(true)}
+                  onClick={() => {
+                    if (reviewingCv?.user_id) {
+                      window.location.href = `/dashboard/reviews/${reviewingCv.user_id}`;
+                    }
+                  }}
                   style={{
                     width: '100%', maxWidth: '320px',
                     padding: '0.75rem 1.5rem', borderRadius: '12px',
@@ -877,63 +881,6 @@ export default function AdminReviewTab() {
             </div>
           </div>
         </div>
-
-        {/* ═══ REVIEWS LIST OVERLAY MODAL ═══ */}
-        {showReviewsModal && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 10010, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }} onClick={() => setShowReviewsModal(false)}>
-            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '24px', maxWidth: '680px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.2)', animation: 'fadeIn 0.3s ease' }} onClick={e => e.stopPropagation()}>
-               <button onClick={() => setShowReviewsModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#f8fafc', border: 'none', width: '40px', height: '40px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-                 <X size={20} color="#134E39" />
-               </button>
-               
-               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '1.5rem', textAlign: 'left' }}>
-                   <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.12)', flexShrink: 0 }}>
-                     <Star size={24} fill="#D4AF37" color="#D4AF37" />
-                   </div>
-                   <div>
-                     <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#134E39', margin: 0 }}>Review & Kesan</h3>
-                     <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem', fontWeight: '600' }}>Pendapat jujur dari kandidat lainnya untuk {reviewingCv?.alias}</p>
-                   </div>
-               </div>
-
-               <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', marginBottom: '1rem' }} className="custom-scrollbar">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
-                     {(userReviews || []).filter(r => r.target_id === reviewingCv?.user_id && r.is_active !== false).length === 0 ? (
-                       <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #e2e8f0' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '1px solid #f1f5f9' }}>
-                             <Quote size={26} color="#cbd5e1" />
-                          </div>
-                          <h4 style={{ color: '#134E39', fontWeight: '900', fontSize: '1.05rem', margin: '0 0 0.4rem' }}>Belum Ada Kesan</h4>
-                          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.82rem', fontWeight: '500' }}>Belum ada kandidat yang memberikan kesan untuk profil ini</p>
-                       </div>
-                     ) : (
-                       (userReviews || []).filter(r => r.target_id === reviewingCv?.user_id && r.is_active !== false).map(review => (
-                         <div key={review.id} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #134E39 0%, #1a5d46 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>
-                                   {review.reviewer?.name?.charAt(0)}
-                                </div>
-                                <div>
-                                   <span style={{ fontWeight: '800', color: '#134E39', fontSize: '0.95rem', display: 'block' }}>{review.reviewer?.name}</span>
-                                   <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '600' }}>{new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                                </div>
-                             </div>
-                             <div style={{ display: 'flex', gap: '3px', background: 'rgba(212,175,55,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.1)' }}>
-                               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={12} color={s <= review.rating ? '#D4AF37' : '#e2e8f0'} fill={s <= review.rating ? '#D4AF37' : 'transparent'} />)}
-                             </div>
-                           </div>
-                           <div style={{ padding: '0.85rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: '#334155', lineHeight: 1.7, fontWeight: '500', fontStyle: 'italic' }}>"{review.comment}"</p>
-                           </div>
-                         </div>
-                       ))
-                     )}
-                  </div>
-               </div>
-            </div>
-          </div>
-        )}
       </>
       )}
     </div>
