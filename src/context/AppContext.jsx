@@ -335,13 +335,16 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [user, isAdmin, fetchLeaderboard]);
 
+  const handleRefresh = useCallback(() => {
+    if (user) fetchAllData();
+  }, [user, fetchAllData]);
+
   useEffect(() => {
     if (user) fetchAllData();
     
-    const handleRefresh = () => { if (user) fetchAllData(); };
     window.addEventListener('refreshData', handleRefresh);
     return () => window.removeEventListener('refreshData', handleRefresh);
-  }, [user, fetchAllData]);
+  }, [user, fetchAllData, handleRefresh]);
 
   const fetchSessionUser = useCallback(async (authUser) => {
     if (!authUser) {
@@ -495,7 +498,7 @@ export const AppContextProvider = ({ children }) => {
         modalState, setModalState, confirmState, isInitializing,
         lmsView, setLmsView, handleLogout, unreadCount, markNotificationsAsRead,
         reportModalState, setReportModalState, csContacts, setCsContacts,
-        leaderboard, fetchLeaderboard, getBadgeCount,
+        leaderboard, fetchLeaderboard, getBadgeCount, handleRefresh,
         getAcademyBadge: (completedCount, iconSize = 14) => {
           const count = Number(completedCount) || 0;
           if (count < 1) return null;

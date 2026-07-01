@@ -15,6 +15,64 @@ export default function StatusTab({
   const { user, taarufRequests, setTaarufRequests, messages, showAlert } = useAppContext();
   const [statusFilter, setStatusFilter] = useState('active');
 
+  const getApprovalState = (status, isSender) => {
+    let base = status;
+    let hasApproved = false;
+    let partnerApproved = false;
+
+    if (status.startsWith('qna_')) {
+      base = 'qna';
+      hasApproved = isSender ? status === 'qna_acc_sender' : status === 'qna_acc_receiver';
+      partnerApproved = isSender ? status === 'qna_acc_receiver' : status === 'qna_acc_sender';
+    } else if (status.startsWith('wali_')) {
+      base = 'wali_process';
+      hasApproved = isSender ? status === 'wali_acc_sender' : status === 'wali_acc_receiver';
+      partnerApproved = isSender ? status === 'wali_acc_receiver' : status === 'wali_acc_sender';
+    } else if (status.startsWith('meet_')) {
+      base = 'meet';
+      hasApproved = isSender ? status === 'meet_acc_sender' : status === 'meet_acc_receiver';
+      partnerApproved = isSender ? status === 'meet_acc_receiver' : status === 'meet_acc_sender';
+    }
+    
+    return { base, hasApproved, partnerApproved };
+  };
+
+  const handleProceed = async (req, baseStage) => {
+    const isSender = req.senderId === user?.id;
+    const { partnerApproved } = getApprovalState(req.status, isSender);
+
+    let nextStatus = '';
+    if (baseStage === 'qna') {
+      nextStatus = partnerApproved ? 'wali_process' : (isSender ? 'qna_acc_sender' : 'qna_acc_receiver');
+    } else if (baseStage === 'wali_process') {
+      nextStatus = partnerApproved ? 'meet' : (isSender ? 'wali_acc_sender' : 'wali_acc_receiver');
+    } else if (baseStage === 'meet') {
+      nextStatus = partnerApproved ? 'completed' : (isSender ? 'meet_acc_sender' : 'meet_acc_receiver');
+    }
+
+    if (!nextStatus) return;
+
+    try {
+      const { error } = await supabase
+        .from('taaruf_requests')
+        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        .eq('id', req.id);
+
+      if (error) {
+        showAlert('Gagal', 'Terjadi kesalahan: ' + error.message, 'error');
+        return;
+      }
+
+      setTaarufRequests(taarufRequests.map(r => 
+        r.id === req.id ? { ...r, status: nextStatus, updatedAt: new Date().toISOString() } : r
+      ));
+
+      showAlert('Bismillah', 'Persetujuan Anda telah disimpan.', 'success');
+    } catch (err) {
+      showAlert('Gagal', 'Terjadi kesalahan sistem.', 'error');
+    }
+  };
+
   const userRequests = taarufRequests.filter(req => req.senderId === user?.id || req.receiverId === user?.id);
 
   const filteredItems = userRequests.filter(req => {
@@ -115,6 +173,57 @@ export default function StatusTab({
             <p style={{ color: '#64748b' }}>Pantau setiap tahapan proses taaruf yang sedang berlangsung.</p>
           </div>
 
+          {(() => {
+            const pendingDecisions = userRequests.filter(req => {
+              if (['completed', 'rejected'].includes(req.status)) return false;
+              const isSender = req.senderId === user?.id;
+              const { hasApproved, partnerApproved } = getApprovalState(req.status, isSender);
+              return partnerApproved && !hasApproved;
+            });
+            if (pendingDecisions.length === 0) return null;
+            return (
+              <div style={{
+                background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                border: '1px solid #fde68a',
+                borderRadius: '16px',
+                padding: '1.25rem',
+                marginBottom: '1.5rem',
+                boxShadow: '0 4px 15px rgba(217, 119, 6, 0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                animation: 'fadeInUp 0.4s ease'
+              }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <Sparkles size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#92400e' }}>
+                      Keputusan Taaruf Diperlukan
+                    </h4>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#b45309', lineHeight: '1.5', fontWeight: '650' }}>
+                      Ada {pendingDecisions.length} proses taaruf aktif di mana calon pasangan Anda sudah menyetujui untuk lanjut ke tahap berikutnya, namun Anda belum memberikan keputusan.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => {
+                      setViewingStatusId(pendingDecisions[0].id);
+                    }}
+                    style={{
+                      padding: '6px 14px', borderRadius: '8px', border: 'none',
+                      background: '#134E39', color: 'white', fontSize: '0.72rem',
+                      fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                      boxShadow: '0 2px 4px rgba(19,78,57,0.2)'
+                    }}
+                  >
+                    Tinjau Keputusan Sekarang
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="status-filter-bar">
             <button 
               className={`status-filter-tab ${statusFilter === 'active' ? 'active' : ''}`}
@@ -159,7 +268,8 @@ export default function StatusTab({
                 const isSender = req.senderId === user?.id;
                 const partnerAlias = isSender ? req.targetAlias : req.senderAlias;
                 const isRejected = req.status === 'rejected';
-                const currentIndex = stages.indexOf(req.status);
+                const { base: baseStatus, hasApproved, partnerApproved } = getApprovalState(req.status, isSender);
+                const currentIndex = stages.indexOf(baseStatus);
 
                 let badgeClass = 'berjalan';
                 let badgeText = 'PROSES BERJALAN';
@@ -194,7 +304,16 @@ export default function StatusTab({
                     <div className="status-row-meta">
                       {!isRejected && (
                         <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#475569', background: '#f8fafc', padding: '4px 10px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                          Tahap {currentIndex + 1}/6: {stageLabels[req.status]}
+                          Tahap {currentIndex + 1}/6: {stageLabels[baseStatus]}
+                        </span>
+                      )}
+                      {partnerApproved && !hasApproved && (
+                        <span style={{ 
+                          fontSize: '0.66rem', fontWeight: '800', color: '#b45309', 
+                          background: '#fef3c7', padding: '4px 10px', borderRadius: '8px', 
+                          border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '4px'
+                        }}>
+                          ⚠️ Persetujuan Anda Diperlukan
                         </span>
                       )}
                       <span className={`status-badge-glass ${badgeClass}`} style={{ padding: '4px 10px', fontSize: '0.66rem' }}>
@@ -234,7 +353,8 @@ export default function StatusTab({
               const isSender = req.senderId === user?.id;
               const partnerAlias = isSender ? req.targetAlias : req.senderAlias;
               const isRejected = req.status === 'rejected';
-              const currentIndex = stages.indexOf(req.status);
+              const { base: baseStatus, hasApproved, partnerApproved } = getApprovalState(req.status, isSender);
+              const currentIndex = stages.indexOf(baseStatus);
 
               return (
                 <>
@@ -253,6 +373,71 @@ export default function StatusTab({
 
                   {/* Drawer Body */}
                   <div className="status-drawer-body">
+                    {partnerApproved && !hasApproved && (
+                       <div style={{ 
+                         background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                         border: '1px solid #fde68a',
+                         borderRadius: '16px',
+                         padding: '1.25rem',
+                         marginBottom: '1.25rem',
+                         boxShadow: '0 4px 15px rgba(217, 119, 6, 0.08)',
+                         animation: 'fadeInUp 0.4s ease',
+                         display: 'flex',
+                         flexDirection: 'column',
+                         gap: '12px'
+                       }}>
+                         <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                           <Sparkles size={20} style={{ flexShrink: 0, marginTop: '2px', color: '#d97706' }} />
+                           <div>
+                             <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: '#92400e' }}>
+                               Calon Pasangan Bersedia Melanjutkan
+                             </h4>
+                             <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#b45309', lineHeight: '1.5', fontWeight: '650' }}>
+                               Calon pasangan Anda (<strong>{partnerAlias}</strong>) telah menyetujui untuk melanjutkan proses taaruf ke tahap selanjutnya (<strong>{
+                                 baseStatus === 'qna' ? 'Proses Koordinasi Wali' : 
+                                 baseStatus === 'wali_process' ? 'Pertemuan Nadzhor' : 
+                                 'Proses Selesai (Pernikahan)'
+                               }</strong>).
+                               Apakah Anda juga bersedia untuk melanjutkan?
+                             </p>
+                           </div>
+                         </div>
+                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                           <button
+                             onClick={async (e) => {
+                               e.stopPropagation();
+                               const confirm = window.confirm('Apakah Anda yakin ingin menghentikan proses taaruf ini?');
+                               if (confirm) {
+                                 const { error } = await supabase.from('taaruf_requests').update({ status: 'rejected', updated_at: new Date().toISOString() }).eq('id', req.id);
+                                 if (!error) {
+                                   setTaarufRequests(taarufRequests.map(r => r.id === req.id ? { ...r, status: 'rejected', updatedAt: new Date().toISOString() } : r));
+                                   showAlert('Proses Dihentikan', 'Proses taaruf telah dibatalkan.', 'info');
+                                 }
+                               }
+                             }}
+                             style={{
+                               padding: '6px 12px', borderRadius: '8px', border: '1px solid #f59e0b',
+                               background: 'transparent', color: '#b45309', fontSize: '0.72rem',
+                               fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s'
+                             }}
+                           >
+                             Batalkan Taaruf
+                           </button>
+                           <button
+                             onClick={() => handleProceed(req, baseStatus)}
+                             style={{
+                               padding: '6px 16px', borderRadius: '8px', border: 'none',
+                               background: '#134E39', color: 'white', fontSize: '0.72rem',
+                               fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s',
+                               boxShadow: '0 2px 4px rgba(19,78,57,0.2)'
+                             }}
+                           >
+                             Ya, Saya Bersedia Lanjut
+                           </button>
+                         </div>
+                       </div>
+                     )}
+
                     {/* Partner summary */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
                       <div className="status-avatar-premium" style={{ width: '48px', height: '48px', borderRadius: '12px', fontSize: '1.2rem' }}>
@@ -323,24 +508,30 @@ export default function StatusTab({
                         <span>Panduan Tahap Aktif</span>
                       </div>
                       <div className="status-action-box-desc">
-                        {req.status === 'pending_target' && (
+                        {baseStatus === 'pending_target' && (
                           isSender 
                             ? 'Permohonan taaruf Anda telah dikirimkan ke calon pasangan. Mohon bersabar menunggu tanggapan pihak akhwat/ikhwan selama maksimal 7 hari kerja. Perbanyak doa agar dilancarkan.'
                             : 'Anda menerima pengajuan taaruf dari calon pasangan ini. Silakan baca dan pelajari CV mereka di tab Cari Pasangan. Setelah itu, putuskan apakah Anda bersedia berlanjut ke sesi Q&A atau ingin menolak.'
                         )}
-                        {req.status === 'pending_admin' && (
+                        {baseStatus === 'pending_admin' && (
                           'Alhamdulillah, kedua belah pihak telah menyetujui pengajuan taaruf! Saat ini berkas sedang ditinjau oleh Admin & Ustadz Pembimbing Separuh Agama untuk verifikasi kelayakan sebelum mediasi chat Q&A dibuka.'
                         )}
-                        {req.status === 'qna' && (
+                        {baseStatus === 'qna' && (
+                          hasApproved && !partnerApproved ? 'Anda telah menyetujui untuk melanjutkan ke tahap berikutnya (Proses Wali). Menunggu persetujuan calon pasangan Anda.' :
+                          !hasApproved && partnerApproved ? 'Calon pasangan Anda telah menyetujui untuk melanjutkan ke Proses Wali. Silakan berikan keputusan Anda.' :
                           'Ruang mediasi chat Q&A Anda sekarang aktif. Di sini Anda dapat bertanya dan berdiskusi seputar visi, misi, dan kesiapan membina keluarga. Sesi ini diawasi sepenuhnya oleh Ustadz mediator untuk menjaga kesucian adab.'
                         )}
-                        {req.status === 'wali_process' && (
+                        {baseStatus === 'wali_process' && (
+                          hasApproved && !partnerApproved ? 'Anda telah menyetujui untuk melanjutkan ke tahap berikutnya (Pertemuan Nadzhor). Menunggu persetujuan calon pasangan Anda.' :
+                          !hasApproved && partnerApproved ? 'Calon pasangan Anda telah menyetujui untuk melanjutkan ke Pertemuan Nadzhor. Silakan berikan keputusan Anda.' :
                           'Sesi Q&A telah selesai dengan kesepakatan baik. Saat ini Admin Ustadz sedang melakukan koordinasi dengan wali nasab dari pihak Akhwat untuk meminta restu dan memverifikasi data keluarga.'
                         )}
-                        {req.status === 'meet' && (
+                        {baseStatus === 'meet' && (
+                          hasApproved && !partnerApproved ? 'Anda telah menyetujui untuk menyelesaikan proses taaruf (Pernikahan). Menunggu persetujuan calon pasangan Anda.' :
+                          !hasApproved && partnerApproved ? 'Calon pasangan Anda telah menyetujui untuk menyelesaikan proses taaruf (Pernikahan). Silakan berikan keputusan Anda.' :
                           'Tahap Nadzhor (pertemuan offline) sedang dijadwalkan oleh Ustadz mediator. Kedua belah pihak akan dipertemukan secara langsung didampingi oleh wali/mediator di lokasi yang ditentukan.'
                         )}
-                        {req.status === 'completed' && (
+                        {baseStatus === 'completed' && (
                           'Maa syaa Allah, tabarakallah! Proses taaruf telah selesai dengan pernikahan yang sah. Semoga Allah memberkahi rumah tangga Anda: "Barakallahu lakum wa baaraka \'alaikum wa jama\'a bainakuma fii khair."'
                         )}
                         {isRejected && (
@@ -442,7 +633,7 @@ export default function StatusTab({
                           </button>
                         )}
 
-                        {!isRejected && (req.status === 'qna' || req.status === 'meet') && (
+                        {!isRejected && (baseStatus === 'qna' || baseStatus === 'meet') && (
                           <button 
                             className="btn"
                             style={{ 
@@ -470,7 +661,7 @@ export default function StatusTab({
                           </button>
                         )}
 
-                        {!isRejected && req.status === 'qna' && (
+                        {!isRejected && baseStatus === 'qna' && (
                           <button 
                             className="btn"
                             style={{ 
@@ -495,6 +686,88 @@ export default function StatusTab({
                             <Compass size={18} /> Panduan Pertanyaan
                           </button>
                         )}
+
+                        {/* Aksi Persetujuan Lanjut untuk Sesi Aktif */}
+                        {!isRejected && ['qna', 'wali_process', 'meet'].includes(baseStatus) && !hasApproved && (
+                          <>
+                            <button
+                              className="btn"
+                              style={{
+                                background: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                fontWeight: '800',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                                transition: 'all 0.2s'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleProceed(req, baseStatus);
+                              }}
+                            >
+                              <CheckCircle size={18} /> {
+                                baseStatus === 'qna' ? 'Lanjut ke Proses Wali' :
+                                baseStatus === 'wali_process' ? 'Lanjut ke Nadzhor (Pertemuan)' :
+                                'Selesai Taaruf (Pernikahan)'
+                              }
+                            </button>
+
+                            <button
+                              className="btn"
+                              style={{
+                                background: 'white',
+                                color: '#ef4444',
+                                border: '1.5px solid #fee2e2',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                fontWeight: '800',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s'
+                              }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const confirm = window.confirm('Apakah Anda yakin ingin membatalkan/menghentikan proses taaruf ini?');
+                                if (confirm) {
+                                  const { error } = await supabase.from('taaruf_requests').update({ status: 'rejected', updated_at: new Date().toISOString() }).eq('id', req.id);
+                                  if (!error) {
+                                    setTaarufRequests(taarufRequests.map(r => r.id === req.id ? { ...r, status: 'rejected', updatedAt: new Date().toISOString() } : r));
+                                    showAlert('Proses Dihentikan', 'Proses taaruf telah dibatalkan.', 'info');
+                                  }
+                                }
+                              }}
+                            >
+                              <XCircle size={18} /> Batalkan Taaruf
+                            </button>
+                          </>
+                        )}
+
+                        {!isRejected && ['qna', 'wali_process', 'meet'].includes(baseStatus) && hasApproved && (
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 16px',
+                            background: '#ecfdf5',
+                            border: '1px solid #a7f3d0',
+                            borderRadius: '12px',
+                            color: '#065f46',
+                            fontSize: '0.8rem',
+                            fontWeight: '800'
+                          }}>
+                            <CheckCircle size={16} /> Anda telah menyetujui. Menunggu persetujuan calon pasangan.
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -505,8 +778,13 @@ export default function StatusTab({
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#134E39', marginTop: '5px' }}></div>
                           <div>
-                            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#1e293b' }}>Status: {stageLabels[req.status]}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Diperbaharui pada {new Date(req.updatedAt).toLocaleString('id-ID')}</div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#1e293b' }}>Status: {stageLabels[baseStatus]}</div>
+                            {['qna', 'wali_process', 'meet'].includes(baseStatus) && (
+                              <div style={{ fontSize: '0.72rem', color: '#475569', marginTop: '2px', fontWeight: '650' }}>
+                                Persetujuan: {hasApproved ? 'Anda (Setuju)' : 'Anda (Belum)'} | {partnerApproved ? 'Calon (Setuju)' : 'Calon (Belum)'}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Diperbaharui pada {new Date(req.updatedAt).toLocaleString('id-ID')}</div>
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>

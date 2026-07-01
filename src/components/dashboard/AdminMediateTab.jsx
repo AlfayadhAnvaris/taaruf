@@ -95,7 +95,14 @@ export default function AdminMediateTab() {
       req.targetAlias.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(req.id).includes(searchTerm);
     
-    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+    const getBaseStatus = (status) => {
+      if (status.startsWith('qna_')) return 'qna';
+      if (status.startsWith('wali_')) return 'wali_process';
+      if (status.startsWith('meet_')) return 'meet';
+      return status;
+    };
+
+    const matchesStatus = statusFilter === 'all' || getBaseStatus(req.status) === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -110,9 +117,18 @@ export default function AdminMediateTab() {
     switch (status) {
       case 'pending_target': return { bg: '#fef3c7', text: '#92400e', label: 'Menunggu Persetujuan' };
       case 'pending_admin': return { bg: '#e0f2fe', text: '#0369a1', label: 'Verifikasi Ustadz' };
-      case 'qna': return { bg: '#f0fdf4', text: '#166534', label: 'Sesi Q&A' };
-      case 'wali_process': return { bg: '#faf5ff', text: '#6b21a8', label: 'Proses Wali' };
-      case 'meet': return { bg: '#fdf2f8', text: '#9d174d', label: 'Nadzhor/Pertemuan' };
+      case 'qna':
+      case 'qna_acc_sender':
+      case 'qna_acc_receiver':
+        return { bg: '#f0fdf4', text: '#166534', label: 'Sesi Q&A' };
+      case 'wali_process':
+      case 'wali_acc_sender':
+      case 'wali_acc_receiver':
+        return { bg: '#faf5ff', text: '#6b21a8', label: 'Proses Wali' };
+      case 'meet':
+      case 'meet_acc_sender':
+      case 'meet_acc_receiver':
+        return { bg: '#fdf2f8', text: '#9d174d', label: 'Nadzhor/Pertemuan' };
       case 'completed': return { bg: '#f0fdf4', text: '#15803d', label: 'Berhasil/Nikah' };
       case 'rejected': return { bg: '#fef2f2', text: '#991b1b', label: 'Dibatalkan' };
       default: return { bg: '#f1f5f9', text: '#475569', label: status };
@@ -515,7 +531,9 @@ export default function AdminMediateTab() {
                         {new Date(req.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                       <select
-                        value={req.status}
+                        value={['qna', 'qna_acc_sender', 'qna_acc_receiver'].includes(req.status) ? 'qna' : 
+                               ['wali_process', 'wali_acc_sender', 'wali_acc_receiver'].includes(req.status) ? 'wali_process' : 
+                               ['meet', 'meet_acc_sender', 'meet_acc_receiver'].includes(req.status) ? 'meet' : req.status}
                         onChange={(e) => updateTaarufStatus(req.id, e.target.value)}
                         style={{ 
                           fontSize: '0.7rem', 
@@ -538,6 +556,19 @@ export default function AdminMediateTab() {
                         <option value="rejected" style={{ background: 'white', color: '#1e293b' }}>Dibatalkan</option>
                       </select>
                     </div>
+
+                    {req.status.includes('_acc_') && (
+                      <div style={{ 
+                        fontSize: '0.68rem', color: '#b45309', fontWeight: '800', 
+                        marginTop: '-4px', marginBottom: '4px', textAlign: 'right',
+                        background: '#fef3c7', padding: '4px 8px', borderRadius: '6px',
+                        border: '1px solid #fde68a', alignSelf: 'flex-end'
+                      }}>
+                        Persetujuan Parsial: {
+                          req.status.endsWith('sender') ? 'Disetujui Pengirim saja' : 'Disetujui Penerima saja'
+                        }
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: '750', color: '#1e293b' }}>
                       <span style={{ color: '#134E39' }}>{req.senderAlias}</span>
@@ -672,7 +703,9 @@ export default function AdminMediateTab() {
                   {/* 3. Status Badge */}
                   <div>
                     <select
-                      value={req.status}
+                      value={['qna', 'qna_acc_sender', 'qna_acc_receiver'].includes(req.status) ? 'qna' : 
+                             ['wali_process', 'wali_acc_sender', 'wali_acc_receiver'].includes(req.status) ? 'wali_process' : 
+                             ['meet', 'meet_acc_sender', 'meet_acc_receiver'].includes(req.status) ? 'meet' : req.status}
                       onChange={(e) => updateTaarufStatus(req.id, e.target.value)}
                       style={{ 
                         fontSize: '0.7rem', 
@@ -703,6 +736,18 @@ export default function AdminMediateTab() {
                       <option value="completed" style={{ background: 'white', color: '#1e293b' }}>Berhasil/Nikah</option>
                       <option value="rejected" style={{ background: 'white', color: '#1e293b' }}>Dibatalkan</option>
                     </select>
+
+                    {req.status.includes('_acc_') && (
+                      <div style={{ 
+                        fontSize: '0.65rem', color: '#b45309', fontWeight: '800', 
+                        marginTop: '4px', background: '#fef3c7', padding: '3px 8px', 
+                        borderRadius: '6px', border: '1px solid #fde68a', display: 'inline-block'
+                      }}>
+                        Persetujuan Parsial: {
+                          req.status.endsWith('sender') ? 'Disetujui Pengirim saja' : 'Disetujui Penerima saja'
+                        }
+                      </div>
+                    )}
                   </div>
 
                   {/* 4. Aksi Mediasi */}

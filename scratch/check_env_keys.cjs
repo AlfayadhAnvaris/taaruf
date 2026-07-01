@@ -1,2 +1,1 @@
-console.log("Environment variables keys:");
-console.log(Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("KEY") || k.includes("SECRET")));
+console.log(Object.keys(process.env).filter(k => k.toLowerCase().includes('supabase') || k.toLowerCase().includes('key') || k.toLowerCase().includes('secret')));

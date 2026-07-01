@@ -14,6 +14,7 @@ import FeedbackTab from './FeedbackTab';
 const HomeTab = dynamic(() => import('./HomeTab'), { ssr: false });
 import FindTab from './FindTab';
 import StatusTab from './StatusTab';
+import QaTemplatesModal from './QaTemplatesModal';
 const LeaderboardTab = dynamic(() => import('./LeaderboardTab'), { ssr: false });
 
 const RenderLockedState = ({ isProfileComplete, isCvComplete, router }) => {
@@ -81,7 +82,8 @@ export default function UserDashboard({ activeTab, subId }) {
     showAlert, addNotification, 
     bookmarks, setBookmarks,
     getAcademyBadge,
-    lmsView, setLmsView
+    lmsView, setLmsView,
+    handleRefresh
   } = useAppContext();
   
   const router = useRouter();
@@ -511,6 +513,7 @@ export default function UserDashboard({ activeTab, subId }) {
         updated_at: new Date().toISOString()
       });
       if (error) throw error;
+      if (handleRefresh) handleRefresh();
       showAlert('Berhasil', 'Pengajuan taaruf telah dikirim. Menunggu persetujuan target.', 'success');
       router.push('/dashboard/status');
     } catch (err) {
@@ -636,6 +639,15 @@ export default function UserDashboard({ activeTab, subId }) {
       )}
       {activeTab === 'feedback' && <FeedbackTab user={user} showAlert={showAlert} />}
       {activeTab === 'account' && <AccountTab user={user} />}
+
+      <QaTemplatesModal 
+        isOpen={showQaTemplates} 
+        onClose={() => setShowQaTemplates(false)} 
+        onSelect={(text) => {
+          setChatInput(text);
+          setShowQaTemplates(false);
+        }}
+      />
     </div>
   );
 }
